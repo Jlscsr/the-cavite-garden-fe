@@ -1,0 +1,63 @@
+@import "../../styles/variables.scss";
+
+/* ============== Header Section ============== */
+.header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+
+    & > .navbar {
+        padding: 1.5rem 10rem;
+
+        & > .container-fluid > .navbar-collapse {
+            flex-grow: 0;
+        }
+
+        & > .container-fluid {
+            & > .collapse:nth-of-type(1) {
+                & > .navbar-nav {
+                    & > .nav-item {
+                        & > .nav-link:hover {
+                            text-decoration: underline !important;
+                        }
+                    }
+                }
+            }
+
+            & > .collapse:nth-of-type(2) {
+                & > .navbar-nav {
+                    & > .nav-item {
+                        margin-left: 1rem;
+                        padding-inline: 1rem;
+                        border: 1px solid $main-color;
+                        border-radius: $border-radius-1;
+                        &:hover {
+                            border: 2px dashed $main-color;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.modal {
+    & > .modal-dialog {
+        max-width: 700px !important;
+        & > .modal-content {
+            & > .modal-body {
+                & > .products {
+                    row-gap: 1rem;
+                    & > .product {
+                        column-gap: 2rem;
+
+                        & > .product-data {
+                            height: 120px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

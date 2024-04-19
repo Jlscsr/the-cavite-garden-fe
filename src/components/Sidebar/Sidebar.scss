@@ -1,0 +1,159 @@
+$sb-primary-color: #173f39;
+$sb-primary-color-sh1: #173f3948;
+$sb-secondary-color: #feffff;
+$sb-accent-color: #41b06e;
+$sb-open-status: (
+    "background-color": #95ecb9,
+    "border-color": #32e77e,
+);
+$sb-close-status: (
+    "background-color": #ffc470,
+    "border-color": #ffab36,
+);
+
+.sidebar {
+    border: 1px solid $sb-primary-color-sh1;
+    height: 100vh;
+    background-color: $sb-secondary-color;
+
+    & > .sidebar-wrapper {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        & > .sidebar-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: $sb-primary-color;
+
+            & > .img-container {
+                display: inline-block;
+                background-color: $sb-secondary-color;
+                border-radius: 50%;
+                & > img {
+                    display: inline-block;
+                    width: 60px;
+                    border-radius: 50%;
+                }
+            }
+
+            & > span {
+                display: inline-block;
+                width: 150px;
+                color: $sb-secondary-color;
+            }
+        }
+
+        & > .store-status {
+            display: grid;
+            place-content: center;
+
+            &.open,
+            &.close {
+                transition: all 0.2s ease;
+            }
+
+            &.open {
+                background-color: map-get($sb-open-status, "background-color");
+                border: inset map-get($sb-open-status, "border-color");
+            }
+
+            &.close {
+                background-color: map-get($sb-close-status, "background-color");
+                border: inset map-get($sb-close-status, "border-color");
+            }
+
+            & > .btn {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                column-gap: 0.5rem;
+
+                &:focus {
+                    outline: none !important;
+                }
+            }
+        }
+
+        & > .sidebar-nav {
+            & > .sidebar-nav-list {
+                display: flex;
+                flex-direction: column;
+
+                & > .sidebar-item {
+                    width: 100%;
+                    transition: 0.3s;
+                    &:nth-of-type(n + 3):hover {
+                        background-color: $sb-primary-color;
+                        & > a {
+                            & > i,
+                            & > span {
+                                color: $sb-secondary-color;
+                            }
+                        }
+                    }
+                    & > a {
+                        display: flex;
+                        align-items: center;
+                    }
+                    & > .sidebar-menu-toggle {
+                        &:hover {
+                            background-color: $sb-primary-color;
+                            color: $sb-secondary-color;
+                        }
+                        display: flex;
+                        align-items: center;
+                        column-gap: 0.3rem;
+                        transition: 0.3s;
+
+                        & > i:nth-of-type(2) {
+                            transition: 0.3s;
+                            margin-left: auto;
+                        }
+                    }
+
+                    & > .sidebar-subnav-list {
+                        display: flex;
+                        flex-direction: column;
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: 0.3s;
+
+                        &.active {
+                            max-height: 150px;
+                        }
+
+                        & > .sidebar-subnav-item {
+                            padding: 1rem;
+                            transition: 0.3s;
+                            &:hover {
+                                background-color: $sb-primary-color;
+
+                                & > a {
+                                    & > i,
+                                    & > span {
+                                        color: $sb-secondary-color;
+                                    }
+                                }
+                            }
+                            & > a {
+                                display: flex;
+                                align-items: center;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        & > .profile {
+            margin-top: auto;
+            margin-bottom: 1rem;
+            & > .profile-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+    }
+}
