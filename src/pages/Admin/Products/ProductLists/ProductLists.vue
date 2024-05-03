@@ -889,14 +889,6 @@ const resetForm = () => {
 };
 
 const isFormInvalid = computed(() => {
-    console.log("Product Category: ", productCategory.value);
-    console.log("Product Sub Category: ", productSubCategory.value);
-    console.log("Product Price: ", productPrice.value);
-    console.log("Product Stock: ", productStock.value);
-    console.log("Product Description: ", productDescription.value);
-    console.log("Product Name: ", productName.value);
-    console.log("Product Size: ", potSize.value);
-    console.log("Product photo: ", productPhotoUrl.value);
     const commonValidation = () => {
         return (
             productName.value === "" ||
