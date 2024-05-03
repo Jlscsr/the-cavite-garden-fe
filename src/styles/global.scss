@@ -1,0 +1,53 @@
+/* Font Families */
+.fs-thin {
+    font-family: "Poppins Thin", sans-serif !important;
+}
+
+.fs-light {
+    font-family: "Poppins Light", sans-serif !important;
+}
+
+.fs-regular {
+    font-family: "Poppins Regular", sans-serif !important;
+}
+
+.fs-medium {
+    font-family: "Poppins Medium", sans-serif !important;
+}
+
+.fs-semi-bold {
+    font-family: "Poppins SemiBold", sans-serif !important;
+}
+
+.fs-bold {
+    font-family: "Poppins Bold", sans-serif !important;
+}
+
+.cursor-pointer {
+    cursor: pointer !important;
+}
+
+/* Style for all the heading on each section */
+.main {
+    & > .section {
+        & > .heading {
+            position: relative;
+            font-size: 5rem;
+            color: transparent;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            pointer-events: none;
+            -webkit-text-stroke: 0.05rem $main-color;
+
+            & > span {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 100%;
+                color: $main-color;
+                transform: translate(-50%, -50%);
+            }
+        }
+    }
+}

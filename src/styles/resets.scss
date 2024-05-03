@@ -1,0 +1,12 @@
+a {
+    color: $main-color !important;
+    text-decoration: none;
+}
+
+.swal-overlay {
+    & > .swal-modal {
+        & > .swal-text {
+            text-align: center !important;
+        }
+    }
+}
