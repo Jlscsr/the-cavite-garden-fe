@@ -86,7 +86,7 @@
                                 Shipping Address:
                             </h5>
                             <p classs="mb-0 mt-2">
-                                {{ order?.shipping_address }}
+                                {{ order?.shipping_address || "N/A" }}
                             </p>
                         </div>
                         <div class="container d-flex flex-column gap-1">
@@ -135,14 +135,15 @@
                                     class="d-flex w-100 justify-content-between mb-3"
                                 >
                                     <h5 class="mb-1">
-                                        {{ product?.plant_name }}
+                                        {{ product?.product_name }}
                                     </h5>
                                     <small
-                                        >Price: {{ product.plant_price }}</small
+                                        >Price:
+                                        {{ product.product_price }}</small
                                     >
                                 </div>
                                 <p class="mb-1">
-                                    {{ product?.plant_description }}
+                                    {{ product?.product_description }}
                                 </p>
                                 <small
                                     >Quantity:

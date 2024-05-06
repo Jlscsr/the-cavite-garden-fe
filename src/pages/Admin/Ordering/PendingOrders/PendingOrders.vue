@@ -297,14 +297,14 @@
                                 class="d-flex justify-content-between w-100 border-bottom"
                             >
                                 <p class="fs-medium mb-0">
-                                    {{ product.plant_name }}
+                                    {{ product.product_name }}
                                 </p>
                                 <div class="mb-0">
                                     <p class="mb-0 text-end">
                                         x{{ product.purchased_quantity }}
                                     </p>
                                     <p class="mb-0">
-                                        ₱{{ product.plant_price }}
+                                        ₱{{ product.product_price }}
                                     </p>
                                 </div>
                             </div>
@@ -313,7 +313,7 @@
                                 <p class="mb-0">
                                     ₱{{
                                         product.purchased_quantity *
-                                        product.plant_price
+                                        product.product_price
                                     }}.00
                                 </p>
                             </div>

@@ -114,35 +114,35 @@
                 <tr
                     v-if="productLists.length > 0"
                     v-for="product in productLists"
-                    :key="product.categoryId"
+                    :key="product?.id"
                 >
                     <td class="p-3">
                         <img
-                            :src="product.plant_image"
-                            :alt="product.plant_name"
+                            :src="product?.product_image"
+                            :alt="product?.product_name"
                         />
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ firstLetterUppercase(product.category_name) }}
+                        {{ firstLetterUppercase(product?.category_name) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ product.plant_name }}
+                        {{ product?.product_name }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(product.created_at) }}
+                        {{ formatDate(product?.created_at) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(product.modified_at) }}
+                        {{ formatDate(product?.modified_at) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
                         <span
                             class="chip"
                             :class="{
-                                available: product.status === 'Available',
-                                unavailable: product.status === 'Unavailable',
+                                available: product?.status === 'Available',
+                                unavailable: product?.status === 'Unavailable',
                             }"
                         >
-                            {{ product.status }}
+                            {{ product?.status }}
                         </span>
                     </td>
                     <td class="text-center">
@@ -163,7 +163,7 @@
                                         class="btn btn-success w-100"
                                         data-bs-toggle="modal"
                                         data-bs-target="#productDetailsModal"
-                                        @click="viewProduct(product.id)"
+                                        @click="viewProduct(product?.id)"
                                     >
                                         View
                                     </button>
@@ -173,7 +173,7 @@
                                 >
                                     <button
                                         class="btn btn-warning w-100"
-                                        @click="toggleEditBtn(product.id)"
+                                        @click="toggleEditBtn(product?.id)"
                                     >
                                         Edit
                                     </button>
@@ -183,7 +183,7 @@
                                 >
                                     <button
                                         class="btn btn-danger w-100"
-                                        @click="toggleDeleteBtn(product.id)"
+                                        @click="toggleDeleteBtn(product?.id)"
                                     >
                                         Delete
                                     </button>
@@ -441,8 +441,8 @@
                         <div class="px-4 text-center">
                             <div class="">
                                 <img
-                                    :src="selectedProduct?.plant_image"
-                                    alt="Test"
+                                    :src="selectedProduct?.product_image"
+                                    :alt="selectedProduct?.product_name"
                                     width="250"
                                     class="rounded"
                                 />
@@ -480,7 +480,7 @@
                                 >
                                     <p class="fs-medium mb-0">Plant Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.plant_name }}
+                                        {{ selectedProduct?.product_name }}
                                     </p>
                                 </div>
                                 <div
@@ -492,7 +492,9 @@
                                         Description:
                                     </p>
                                     <p class="mb-0" style="width: 350px">
-                                        {{ selectedProduct?.plant_description }}
+                                        {{
+                                            selectedProduct?.product_description
+                                        }}
                                     </p>
                                 </div>
                                 <div
@@ -500,7 +502,7 @@
                                 >
                                     <p class="fs-medium mb-0">Price:</p>
                                     <p class="mb-0">
-                                        ₱{{ selectedProduct?.plant_price }}
+                                        ₱{{ selectedProduct?.product_price }}
                                     </p>
                                 </div>
                                 <div
@@ -651,13 +653,13 @@ const previousImagePlaceholder = ref("");
 
 onMounted(() => {
     modalInstance.value = new bootstrap.Modal(productModalForm.value);
-    getPlants();
+    getProducts();
 
     getAllPlantCategories()
         .then((response) => {
             if (response.status === "success") {
                 categories.value = response.data;
-                getPlants();
+                getProducts();
             }
         })
         .catch((error) => {
@@ -666,6 +668,7 @@ onMounted(() => {
 });
 
 const productSubCategories = ref([]);
+
 watch(productCategory, (newVal, oldVal) => {
     if (productCategory.value) {
         productSubCategories.value = categories.value.find(
@@ -683,7 +686,7 @@ watch(productCategory, (newVal, oldVal) => {
     }
 });
 
-const getPlants = () => {
+const getProducts = () => {
     getAllPlants()
         .then((response) => {
             if (response.status === "success") {
@@ -722,7 +725,7 @@ const addNewProduct = async () => {
 
         swal("New Product has been added!", "", "success").then((success) => {
             if (success) {
-                getPlants();
+                getProducts();
             }
         });
     } catch (error) {
@@ -769,6 +772,7 @@ const editPlantWithImage = async () => {
         product_category: productCategory.value,
         product_sub_category: productSubCategory.value,
         product_price: productPrice.value,
+        stock: productStock.value,
         pot_size: potSize.value,
         stock: productStock.value,
         product_description: productDescription.value,
@@ -791,6 +795,7 @@ const editPlantMetadataOnly = async () => {
         product_name: productName.value,
         product_category: productCategory.value,
         product_sub_category: productSubCategory.value,
+        stock: productStock.value,
         product_price: productPrice.value,
         pot_size: potSize.value,
         product_description: productDescription.value,
@@ -811,7 +816,7 @@ const deleteProduct = async (id) => {
         (product) => product.id === id
     );
 
-    await deleteImageFromFirebase(selectedProduct.plant_image);
+    await deleteImageFromFirebase(selectedProduct.product_image);
 
     const response = await deletePlant(id);
 
@@ -821,7 +826,7 @@ const deleteProduct = async (id) => {
     }
 
     swal("Product has been deleted!", "", "success");
-    getPlants();
+    getProducts();
 };
 
 const viewProduct = (id) => {
@@ -837,17 +842,15 @@ const toggleEditBtn = (id) => {
         (product) => product.id === id
     );
 
-    console.log(selectedProduct.value);
-
-    imagePlacholder.value = selectedProduct.value.plant_image;
+    imagePlacholder.value = selectedProduct.value.product_image;
     previousImagePlaceholder.value = imagePlacholder.value;
-    productName.value = selectedProduct.value.plant_name;
+    productName.value = selectedProduct.value.product_name;
     productCategory.value = selectedProduct.value.category_name;
     productSubCategory.value = selectedProduct.value.sub_category_name;
     potSize.value = selectedProduct.value.size ?? null;
     productStock.value = selectedProduct.value.stock;
-    productPrice.value = selectedProduct.value.plant_price;
-    productDescription.value = selectedProduct.value.plant_description;
+    productPrice.value = selectedProduct.value.product_price;
+    productDescription.value = selectedProduct.value.product_description;
 };
 
 const toggleDeleteBtn = async (id) => {
@@ -950,7 +953,7 @@ const completeOperation = () => {
 
 const editSuccess = () => {
     swal("Product has been updated!", "", "success");
-    getPlants();
+    getProducts();
 };
 
 const handleError = (title, message, error) => {

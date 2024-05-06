@@ -14,12 +14,13 @@
                             <span class="text-emphasis">Roots of Serinity</span>
                             - Your Oasis In Cavite
                         </p>
-                        <button
+                        <a
+                            href="#menu"
                             type="button"
                             class="btn fs-6 bg-black text-white"
                         >
                             BUY NOW
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="carousel-item h-100">

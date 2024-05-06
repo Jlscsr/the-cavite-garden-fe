@@ -239,8 +239,8 @@
                         >
                             <div class="product-img">
                                 <img
-                                    :src="product?.product_info.plant_image"
-                                    :alt="product?.product_info.plant_name"
+                                    :src="product?.product_info.product_image"
+                                    :alt="product?.product_info.product_name"
                                     width="100"
                                 />
                             </div>
@@ -249,7 +249,7 @@
                             >
                                 <div class="">
                                     <p class="fs-5 fs-medium mb-0">
-                                        {{ product?.product_info.plant_name }}
+                                        {{ product?.product_info.product_name }}
                                     </p>
                                     <p class="fs-6 text-secondary mb-0">
                                         {{
@@ -411,7 +411,6 @@ import {
     database,
     ref as dbRef,
     set,
-    onValue,
     query,
     orderByChild,
     equalTo,
@@ -478,6 +477,8 @@ const setSelectedAddress = (event) => {
     selectedShippingAddress.value = userShippingAddresses.value.find(
         (address) => address.label === selectedLabel.toLowerCase()
     );
+
+    console.log(selectedShippingAddress.value);
 
     selectedAddressString.value = `${selectedShippingAddress.value.street_blk_lot}, ${selectedShippingAddress.value.barangay}, ${selectedShippingAddress.value.municipality}, ${selectedShippingAddress.value.province}, ${selectedShippingAddress.value.region}, Philippines`;
     selectedShippingAddress.value = selectedAddressString.value;
@@ -628,7 +629,7 @@ const addQuantity = (id) => {
         if (product.id === id) {
             product.quantity++;
             let totalPrice = parseFloat(product.price);
-            let productPrice = parseFloat(product.product_info.plant_price);
+            let productPrice = parseFloat(product.product_info.product_price);
             product.price = totalPrice + productPrice;
             product.price = product.price.toFixed(2);
         }
@@ -641,7 +642,7 @@ const subtractQuantity = (id) => {
         if (product.id === id && product.quantity > 1) {
             product.quantity--;
             let totalPrice = parseFloat(product.price);
-            let productPrice = parseFloat(product.product_info.plant_price);
+            let productPrice = parseFloat(product.product_info.product_price);
             product.price = totalPrice - productPrice;
             product.price = product.price.toFixed(2);
         }

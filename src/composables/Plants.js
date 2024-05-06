@@ -2,7 +2,7 @@ import { API } from "../boot/axios";
 
 const getAllPlants = async () => {
     try {
-        const response = await API.get("/plant");
+        const response = await API.get("/products");
 
         return response.data;
     } catch (error) {
@@ -12,7 +12,7 @@ const getAllPlants = async () => {
 
 const getAllPlantsByCategory = async (categoryId) => {
     try {
-        const response = await API.get("/plant/category/" + categoryId);
+        const response = await API.get("/product/category/" + categoryId);
 
         if (response.status !== 200) {
             return [];
@@ -27,7 +27,7 @@ const getAllPlantsByCategory = async (categoryId) => {
 
 const addNewPlant = async (plant) => {
     try {
-        const response = await API.post("/plant/add", plant);
+        const response = await API.post("/product/add", plant);
 
         if (response.status !== 201) {
             return false;
@@ -42,7 +42,7 @@ const addNewPlant = async (plant) => {
 
 const editPlant = async (id, plant) => {
     try {
-        const response = await API.put(`/plant/edit/${id}`, plant);
+        const response = await API.put(`/product/edit/${id}`, plant);
 
         if (response.status !== 201) {
             return false;
@@ -57,7 +57,7 @@ const editPlant = async (id, plant) => {
 
 const deletePlant = async (id) => {
     try {
-        const response = await API.delete(`/plant/delete/${id}`);
+        const response = await API.delete(`/product/delete/${id}`);
         console.log(response);
         if (response.status !== 200) {
             return false;

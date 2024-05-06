@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosConfig = {
-    baseURL: "http://localhost/the-cavite-garden-test/api",
+    baseURL: "http://localhost/the-cavite-garden-be/api",
     headers: {
         "Content-Type": "application/json",
     },

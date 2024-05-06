@@ -44,12 +44,12 @@
                         <div class="content">
                             <div class="img-container">
                                 <img
-                                    :src="plant?.plant_image"
-                                    :alt="plant?.plant_name"
+                                    :src="plant?.product_image"
+                                    :alt="plant?.product_name"
                                 />
                             </div>
                             <p class="fs-5 fs-medium">
-                                {{ plant?.plant_name }}
+                                {{ plant?.product_name }}
                             </p>
                             <div
                                 class="button cursor-pointer"
@@ -114,8 +114,8 @@
                         <div class="px-4 text-center">
                             <div class="image-container">
                                 <img
-                                    :src="selectedProduct?.plant_image"
-                                    alt="Test"
+                                    :src="selectedProduct?.product_image"
+                                    :alt="selectedProduct?.product_name"
                                     width="200"
                                     class="rounded-circle"
                                 />
@@ -153,7 +153,7 @@
                                 >
                                     <p class="fs-medium mb-0">Plant Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.plant_name }}
+                                        {{ selectedProduct?.product_name }}
                                     </p>
                                 </div>
                                 <div
@@ -165,7 +165,9 @@
                                         Description:
                                     </p>
                                     <p class="mb-0 text-justify text-end">
-                                        {{ selectedProduct?.plant_description }}
+                                        {{
+                                            selectedProduct?.product_description
+                                        }}
                                     </p>
                                 </div>
                                 <div
@@ -173,7 +175,7 @@
                                 >
                                     <p class="fs-medium mb-0">Price:</p>
                                     <p class="mb-0">
-                                        ₱{{ selectedProduct?.plant_price }}
+                                        ₱{{ selectedProduct?.product_price }}
                                     </p>
                                 </div>
                                 <div
@@ -303,7 +305,7 @@ const addToProductToCart = (productId, quantity) => {
             const data = {
                 product_id: productId,
                 product_quantity: quantity,
-                product_base_price: selectedProduct.value.plant_price,
+                product_base_price: selectedProduct.value.product_price,
             };
             const response = await addToCart(data);
 

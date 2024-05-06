@@ -20,6 +20,16 @@ const getProductsInCart = async () => {
     }
 };
 
+const getProductsInCartByCustomerId = async (customerId) => {
+    try {
+        const response = await API.get(`/cart/customer/${customerId}`);
+
+        return response.data;
+    } catch (error) {
+        return error.response.data;
+    }
+};
+
 const deleteProductFromCart = async (id) => {
     try {
         const response = await API.delete(`/cart/delete/${id}`);
@@ -30,4 +40,9 @@ const deleteProductFromCart = async (id) => {
         return error.response.data;
     }
 };
-export { addToCart, getProductsInCart, deleteProductFromCart };
+export {
+    addToCart,
+    getProductsInCartByCustomerId,
+    getProductsInCart,
+    deleteProductFromCart,
+};
