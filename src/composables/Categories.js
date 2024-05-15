@@ -1,6 +1,11 @@
 import { API } from "../boot/axios";
 
-const getAllPlantCategories = async () => {
+/**
+ * Retrieves all categories from the backend API.
+ *
+ * @return {Object} The data containing all categories.
+ */
+const GetAllCategoriesAPI = async () => {
     try {
         const response = await API.get("/categories");
 
@@ -10,9 +15,15 @@ const getAllPlantCategories = async () => {
     }
 };
 
-const addNewCategory = async (category) => {
+/**
+ * Add a new category through the API.
+ *
+ * @param {Object} newCategoryInfo - The category object to be added.
+ * @return {Object} The data returned from the API after adding the category.
+ */
+const AddNewCategoryAPI = async (newCategoryInfo) => {
     try {
-        const response = await API.post("/category/add", category);
+        const response = await API.post("/category/add", newCategoryInfo);
 
         return response.data;
     } catch (error) {
@@ -20,9 +31,15 @@ const addNewCategory = async (category) => {
     }
 };
 
-const addNewSubCategory = async (subcategory) => {
+/**
+ * Add a new subcategory through the API.
+ *
+ * @param {Object} newSubcategoryInfo - The newSubcategoryInfo object to be added.
+ * @return {Object} The data returned from the API after adding the subcategory.
+ */
+const AddNewSubCategoryAPI = async (newSubcategoryInfo) => {
     try {
-        const response = await API.post("/subcategory/add", subcategory);
+        const response = await API.post("/subcategory/add", newSubcategoryInfo);
 
         return response.data;
     } catch (error) {
@@ -30,40 +47,46 @@ const addNewSubCategory = async (subcategory) => {
     }
 };
 
-const editCategory = async (id, category) => {
+/**
+ * Edit a category through the API.
+ *
+ * @param {int} categoryID - The ID of the category to edit.
+ * @param {Object} newCategoryInfo - The newCategoryInfo object with updated information.
+ * @return {Object} The data returned from the API after editing the category.
+ */
+const EditCategoryAPI = async (categoryID, newCategoryInfo) => {
     try {
-        const response = await API.put("/category/edit/" + id, category);
-
-        if (response.status !== 201) {
-            return [];
-        }
+        const response = await API.put(
+            "/category/edit/" + categoryID,
+            newCategoryInfo
+        );
 
         return response.data;
     } catch (error) {
-        console.error("Error editing category: ", error.message);
-        return [];
+        return error.response.data;
     }
 };
 
-const deleteCategory = async (id) => {
+/**
+ * Delete a category through the API.
+ *
+ * @param {int} categoryID - The ID of the category to delete.
+ * @return {Object} The data returned from the API after deleting the category.
+ */
+const DeleteCategoryAPI = async (categoryID) => {
     try {
-        const response = await API.delete("/category/delete/" + id);
-
-        if (response.status !== 200) {
-            return [];
-        }
+        const response = await API.delete("/category/delete/" + categoryID);
 
         return response.data;
     } catch (error) {
-        console.error("Error deleting category: ", error.message);
-        return [];
+        return response.data;
     }
 };
 
 export {
-    getAllPlantCategories,
-    addNewCategory,
-    editCategory,
-    deleteCategory,
-    addNewSubCategory,
+    GetAllCategoriesAPI,
+    AddNewCategoryAPI,
+    AddNewSubCategoryAPI,
+    EditCategoryAPI,
+    DeleteCategoryAPI,
 };

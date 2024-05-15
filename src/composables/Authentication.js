@@ -32,15 +32,27 @@ const logout = async () => {
 const checkUserSession = async () => {
     try {
         const response = await API.get("/auth/check");
-        if (response.status !== 200) {
-            return false;
-        }
 
         return response.data;
     } catch (error) {
-        console.error(error.message);
-        return [];
+        return error.response.data;
     }
 };
 
-export { registerUser, loginUser, checkUserSession, logout };
+const RequestToCheckUserRole = async () => {
+    try {
+        const response = await API.get("/auth/check-role");
+
+        return response.data;
+    } catch (error) {
+        return error.response.data;
+    }
+};
+
+export {
+    registerUser,
+    loginUser,
+    checkUserSession,
+    logout,
+    RequestToCheckUserRole,
+};

@@ -28,6 +28,27 @@
                 }
             }
 
+            & > .subcategories {
+                & > .btn {
+                    border: none;
+
+                    &:hover {
+                        & > span {
+                            color: $main-color !important;
+                        }
+                    }
+                }
+
+                & > .btn.active {
+                    border-bottom: 1px solid $main-color;
+                    border-radius: 0px;
+
+                    & > span {
+                        color: $main-color !important;
+                    }
+                }
+            }
+
             & > .container-fluid {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
@@ -97,8 +118,10 @@
                             display: grid;
                             place-content: center;
                             & > img {
-                                width: 200px;
-                                border-radius: 50%;
+                                width: 350px;
+                                height: 300px;
+                                object-fit: cover;
+                                border-radius: 10%;
                             }
                         }
 

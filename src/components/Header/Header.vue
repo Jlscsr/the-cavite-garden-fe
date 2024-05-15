@@ -416,6 +416,11 @@ import {
     equalTo,
     onChildChanged,
 } from "../../boot/firebase.js";
+import {
+    SetCookieHelper,
+    GetCookieHelper,
+} from "../../composables/helpers/CookieHelper.js";
+import { sessionExpiredModalMessage } from "../../composables/helpers/SweetAlertMessages.js";
 
 import swal from "sweetalert";
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
@@ -685,39 +690,39 @@ const logoutUser = async () => {
 onMounted(async () => {
     addressLabels.value = [];
     modalInstance.value = new bootstrap.Modal(headerActiveModal.value);
-    if (customerStore.isAuthenticated()) {
+    isAuthenticated.value = GetCookieHelper();
+
+    if (isAuthenticated.value) {
         const response = await checkUserSession();
         if (response.status === "unauthorized") {
-            swal("Session Expired!", "Please login again!", "warning").then(
-                (value) => {
-                    if (value) {
-                        isAuthenticated.value = false;
-                        customerStore.unauthticateCustomer();
-                        return;
-                    }
+            sessionExpiredModalMessage((value) => {
+                if (value) {
+                    SetCookieHelper("isAuthenticated", false);
+                    router.go();
                 }
-            );
-        }
-    }
-
-    try {
-        const response = await getUserInfo();
-        console.log(response);
-
-        if (response.status === "success") {
-            userData.value = response.data;
-            listenForTransactionChanges(userData.value[0]?.id);
-
-            userShippingAddresses.value = response.data[0].shipping_addresses;
-            userShippingAddresses.value.forEach((address) => {
-                addressLabels.value.push(firstLetterUppercase(address.label));
             });
+            return;
         }
-    } catch (error) {
-        console.error(error);
-    }
 
-    isAuthenticated.value = customerStore.isAuthenticated();
+        try {
+            const response = await getUserInfo();
+
+            if (response.status === "success") {
+                userData.value = response.data;
+                listenForTransactionChanges(userData.value[0]?.id);
+
+                userShippingAddresses.value =
+                    response.data[0].shipping_addresses;
+                userShippingAddresses.value.forEach((address) => {
+                    addressLabels.value.push(
+                        firstLetterUppercase(address.label)
+                    );
+                });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
 });
 </script>
 

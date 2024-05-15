@@ -8,65 +8,75 @@
         <div class="container text-center px-5 py-3">
             <div class="container text-center">
                 <div class="row mt-4" id="btn-container">
-                    <div v-for="category in plantCategories" class="col">
+                    <div
+                        v-if="productsCategories.length > 0"
+                        v-for="category in productsCategories"
+                        class="col"
+                    >
                         <button
                             class="btn"
-                            id="plantTypeBtn"
-                            :data-plant-type-id="category.id"
-                            @click="getPlants(category.id)"
+                            :class="{
+                                active: category.id === selectedCategory?.id,
+                            }"
+                            @click="filterProductsByCategoryID(category.id)"
                         >
                             <span class="fs-5 text-black-50">
-                                {{ firstLetterUppercase(category.name) }}
+                                {{
+                                    firstLetterUppercase(category.categoryName)
+                                }}
                             </span>
                         </button>
                     </div>
                 </div>
 
-                <div v-if="subCategories.length > 0" class="mt-4">
+                <div v-if="subCategories.length > 0" class="subcategories mt-4">
                     <button
                         v-for="subcategory in subCategories"
                         :key="subcategory.id"
+                        :class="{
+                            active: subcategory.id === selectedSubCategory?.id,
+                        }"
                         class="btn mx-5"
-                        @click="getPlantsBySubCategory(subcategory.id)"
+                        @click="filterProductsBySubCategoryID(subcategory.id)"
                     >
                         <span class="fs-5 text-black-50">
-                            {{ subcategory.name }}
+                            {{ subcategory.subCategoryName }}
                         </span>
                     </button>
                 </div>
 
-                <div class="container-fluid mt-5" id="plants">
+                <div class="container-fluid mt-5">
                     <div
-                        v-for="plant in plants"
+                        v-for="product in products"
                         class="box d-flex justify-content-center align-items-center px-3 py-3"
-                        :key="plant?.id"
+                        :key="product?.id"
                     >
                         <div class="content">
                             <div class="img-container">
                                 <img
-                                    :src="plant?.product_image"
-                                    :alt="plant?.product_name"
+                                    :src="product?.productImage"
+                                    :alt="product?.productName"
                                 />
                             </div>
                             <p class="fs-5 fs-medium">
-                                {{ plant?.product_name }}
+                                {{ product?.productName }}
                             </p>
                             <div
                                 class="button cursor-pointer"
                                 data-bs-toggle="modal"
                                 data-bs-target="#productDetailsModal"
-                                @click="viewProduct(plant?.id)"
+                                @click="viewProduct(product?.id)"
                             >
                                 <i class="fs-3 fas fa-cart-plus"></i>
                             </div>
                         </div>
                     </div>
                     <div
-                        v-if="!loadingState && plants.length === 0"
+                        v-if="!loadingState && products.length === 0"
                         class="d-flex align-items-center justify-content-center w-100"
                     >
                         <span class="d-block fs-5 fs-semi-bold"
-                            >No Data Found</span
+                            >No Products Found...</span
                         >
                     </div>
                     <div
@@ -114,10 +124,8 @@
                         <div class="px-4 text-center">
                             <div class="image-container">
                                 <img
-                                    :src="selectedProduct?.product_image"
-                                    :alt="selectedProduct?.product_name"
-                                    width="200"
-                                    class="rounded-circle"
+                                    :src="selectedProduct?.productImage"
+                                    :alt="selectedProduct?.productName"
                                 />
                             </div>
                             <hr />
@@ -128,9 +136,9 @@
                                     <p class="fs-medium mb-0">Category:</p>
                                     <p class="mb-0">
                                         {{
-                                            selectedProduct?.category_name &&
+                                            selectedProduct?.categoryName &&
                                             firstLetterUppercase(
-                                                selectedProduct.category_name
+                                                selectedProduct.categoryName
                                             )
                                         }}
                                     </p>
@@ -141,9 +149,9 @@
                                     <p class="fs-medium mb-0">Sub Category:</p>
                                     <p class="mb-0">
                                         {{
-                                            selectedProduct?.sub_category_name &&
+                                            selectedProduct?.subCategoryName &&
                                             firstLetterUppercase(
-                                                selectedProduct.sub_category_name
+                                                selectedProduct.subCategoryName
                                             )
                                         }}
                                     </p>
@@ -151,9 +159,9 @@
                                 <div
                                     class="d-flex justify-content-between align-items-center border-bottom mt-2"
                                 >
-                                    <p class="fs-medium mb-0">Plant Name:</p>
+                                    <p class="fs-medium mb-0">Product Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.product_name }}
+                                        {{ selectedProduct?.productName }}
                                     </p>
                                 </div>
                                 <div
@@ -166,7 +174,7 @@
                                     </p>
                                     <p class="mb-0 text-justify text-end">
                                         {{
-                                            selectedProduct?.product_description
+                                            selectedProduct?.productDescription
                                         }}
                                     </p>
                                 </div>
@@ -175,7 +183,7 @@
                                 >
                                     <p class="fs-medium mb-0">Price:</p>
                                     <p class="mb-0">
-                                        ₱{{ selectedProduct?.product_price }}
+                                        ₱{{ selectedProduct?.productPrice }}
                                     </p>
                                 </div>
                                 <div
@@ -184,7 +192,10 @@
                                 >
                                     <p class="fs-medium mb-0">Size:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.size }}
+                                        {{
+                                            selectedProduct?.productSize ??
+                                            "N/A"
+                                        }}
                                     </p>
                                 </div>
                                 <div
@@ -192,7 +203,7 @@
                                 >
                                     <p class="fs-medium mb-0">Stock:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.stock }}
+                                        {{ selectedProduct?.productStock }}
                                     </p>
                                 </div>
                                 <div class="mt-3 text-start">
@@ -204,9 +215,8 @@
                                     <input
                                         type="number"
                                         min="1"
-                                        :max="selectedProduct?.stock"
+                                        :max="selectedProduct?.productStock"
                                         class="form-control"
-                                        id="quantity"
                                         v-model="productQuantity"
                                     />
                                 </div>
@@ -243,39 +253,111 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getAllPlantCategories } from "../../../composables/Categories";
-import { getAllPlantsByCategory } from "../../../composables/Plants";
+
+import swal from "sweetalert";
+
+import { GetAllProductsAPI } from "../../../composables/Plants";
+import { GetAllCategoriesAPI } from "../../../composables/Categories";
 import { firstLetterUppercase } from "../../../composables/Helpers";
 import { addToCart } from "../../../composables/Cart";
 import { useCustomerStore } from "../../../store/customerStore";
-import swal from "sweetalert";
-import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
 const router = useRouter();
 const menuActiveModal = ref(null);
 const modalInstance = ref(null);
 const customerStore = useCustomerStore();
 
-let loadingState = ref(false);
-const plantCategories = ref([]);
+// States
+const loadingState = ref(false);
+
+const products = ref([]);
+const selectedProduct = ref(null);
+const productsCopy = ref([]);
+const productsCategories = ref([]);
+const selectedCategory = ref([]);
 const subCategories = ref([]);
-const plants = ref([]);
+const selectedSubCategory = ref([]);
 
 const productQuantity = ref(1);
-const selectedCategory = ref();
-const selectedProduct = ref(null);
 
-const getPlantsBySubCategory = async (subcategoryId) => {
-    await getPlants(selectedCategory.value.id);
+/**
+ * @description
+ * - Load all product categories and products on mount
+ *
+ * @function onMounted
+ * @param {Object} - Vue lifecycle hook
+ * @returns {Promise<void>}
+ */
+onMounted(async () => {
+    loadingState.value = true;
 
-    plants.value = plants.value.filter((plant) => {
-        return plant.subCategoryId === subcategoryId;
-    });
+    const [categoriesResponse, productsResponse] = await Promise.all([
+        GetAllCategoriesAPI(),
+        GetAllProductsAPI(),
+    ]);
 
-    console.log(plants.value);
+    productsCategories.value = categoriesResponse.data ?? [];
+    products.value = productsResponse.data ?? [];
+    productsCopy.value = [...products.value];
+
+    if (productsCategories.value.length > 0) {
+        filterProductsByCategoryID(productsCategories.value[0].id);
+    }
+
+    loadingState.value = false;
+});
+
+/**
+ * Filters products by a specific category ID.
+ *
+ * @param {int} categoryId - The ID of the category to filter products by.
+ */
+const filterProductsByCategoryID = (categoryId) => {
+    selectedCategory.value = productsCategories.value.find(
+        (category) => category.id === categoryId
+    );
+
+    products.value = productsCopy.value.filter(
+        (product) => product.categoryID === selectedCategory.value.id
+    );
+
+    setSubCategories(selectedCategory.value.subCategories);
 };
+
+/**
+ * Set the subcategories with the provided new subcategories or an empty array if newSubCategories is null or undefined.
+ *
+ * @param {any} newSubCategories - The new subcategories to set.
+ * @return {void}
+ */
+const setSubCategories = (newSubCategories) => {
+    subCategories.value = newSubCategories || [];
+};
+
+/**
+ * Filters products by a specific subcategory ID.
+ *
+ * @param {type} subcategoryId - description of parameter
+ * @return {type} description of return value
+ */
+const filterProductsBySubCategoryID = (subcategoryId) => {
+    selectedSubCategory.value = subCategories.value.find(
+        (subcategory) => subcategory.id === subcategoryId
+    );
+
+    products.value = productsCopy.value.filter(
+        (product) => product.subCategoryID === subcategoryId
+    );
+};
+
+/**
+ * Sets the selected product to the one with the provided ID.
+ *
+ * @param {type} id - The ID of the product to set as selected.
+ * @return {type} description of return value
+ */
 const viewProduct = (id) => {
-    selectedProduct.value = plants.value.find((plant) => plant.id === id);
+    selectedProduct.value = products.value.find((plant) => plant.id === id);
 };
 
 const addToProductToCart = (productId, quantity) => {
@@ -323,68 +405,6 @@ const addToProductToCart = (productId, quantity) => {
         }
     });
 };
-
-const getPlants = async (categoryId) => {
-    plants.value = [];
-
-    selectedCategory.value = plantCategories.value.find((category) => {
-        return category.id === categoryId;
-    });
-
-    subCategories.value = selectedCategory.value.sub_categories ?? [];
-
-    updateButtonState(categoryId);
-
-    loadingState.value = true;
-
-    try {
-        const response = await getAllPlantsByCategory(categoryId);
-
-        if (response.status === "success") {
-            if (response.hasOwnProperty("data")) {
-                plants.value = response.data;
-            }
-        }
-    } catch (error) {
-        console.log(error);
-    } finally {
-        loadingState.value = false;
-    }
-};
-
-const updateButtonState = (categoryId) => {
-    const currentBtn = document.querySelector(
-        `[data-plant-type-id="${categoryId}"]`
-    );
-
-    document
-        .querySelectorAll("[data-plant-type-id]")
-        .forEach((btn) => btn.classList.remove("active"));
-
-    currentBtn.classList.add("active");
-};
-
-onMounted(async () => {
-    modalInstance.value = new bootstrap.Modal(menuActiveModal.value);
-    loadingState.value = true;
-    try {
-        const categoriesResponse = await getAllPlantCategories();
-
-        if (categoriesResponse.status === "success") {
-            plantCategories.value = categoriesResponse.data;
-        }
-
-        const plantsResponse = await getAllPlantsByCategory(2);
-
-        if (plantsResponse.status === "success") {
-            plants.value = plantsResponse.data;
-        }
-    } catch (error) {
-        console.error(error);
-    } finally {
-        loadingState.value = false;
-    }
-});
 </script>
 
 <style scoped lang="scss">

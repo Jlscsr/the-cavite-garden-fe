@@ -39,6 +39,9 @@ const routes = [
             {
                 path: "admin",
                 component: () => import("../pages/Admin.vue"),
+                meta: {
+                    requiresAuth: true,
+                },
                 children: [
                     {
                         path: "pending-orders",

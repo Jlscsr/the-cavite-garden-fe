@@ -1,6 +1,11 @@
 import { API } from "../boot/axios";
 
-const getAllPlants = async () => {
+/**
+ * Retrieves all products from the API.
+ *
+ * @return {Object} The data containing all products.
+ */
+const GetAllProductsAPI = async () => {
     try {
         const response = await API.get("/products");
 
@@ -10,70 +15,78 @@ const getAllPlants = async () => {
     }
 };
 
-const getAllPlantsByCategory = async (categoryId) => {
+/**
+ * Retrieves all products by category ID from the API.
+ *
+ * @param {int} categoryId - The ID of the category to retrieve products from.
+ * @return {Object} The data containing products of the specified category.
+ */
+const GetAllProductsByCategoryIDAPI = async (categoryId) => {
     try {
-        const response = await API.get("/product/category/" + categoryId);
-
-        if (response.status !== 200) {
-            return [];
-        }
+        const response = await API.get("/products/category/" + categoryId);
 
         return response.data;
     } catch (error) {
-        console.error(`Error fetching plants by category: ${error.message}`);
-        return [];
+        return error.response.data;
     }
 };
 
-const addNewPlant = async (plant) => {
+/**
+ * Add a new product through the API.
+ *
+ * @param {Object} newProductInfo - The information of the new product to be added.
+ * @return {Object} The data returned from the API after adding the new product.
+ */
+const AddNewProductAPI = async (newProductInfo) => {
     try {
-        const response = await API.post("/product/add", plant);
-
-        if (response.status !== 201) {
-            return false;
-        }
+        const response = await API.post("/product/add", newProductInfo);
 
         return response.data;
     } catch (error) {
-        console.error(`Error adding new plant: ${error.message}`);
-        return false;
+        return error.response.data;
     }
 };
 
-const editPlant = async (id, plant) => {
+/**
+ * Edit a product through the API.
+ *
+ * @param {int} productID - The ID of the product to be edited.
+ * @param {Object} newProductInfo - The updated information of the product.
+ * @return {Object} The data returned from the API after editing the product.
+ */
+const EditProductAPI = async (productID, newProductInfo) => {
     try {
-        const response = await API.put(`/product/edit/${id}`, plant);
-
-        if (response.status !== 201) {
-            return false;
-        }
+        const response = await API.put(
+            `/product/edit/${productID}`,
+            newProductInfo
+        );
 
         return response.data;
     } catch (error) {
-        console.error(`Error editing plant: ${error.message}`);
-        return false;
+        return error.response.data;
     }
 };
 
-const deletePlant = async (id) => {
+/**
+ * Delete a product through the API.
+ *
+ * @param {int} productID - The ID of the product to delete.
+ * @return {Object} The data returned from the API after deleting the product.
+ */
+const DeleteProductAPI = async (productID) => {
     try {
-        const response = await API.delete(`/product/delete/${id}`);
-        console.log(response);
-        if (response.status !== 200) {
-            return false;
-        }
+        const response = await API.delete(`/product/delete/${productID}`);
 
         return response.data;
     } catch (error) {
-        console.error(`Error deleting plant: ${error.message}`);
-        return false;
+        return error.response.data;
     }
 };
 
 export {
-    getAllPlants,
-    getAllPlantsByCategory,
-    addNewPlant,
-    editPlant,
-    deletePlant,
+    GetAllProductsAPI,
+    GetAllProductsByCategoryIDAPI,
+    AddNewProductAPI,
+    EditProductAPI,
+    DeleteProductAPI,
 };
