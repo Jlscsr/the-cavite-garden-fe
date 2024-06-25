@@ -138,13 +138,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { logout } from "../../composables/Authentication";
-import { useCustomerStore } from "../../store/customerStore";
-import { getEmployeeInfo } from "../../composables/Account";
+import { LogoutUserAPI } from "@composables/Authentication";
+import { useUserStore } from "@stores/userStore";
 import swal from "sweetalert";
 
 const router = useRouter();
-const customerStore = useCustomerStore();
+const userStore = useUserStore();
 
 const isShopOpen = ref(true);
 const activeMenu = ref("");
@@ -156,13 +155,14 @@ const logoutUser = async () => {
         icon: "warning",
         buttons: ["Cancel", "Yes, I'm sure"],
         dangerMode: true,
-    }).then(async (willLogout) => {
-        if (willLogout) {
-            const response = await logout();
+    }).then(async (value) => {
+        if (value) {
+            const response = await LogoutUserAPI();
 
             if (response.status === "success") {
+                userStore.setUserInfo({});
+                userStore.setUserAuthenticated(false);
                 router.push({ name: "home" });
-                customerStore.unauthticateCustomer();
             }
         }
     });
@@ -192,31 +192,10 @@ const getMenuClass = (menu) => {
 
 const accountFullName = ref("");
 onMounted(async () => {
-    try {
-        const response = await getEmployeeInfo();
+    const userFirstName = userStore.getUserInfo().firstName;
+    const userLastName = userStore.getUserInfo().lastName;
 
-        if (response.status === "unauthorized") {
-            swal({
-                title: "Unauthorized",
-                text: "You are not authorized to access this page.",
-                icon: "error",
-                button: "OK",
-            }).then(() => {
-                customerStore.unauthticateCustomer();
-                router.push({ name: "home" });
-                return;
-            });
-        }
-
-        localStorage.setItem("ctm", JSON.stringify(response.data[0]));
-    } catch (error) {
-        console.error(error);
-    }
-    const account = JSON.parse(localStorage.getItem("ctm"));
-
-    if (account) {
-        accountFullName.value = `${account.first_name} ${account.last_name}`;
-    }
+    accountFullName.value = `${userFirstName} ${userLastName}`;
 });
 </script>
 

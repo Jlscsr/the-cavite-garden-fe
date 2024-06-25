@@ -22,30 +22,49 @@ const routes = [
             {
                 path: "profile",
                 name: "profile",
+                meta: {
+                    requiresAuth: true,
+                    role: "customer",
+                },
                 component: () =>
                     import("../pages/Customer/Profile/Profile.vue"),
             },
             {
-                path: "track-orders/:customerId/:transactionId?",
+                path: "track-orders/:customerId?/:transactionId?",
                 name: "track-orders",
+                meta: {
+                    requiresAuth: true,
+                    role: "customer",
+                },
                 component: () =>
                     import("../pages/Customer/TrackOrders/TrackOrders.vue"),
             },
             {
                 path: "payment",
                 name: "payment",
+                meta: {
+                    requiresAuth: true,
+                    role: "customer",
+                },
                 component: () => import("../pages/Payment.vue"),
             },
             {
                 path: "admin",
-                component: () => import("../pages/Admin.vue"),
+                name: "admin",
                 meta: {
                     requiresAuth: true,
+                    role: "admin",
                 },
+                component: () => import("../pages/Admin.vue"),
+
                 children: [
                     {
                         path: "pending-orders",
                         name: "peding-orders",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import(
                                 "../pages/Admin/Ordering/PendingOrders/PendingOrders.vue"
@@ -54,6 +73,10 @@ const routes = [
                     {
                         path: "transaction-history",
                         name: "transaction-history",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import(
                                 "../pages/Admin/Ordering/TransactionHistory/TransactionHistory.vue"
@@ -62,6 +85,10 @@ const routes = [
                     {
                         path: "product-lists",
                         name: "product-lists",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import(
                                 "../pages/Admin/Products/ProductLists/ProductLists.vue"
@@ -70,6 +97,10 @@ const routes = [
                     {
                         path: "product-categories",
                         name: "product-categories",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import(
                                 "../pages/Admin/Products/ProductCategories/ProductCategories.vue"
@@ -78,35 +109,46 @@ const routes = [
                     {
                         path: "employees",
                         name: "employees",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import("../pages/Admin/Employees/Employees.vue"),
                     },
                     {
                         path: "customers",
                         name: "customers",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import("../pages/Admin/Customers/Customers.vue"),
                     },
                     {
                         path: "back-logs",
                         name: "back-logs",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import("../pages/Admin/Backlogs/Backlogs.vue"),
                     },
                     {
                         path: "admin-details",
                         name: "admin-details",
+                        meta: {
+                            requiresAuth: true,
+                            role: "admin",
+                        },
                         component: () =>
                             import(
                                 "../pages/Admin/AdminDetails/AdminDetails.vue"
                             ),
                     },
                 ],
-            },
-            {
-                path: "home",
-                name: "home",
-                component: () => import("../pages/Index.vue"),
             },
         ],
     },

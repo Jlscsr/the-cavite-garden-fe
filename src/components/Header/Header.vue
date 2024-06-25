@@ -49,7 +49,10 @@
                     class="collapse navbar-collapse"
                     id="navbarSupportedContent"
                 >
-                    <ul v-if="!isAuthenticated" class="navbar-nav mb-2 mb-lg-0">
+                    <ul
+                        v-if="!userStore.isUserAuthenticated()"
+                        class="navbar-nav mb-2 mb-lg-0"
+                    >
                         <li class="nav-item">
                             <router-link
                                 class="nav-link text-black"
@@ -202,7 +205,9 @@
         aria-labelledby="headerActiveModalLabel"
         aria-hidden="true"
     >
-        <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div
+            class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg"
+        >
             <div class="modal-content">
                 <div class="modal-header">
                     <h1
@@ -239,8 +244,8 @@
                         >
                             <div class="product-img">
                                 <img
-                                    :src="product?.product_info.product_image"
-                                    :alt="product?.product_info.product_name"
+                                    :src="product?.productInfo.productImage"
+                                    :alt="product?.productInfo.productImage"
                                     width="100"
                                 />
                             </div>
@@ -249,13 +254,13 @@
                             >
                                 <div class="">
                                     <p class="fs-5 fs-medium mb-0">
-                                        {{ product?.product_info.product_name }}
+                                        {{ product?.productInfo.productName }}
                                     </p>
                                     <p class="fs-6 text-secondary mb-0">
                                         {{
                                             firstLetterUppercase(
-                                                product?.product_info
-                                                    .category_name
+                                                product?.productInfo
+                                                    .categoryName
                                             )
                                         }}
                                     </p>
@@ -276,7 +281,7 @@
                                         <p
                                             class="mb-0 border rounded mx-1 px-3 py-1"
                                         >
-                                            {{ product?.quantity }}
+                                            {{ product?.productQuantity }}
                                         </p>
                                         <button
                                             class="btn py-0"
@@ -287,7 +292,7 @@
                                     </div>
                                     <div class="price">
                                         <p class="fs-6 fs-semi-bold mb-0">
-                                            ₱{{ product?.price }}
+                                            ₱{{ product?.totalPrice }}
                                         </p>
                                     </div>
                                 </div>
@@ -295,7 +300,7 @@
                             <div class="select">
                                 <button
                                     class="btn btn-outline-danger py-1 px-2"
-                                    @click="deleteFromCart(product?.id)"
+                                    @click="deleteProductFromCart(product?.id)"
                                 >
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -351,7 +356,15 @@
                                 Select Shipping Address
                                 <span class="text-danger">*</span>
                             </label>
+                            <button
+                                v-if="addressLabels.length === 0"
+                                class="btn btn-outline-primary w-100"
+                                @click="goToProfilePage"
+                            >
+                                Add Your Address
+                            </button>
                             <select
+                                v-else
                                 class="form-select"
                                 id="shippingAddress"
                                 placeholder="Select shippingg address"
@@ -397,16 +410,20 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
-import { logout } from "../../composables/Authentication.js";
-import { checkUserSession } from "../../composables/Authentication.js";
-import { useCustomerStore } from "../../store/customerStore.js";
+
+import { LogoutUserAPI } from "@composables/Authentication";
 import {
-    getProductsInCart,
-    deleteProductFromCart,
-} from "../../composables/Cart.js";
-import { firstLetterUppercase } from "../../composables/Helpers.js";
-import { addNewTransaction } from "../../composables/Transaction.js";
-import { getUserInfo } from "../../composables/Account.js";
+    GetAllProductsInUserCartAPI,
+    DeleteProductFromCartAPI,
+} from "@composables/Cart";
+import { firstLetterUppercase } from "@composables/Helpers";
+import { addNewTransaction } from "@composables/Transaction";
+import {
+    AskUserModalMessage,
+    FailedModalMessage,
+    SuccessModalMessage,
+} from "@composables/helpers/SweetAlertModals.js";
+import { useUserStore } from "@stores/userStore.js";
 import {
     database,
     ref as dbRef,
@@ -415,12 +432,7 @@ import {
     orderByChild,
     equalTo,
     onChildChanged,
-} from "../../boot/firebase.js";
-import {
-    SetCookieHelper,
-    GetCookieHelper,
-} from "../../composables/helpers/CookieHelper.js";
-import { sessionExpiredModalMessage } from "../../composables/helpers/SweetAlertMessages.js";
+} from "../../boot/firebase";
 
 import swal from "sweetalert";
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
@@ -428,10 +440,9 @@ import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 const router = useRouter();
 
 const modalLoadingState = ref(false);
-const customerStore = useCustomerStore();
+const userStore = useUserStore();
 const headerActiveModal = ref(null);
 const modalInstance = ref(null);
-const isAuthenticated = ref(false);
 
 const deliveryMethod = ref("");
 const paymentMethod = ref("");
@@ -439,9 +450,51 @@ const cartProducts = ref("");
 const selectedShippingAddress = ref("");
 const addressLabels = ref([]);
 const userShippingAddresses = ref("");
-const selectedAddressString = ref("");
-const userData = ref([]);
+const userData = ref(userStore.getUserInfo());
 const notificationContainer = ref([]);
+
+onMounted(async () => {
+    modalInstance.value = new bootstrap.Modal(headerActiveModal.value);
+    addressLabels.value = [];
+
+    if (userStore.isUserAuthenticated()) {
+        userShippingAddresses.value = userData.value.shippingAddresses;
+        userShippingAddresses.value.forEach((address) => {
+            addressLabels.value.push(firstLetterUppercase(address.label));
+        });
+
+        listenForTransactionChanges(userData.value.id);
+    }
+});
+
+const overAllCartPrice = computed(() => {
+    if (cartProducts.value.length > 0) {
+        let totalPrice = 0;
+
+        cartProducts.value.forEach((product) => {
+            totalPrice += parseFloat(product.totalPrice);
+        });
+
+        return totalPrice.toFixed(2);
+    }
+});
+
+const isFormValid = computed(() => {
+    if (deliveryMethod.value === "delivery") {
+        return (
+            deliveryMethod.value &&
+            paymentMethod.value &&
+            selectedShippingAddress.value &&
+            cartProducts.value.length > 0
+        );
+    } else {
+        return (
+            deliveryMethod.value &&
+            paymentMethod.value &&
+            cartProducts.value.length > 0
+        );
+    }
+});
 
 const gotoTrackOrderPage = (transactionId, customer_id) => {
     // Remoe the clicked notification base on transaction id
@@ -457,7 +510,7 @@ const gotoTrackOrderPage = (transactionId, customer_id) => {
 const listenForTransactionChanges = (customer_id) => {
     const transactionQuery = query(
         dbRef(database, "transaction"),
-        orderByChild("customer_id"),
+        orderByChild("customerID"),
         equalTo(customer_id)
     );
 
@@ -478,48 +531,59 @@ const listenForTransactionChanges = (customer_id) => {
 
 const setSelectedAddress = (event) => {
     const selectedLabel = event.target.value;
-
-    selectedShippingAddress.value = userShippingAddresses.value.find(
-        (address) => address.label === selectedLabel.toLowerCase()
+    const selectedAddress = userShippingAddresses.value.find(
+        (address) => address.label.toLowerCase() === selectedLabel.toLowerCase()
     );
 
-    console.log(selectedShippingAddress.value);
-
-    selectedAddressString.value = `${selectedShippingAddress.value.street_blk_lot}, ${selectedShippingAddress.value.barangay}, ${selectedShippingAddress.value.municipality}, ${selectedShippingAddress.value.province}, ${selectedShippingAddress.value.region}, Philippines`;
-    selectedShippingAddress.value = selectedAddressString.value;
+    selectedShippingAddress.value = selectedAddress
+        ? `${selectedAddress.street_blk_lot}, ${selectedAddress.barangay}, ${selectedAddress.municipality}, ${selectedAddress.province}, ${selectedAddress.region}, Philippines`
+        : "";
 };
 
-const deleteFromCart = async (id) => {
-    swal({
-        title: "Remove from Cart",
-        text: "Are you sure you want to remove this item from cart?",
-        icon: "warning",
-        buttons: ["Cancel", "Yes, I'm sure!"],
-    }).then(async (value) => {
-        if (value) {
-            try {
-                const response = await deleteProductFromCart(id);
+const getCartProducts = async () => {
+    const response = await GetAllProductsInUserCartAPI();
 
-                if (response.status === "failed") {
-                    swal(
-                        "Failed to remove item from cart!",
-                        "Something went wrong.",
-                        "error"
-                    );
-                    return;
-                }
+    if (response.status === "success") {
+        cartProducts.value = response.data || [];
+    }
 
-                if (response.status === "success") {
-                    swal("Item removed from cart!", {
-                        icon: "success",
-                    });
-                    await getCartProducts();
-                }
-            } catch (error) {
-                console.error(error);
+    modalLoadingState.value = false;
+};
+
+const toggleCartBtn = async () => {
+    modalLoadingState.value = true;
+    await getCartProducts();
+};
+
+const handleDeleteProductFromCart = async (id) => {
+    const response = await DeleteProductFromCartAPI(id);
+
+    if (response.status === "failed") {
+        FailedModalMessage(
+            "Failed to remove item from cart!",
+            "Something went wrong. Please Try Again."
+        );
+        return;
+    }
+
+    SuccessModalMessage(
+        "Item Removed From Cart",
+        "Item has been removed from cart."
+    );
+    await getCartProducts();
+};
+
+const deleteProductFromCart = async (id) => {
+    AskUserModalMessage(
+        "Remove Product From Cart",
+        "Are you sure you want to remove this item from cart?",
+        "warning",
+        (value) => {
+            if (value) {
+                handleDeleteProductFromCart(id);
             }
         }
-    });
+    );
 };
 
 const proceedToCheckout = async () => {
@@ -590,140 +654,59 @@ const resetForm = () => {
     paymentMethod.value = "";
     selectedShippingAddress.value = "";
 };
-const isFormValid = computed(() => {
-    if (deliveryMethod.value === "delivery") {
-        return (
-            deliveryMethod.value &&
-            paymentMethod.value &&
-            selectedShippingAddress.value &&
-            cartProducts.value.length > 0
-        );
-    } else {
-        return (
-            deliveryMethod.value &&
-            paymentMethod.value &&
-            cartProducts.value.length > 0
-        );
-    }
-});
 
-const getCartProducts = async () => {
-    try {
-        const response = await getProductsInCart();
-
-        if (response.status === "success") {
-            if (response.hasOwnProperty("data")) {
-                cartProducts.value = response.data;
-            } else {
-                cartProducts.value = [];
-            }
-        }
-    } catch (error) {
-        console.error(error);
-    } finally {
-        modalLoadingState.value = false;
-    }
+const updateTotalPrice = (product, operation) => {
+    let totalPrice = parseFloat(product.totalPrice);
+    let productPrice = parseFloat(product.productInfo.productPrice);
+    product.totalPrice =
+        operation === "add"
+            ? totalPrice + productPrice
+            : totalPrice - productPrice;
+    product.totalPrice = product.totalPrice.toFixed(2);
 };
 
-const toggleCartBtn = async () => {
-    modalLoadingState.value = true;
-    await getCartProducts();
-};
 const addQuantity = (id) => {
-    cartProducts.value = cartProducts.value.map((product) => {
-        if (product.id === id) {
-            product.quantity++;
-            let totalPrice = parseFloat(product.price);
-            let productPrice = parseFloat(product.product_info.product_price);
-            product.price = totalPrice + productPrice;
-            product.price = product.price.toFixed(2);
-        }
-        return product;
-    });
+    const index = cartProducts.value.findIndex((product) => product.id === id);
+    if (index !== -1) {
+        cartProducts.value[index].productQuantity++;
+        updateTotalPrice(cartProducts.value[index], "add");
+    }
 };
 
 const subtractQuantity = (id) => {
-    cartProducts.value = cartProducts.value.map((product) => {
-        if (product.id === id && product.quantity > 1) {
-            product.quantity--;
-            let totalPrice = parseFloat(product.price);
-            let productPrice = parseFloat(product.product_info.product_price);
-            product.price = totalPrice - productPrice;
-            product.price = product.price.toFixed(2);
-        }
-        return product;
-    });
+    const index = cartProducts.value.findIndex((product) => product.id === id);
+    if (index !== -1 && cartProducts.value[index].productQuantity > 1) {
+        cartProducts.value[index].productQuantity--;
+        updateTotalPrice(cartProducts.value[index], "subtract");
+    }
 };
 
-const overAllCartPrice = computed(() => {
-    if (cartProducts.value.length > 0) {
-        let totalPrice = 0;
+const handleLogoutUser = async () => {
+    await LogoutUserAPI();
 
-        cartProducts.value.forEach((product) => {
-            totalPrice += parseFloat(product.price);
-        });
+    userStore.setUserInfo({});
+    userStore.setUserAuthenticated(false);
 
-        return totalPrice.toFixed(2);
-    }
-});
+    router.go();
+};
 
 const logoutUser = async () => {
-    swal({
-        title: "Dont' gooo",
-        text: "Are you sure you want to logout?",
-        icon: "warning",
-        buttons: true,
-    }).then(async (value) => {
-        if (value) {
-            try {
-                await logout();
-                isAuthenticated.value = false;
-                customerStore.unauthticateCustomer();
-                router.go();
-            } catch (error) {
-                console.error(error);
+    AskUserModalMessage(
+        "Logout",
+        "Are you sure you want to logout?",
+        "warning",
+        (value) => {
+            if (value) {
+                handleLogoutUser();
             }
         }
-    });
+    );
 };
 
-onMounted(async () => {
-    addressLabels.value = [];
-    modalInstance.value = new bootstrap.Modal(headerActiveModal.value);
-    isAuthenticated.value = GetCookieHelper();
-
-    if (isAuthenticated.value) {
-        const response = await checkUserSession();
-        if (response.status === "unauthorized") {
-            sessionExpiredModalMessage((value) => {
-                if (value) {
-                    SetCookieHelper("isAuthenticated", false);
-                    router.go();
-                }
-            });
-            return;
-        }
-
-        try {
-            const response = await getUserInfo();
-
-            if (response.status === "success") {
-                userData.value = response.data;
-                listenForTransactionChanges(userData.value[0]?.id);
-
-                userShippingAddresses.value =
-                    response.data[0].shipping_addresses;
-                userShippingAddresses.value.forEach((address) => {
-                    addressLabels.value.push(
-                        firstLetterUppercase(address.label)
-                    );
-                });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-});
+const goToProfilePage = () => {
+    modalInstance.value.hide();
+    router.push({ name: "profile" });
+};
 </script>
 
 <style scoped lang="scss">

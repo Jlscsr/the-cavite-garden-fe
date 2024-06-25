@@ -21,13 +21,13 @@
                                 First Name
                             </p>
                             <p v-if="!personalInfoEditMode" class="mb-0">
-                                {{ userPersonalInfo?.first_name }}
+                                {{ userPersonalInfo?.firstName }}
                             </p>
                             <input
                                 v-else
                                 class="rounded px-2"
                                 type="text"
-                                v-model="userPersonalInfo.first_name"
+                                v-model="userPersonalInfo.firstName"
                             />
                         </div>
                         <div class="">
@@ -49,13 +49,13 @@
                                 Last Name
                             </p>
                             <p v-if="!personalInfoEditMode" class="mb-0">
-                                {{ userPersonalInfo?.last_name }}
+                                {{ userPersonalInfo?.lastName }}
                             </p>
                             <input
                                 v-else
                                 class="rounded px-2"
                                 type="text"
-                                v-model="userPersonalInfo.last_name"
+                                v-model="userPersonalInfo.lastName"
                             />
                         </div>
                         <div class="">
@@ -63,13 +63,13 @@
                                 Phone Number
                             </p>
                             <p v-if="!personalInfoEditMode" class="mb-0">
-                                {{ userPersonalInfo?.phone_number }}
+                                {{ userPersonalInfo?.phoneNumber }}
                             </p>
                             <input
                                 v-else
                                 class="rounded px-2"
                                 type="text"
-                                v-model="userPersonalInfo.phone_number"
+                                v-model="userPersonalInfo.phoneNumber"
                             />
                         </div>
                     </div>
@@ -356,7 +356,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { getUserInfo } from "../../../composables/Account";
+import { GetUserInfoAPI } from "../../../composables/Account";
 import { formatDate, firstLetterUppercase } from "../../../composables/Helpers";
 import {
     regions,
@@ -422,7 +422,7 @@ const addNewAddress = async () => {
                     button: "OK",
                 });
 
-                await getUserInformation();
+                await GetUserInfoAPIrmation();
                 modalInstance.value.hide();
             } catch (error) {
                 console.error(error);
@@ -488,10 +488,10 @@ const selectAddress = (label) => {
     console.log(selectedAddress.value);
 };
 
-const getUserInformation = async () => {
+const getUserInfo = async () => {
     addressLabels.value = [];
     try {
-        const response = await getUserInfo();
+        const response = await GetUserInfoAPI();
 
         if (response.status !== "success") {
             swal("Server Error", "Something Went Wrong!", "error");
@@ -502,12 +502,12 @@ const getUserInformation = async () => {
             regionLists.value = response;
         });
 
-        userPersonalInfo.value = response.data[0];
+        userPersonalInfo.value = response.data;
         selectedAddressLabel.value = firstLetterUppercase(
-            userPersonalInfo.value.shipping_addresses[0].label
+            userPersonalInfo.value.shippingAddresses[0].label
         );
         selectAddress(selectedAddressLabel.value.toLowerCase());
-        userPersonalInfo.value.shipping_addresses.forEach((address) => {
+        userPersonalInfo.value.shippingAddresses.forEach((address) => {
             addressLabels.value.push(firstLetterUppercase(address.label));
         });
     } catch (error) {
@@ -517,6 +517,6 @@ const getUserInformation = async () => {
 
 onMounted(async () => {
     modalInstance.value = new bootstrap.Modal(addressFormModal.value);
-    await getUserInformation();
+    await getUserInfo();
 });
 </script>

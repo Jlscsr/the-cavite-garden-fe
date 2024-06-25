@@ -110,56 +110,62 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { loginUser } from "../composables/Authentication";
-import { useCustomerStore } from "../store/customerStore";
 
-import swal from "sweetalert";
+import { LoginUserAPI } from "@composables/Authentication";
+import { useUserStore } from "@stores/userStore";
+import {
+    FailedModalMessage,
+    SuccessModalMessage,
+} from "@composables/helpers/SweetAlertModals";
 
 const router = useRouter();
-const customerStore = useCustomerStore();
+const userStore = useUserStore();
+
 const btnLoadingState = ref(false);
 
 const email = ref("");
 const password = ref("");
 
+const handleSuccessLogin = (response) => {
+    resetForm();
+    btnLoadingState.value = false;
+
+    userStore.setUserInfo(response.data);
+    userStore.setUserAuthenticated(true);
+
+    userStore.getUserRole() === "admin"
+        ? router.push({ name: "product-lists" })
+        : router.push({ name: "home" });
+};
+
 const submitForm = async () => {
     btnLoadingState.value = true;
-    try {
-        const userCredentials = {
-            email: email.value,
-            password: password.value,
-        };
 
-        const response = await loginUser(userCredentials);
+    const userCredentials = {
+        email: email.value,
+        password: password.value,
+    };
 
-        if (response.status === "unauthorized") {
-            swal("Login Failed", "Invalid email or password.", "error");
-            return;
-        }
+    const response = await LoginUserAPI(userCredentials);
 
-        if (response.status === "failed") {
-            swal("Login Failed", "Somethin went wrong.", "error");
-            return;
-        }
-
-        swal("Logged in successfully!", "", "success").then((value) => {
-            if (value) {
-                customerStore.authenticateCustomer();
-
-                if (response.data.role === "admin") {
-                    localStorage.setItem("role", "admin");
-                    router.push({ name: "product-lists" });
-                } else {
-                    router.push({ name: "home" });
-                }
-            }
-        });
-    } catch (error) {
-        swal("Failed to login", "Something went wrong.", "error");
-    } finally {
-        btnLoadingState.value = false;
-        resetForm();
+    if (response.status === "unauthorized") {
+        FailedModalMessage("Login Failed", "Invalid email or password.");
+        return;
     }
+
+    if (response.status === "failed") {
+        FailedModalMessage(
+            "Login Failed",
+            "Something went wrong. Please try again."
+        );
+        return;
+    }
+
+    SuccessModalMessage("Logged in successfully!", "", (value) => {
+        if (value) {
+            handleSuccessLogin(response);
+        }
+    });
 };
 
 const resetForm = () => {

@@ -1,8 +1,8 @@
 import { API } from "../boot/axios";
 
-const getUserInfo = async () => {
+const GetUserInfoAPI = async () => {
     try {
-        const response = await API.get("/customer");
+        const response = await API.get("/user");
 
         return response.data;
     } catch (error) {
@@ -30,4 +30,4 @@ const addNewUserAddress = async (address) => {
     }
 };
 
-export { getUserInfo, addNewUserAddress, getEmployeeInfo };
+export { GetUserInfoAPI, addNewUserAddress, getEmployeeInfo };

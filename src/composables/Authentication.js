@@ -10,7 +10,7 @@ const registerUser = async (credentials) => {
     }
 };
 
-const loginUser = async (credentials) => {
+const LoginUserAPI = async (credentials) => {
     try {
         const response = await API.post("/auth/login", credentials);
         return response.data;
@@ -19,7 +19,7 @@ const loginUser = async (credentials) => {
     }
 };
 
-const logout = async () => {
+const LogoutUserAPI = async () => {
     try {
         const response = await API.get("/auth/logout");
 
@@ -29,7 +29,7 @@ const logout = async () => {
     }
 };
 
-const checkUserSession = async () => {
+const CheckUserSessionAPI = async () => {
     try {
         const response = await API.get("/auth/check");
 
@@ -39,20 +39,4 @@ const checkUserSession = async () => {
     }
 };
 
-const RequestToCheckUserRole = async () => {
-    try {
-        const response = await API.get("/auth/check-role");
-
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
-};
-
-export {
-    registerUser,
-    loginUser,
-    checkUserSession,
-    logout,
-    RequestToCheckUserRole,
-};
+export { registerUser, LoginUserAPI, CheckUserSessionAPI, LogoutUserAPI };

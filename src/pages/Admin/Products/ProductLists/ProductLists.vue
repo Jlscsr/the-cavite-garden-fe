@@ -118,31 +118,33 @@
                 >
                     <td class="p-3">
                         <img
-                            :src="product?.product_image"
-                            :alt="product?.product_name"
+                            :src="product?.productImage"
+                            :alt="product?.productName"
                         />
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ firstLetterUppercase(product?.category_name) }}
+                        {{ firstLetterUppercase(product?.categoryName) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ product?.product_name }}
+                        {{ product?.productName }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(product?.created_at) }}
+                        {{ formatDate(product?.createdAt) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(product?.modified_at) }}
+                        {{ formatDate(product?.modifiedAt) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
                         <span
                             class="chip"
                             :class="{
-                                available: product?.status === 'Available',
-                                unavailable: product?.status === 'Unavailable',
+                                available:
+                                    product?.productStatus === 'Available',
+                                unavailable:
+                                    product?.productStatus === 'Unavailable',
                             }"
                         >
-                            {{ product?.status }}
+                            {{ product?.productStatus }}
                         </span>
                     </td>
                     <td class="text-center">
@@ -441,8 +443,8 @@
                         <div class="px-4 text-center">
                             <div class="">
                                 <img
-                                    :src="selectedProduct?.product_image"
-                                    :alt="selectedProduct?.product_name"
+                                    :src="selectedProduct?.productImage"
+                                    :alt="selectedProduct?.productName"
                                     width="250"
                                     class="rounded"
                                 />
@@ -455,9 +457,9 @@
                                     <p class="fs-medium mb-0">Category:</p>
                                     <p class="mb-0">
                                         {{
-                                            selectedProduct?.category_name &&
+                                            selectedProduct?.categoryName &&
                                             firstLetterUppercase(
-                                                selectedProduct.category_name
+                                                selectedProduct.categoryName
                                             )
                                         }}
                                     </p>
@@ -468,9 +470,9 @@
                                     <p class="fs-medium mb-0">Sub Category:</p>
                                     <p class="mb-0">
                                         {{
-                                            selectedProduct?.sub_category_name &&
+                                            selectedProduct?.subCategoryName &&
                                             firstLetterUppercase(
-                                                selectedProduct.sub_category_name
+                                                selectedProduct.subCategoryName
                                             )
                                         }}
                                     </p>
@@ -478,9 +480,9 @@
                                 <div
                                     class="d-flex justify-content-between align-items-center border-bottom mt-2"
                                 >
-                                    <p class="fs-medium mb-0">Plant Name:</p>
+                                    <p class="fs-medium mb-0">Product Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.product_name }}
+                                        {{ selectedProduct?.productName }}
                                     </p>
                                 </div>
                                 <div
@@ -493,7 +495,7 @@
                                     </p>
                                     <p class="mb-0" style="width: 350px">
                                         {{
-                                            selectedProduct?.product_description
+                                            selectedProduct?.productDescription
                                         }}
                                     </p>
                                 </div>
@@ -502,7 +504,7 @@
                                 >
                                     <p class="fs-medium mb-0">Price:</p>
                                     <p class="mb-0">
-                                        ₱{{ selectedProduct?.product_price }}
+                                        ₱{{ selectedProduct?.productPrice }}
                                     </p>
                                 </div>
                                 <div
@@ -512,7 +514,7 @@
                                     <p class="mb-0">
                                         {{
                                             selectedProduct?.size
-                                                ? selectedProduct?.size
+                                                ? selectedProduct?.productSize
                                                 : "---"
                                         }}
                                     </p>
@@ -522,7 +524,7 @@
                                 >
                                     <p class="fs-medium mb-0">Stock:</p>
                                     <p class="mb-0">
-                                        {{ selectedProduct?.stock }}
+                                        {{ selectedProduct?.productStock }}
                                     </p>
                                 </div>
                                 <div
@@ -530,7 +532,7 @@
                                 >
                                     <p class="fs-medium mb-0">Status:</p>
                                     <p class="mb-0 text-success">
-                                        {{ selectedProduct?.status }}
+                                        {{ selectedProduct?.productStatus }}
                                     </p>
                                 </div>
                                 <div
@@ -540,7 +542,7 @@
                                     <p class="mb-0">
                                         {{
                                             formatDate(
-                                                selectedProduct?.created_at
+                                                selectedProduct?.createdAt
                                             )
                                         }}
                                     </p>
@@ -552,7 +554,7 @@
                                     <p class="mb-0">
                                         {{
                                             formatDate(
-                                                selectedProduct?.modified_at
+                                                selectedProduct?.modifiedAt
                                             )
                                         }}
                                     </p>
@@ -583,23 +585,17 @@ import swal from "sweetalert";
 // Exports
 import { computed, onMounted, ref, watch } from "vue";
 import {
-    getAllPlants,
-    addNewPlant,
-    editPlant,
-    deletePlant,
-} from "../../../../composables/Plants";
-import { getAllPlantCategories } from "../../../../composables/Categories";
-import {
-    uploadImage,
-    deleteImageFromFirebase,
-} from "../../../../composables/UploadImage";
-import {
-    formatDate,
-    firstLetterUppercase,
-} from "../../../../composables/Helpers";
+    GetAllProductsAPI,
+    AddNewProductAPI,
+    EditProductAPI,
+    DeleteProductAPI,
+} from "@composables/Products";
+import { GetAllCategoriesAPI } from "@composables/Categories";
+import { uploadImage, deleteImageFromFirebase } from "@composables/UploadImage";
+import { formatDate, firstLetterUppercase } from "@composables/Helpers";
 
 // Components
-import Table from "../../../../components/Table/Table.vue";
+import Table from "@components/Table/Table.vue";
 
 // ========= Start of Page Logics =========
 const tableHeaders = [
@@ -651,20 +647,15 @@ const selectedProduct = ref(null);
 
 const previousImagePlaceholder = ref("");
 
-onMounted(() => {
+onMounted(async () => {
     modalInstance.value = new bootstrap.Modal(productModalForm.value);
-    getProducts();
 
-    getAllPlantCategories()
-        .then((response) => {
-            if (response.status === "success") {
-                categories.value = response.data;
-                getProducts();
-            }
-        })
-        .catch((error) => {
-            console.error(error);
-        });
+    const response = await GetAllCategoriesAPI();
+
+    if (response.status === "success") {
+        categories.value = response.data;
+        getProducts();
+    }
 });
 
 const productSubCategories = ref([]);
@@ -686,16 +677,10 @@ watch(productCategory, (newVal, oldVal) => {
     }
 });
 
-const getProducts = () => {
-    getAllPlants()
-        .then((response) => {
-            if (response.status === "success") {
-                productLists.value = response.data;
-            }
-        })
-        .catch((error) => {
-            console.log(error);
-        });
+const getProducts = async () => {
+    const response = await GetAllProductsAPI();
+
+    productLists.value = response.data || [];
 };
 
 const submitForm = async () => {
@@ -721,7 +706,7 @@ const addNewProduct = async () => {
             product_description: productDescription.value,
         };
 
-        await addNewPlant(newPlantData);
+        await AddNewProductAPI(newPlantData);
 
         swal("New Product has been added!", "", "success").then((success) => {
             if (success) {
@@ -778,7 +763,10 @@ const editPlantWithImage = async () => {
         product_description: productDescription.value,
     };
 
-    const response = await editPlant(selectedProduct.value.id, newPlantData);
+    const response = await EditProductAPI(
+        selectedProduct.value.id,
+        newPlantData
+    );
 
     if (response.status !== "success") {
         swal("Failed to update product!", "Something went wrong.", "error");
@@ -801,7 +789,10 @@ const editPlantMetadataOnly = async () => {
         product_description: productDescription.value,
     };
 
-    const response = await editPlant(selectedProduct.value.id, newPlantData);
+    const response = await EditProductAPI(
+        selectedProduct.value.id,
+        newPlantData
+    );
 
     if (response.status !== "success") {
         swal("Failed to update product!", "Something went wrong.", "error");
@@ -818,7 +809,7 @@ const deleteProduct = async (id) => {
 
     await deleteImageFromFirebase(selectedProduct.product_image);
 
-    const response = await deletePlant(id);
+    const response = await DeleteProductAPI(id);
 
     if (response.status !== "success") {
         swal("Failed to delete product!", "Something went wrong.", "error");

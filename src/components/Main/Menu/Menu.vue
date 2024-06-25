@@ -235,7 +235,7 @@
                             type="button"
                             class="btn btn-primary"
                             @click="
-                                addToProductToCart(
+                                addProductToCart(
                                     selectedProduct.id,
                                     productQuantity
                                 )
@@ -254,18 +254,24 @@
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import swal from "sweetalert";
+import { GetAllProductsAPI } from "@composables/Products";
+import { GetAllCategoriesAPI } from "@composables/Categories";
+import { firstLetterUppercase } from "@composables/Helpers";
+import { addToCart } from "@composables/Cart";
+import { useUserStore } from "@stores/userStore";
+import {
+    AuthRequiredModalMessage,
+    AskUserModalMessage,
+    SuccessModalMessage,
+    FailedModalMessage,
+} from "@composables/helpers/SweetAlertModals";
 
-import { GetAllProductsAPI } from "../../../composables/Plants";
-import { GetAllCategoriesAPI } from "../../../composables/Categories";
-import { firstLetterUppercase } from "../../../composables/Helpers";
-import { addToCart } from "../../../composables/Cart";
-import { useCustomerStore } from "../../../store/customerStore";
+import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
 const router = useRouter();
 const menuActiveModal = ref(null);
 const modalInstance = ref(null);
-const customerStore = useCustomerStore();
+const userStore = useUserStore();
 
 // States
 const loadingState = ref(false);
@@ -289,6 +295,7 @@ const productQuantity = ref(1);
  * @returns {Promise<void>}
  */
 onMounted(async () => {
+    modalInstance.value = new bootstrap.Modal(menuActiveModal.value);
     loadingState.value = true;
 
     const [categoriesResponse, productsResponse] = await Promise.all([
@@ -360,50 +367,86 @@ const viewProduct = (id) => {
     selectedProduct.value = products.value.find((plant) => plant.id === id);
 };
 
-const addToProductToCart = (productId, quantity) => {
-    if (!customerStore.isAuthenticated()) {
-        swal({
-            title: "Login Required!",
-            text: "Please login to add this product to your cart!",
-            icon: "warning",
-            buttons: true,
-        }).then((value) => {
-            if (value) {
-                customerStore.unauthticateCustomer();
-                modalInstance.value.hide();
-                router.push({ name: "login" });
-            }
-        });
+/**
+ * Checks if the user is authenticated. If the user is not authenticated, a modal is displayed
+ * prompting the user to log in. Returns a Promise that resolves to true if the user is authenticated,
+ * and false otherwise.
+ *
+ * @return {Promise<boolean>} A Promise that resolves to true if the user is authenticated, and false otherwise.
+ */
+const checkUserIfAuthenticated = () => {
+    if (!userStore.isUserAuthenticated()) {
+        AuthRequiredModalMessage(
+            "Login Required!",
+            "Please login to add product to your cart!"
+        );
+
+        return false;
+    }
+    return true;
+};
+
+/**
+ * Handles adding a product to the cart.
+ *
+ * @param {number} productId - The ID of the product to add to the cart.
+ * @param {number} quantity - The quantity of the product to add to the cart.
+ * @return {Promise<void>} - A promise that resolves when the product is successfully added to the cart.
+ */
+const handleAddProductToCart = async (productId, quantity) => {
+    const payload = {
+        productID: productId,
+        productQuantity: quantity,
+        productBasePrice: selectedProduct.value.productPrice,
+    };
+
+    const response = await addToCart(payload);
+
+    if (response.status === "failed") {
+        FailedModalMessage(
+            "Failed to add product to cart",
+            "Something went wrong. Please try again."
+        );
         return;
     }
 
-    swal({
-        title: "Add to Cart",
-        text: "Do you want to add this product to your cart?",
-        icon: "info",
-        buttons: true,
-    }).then(async (value) => {
-        if (value) {
-            const data = {
-                product_id: productId,
-                product_quantity: quantity,
-                product_base_price: selectedProduct.value.product_price,
-            };
-            const response = await addToCart(data);
+    SuccessModalMessage(
+        "Product has been added to your cart!",
+        "Check your cart."
+    );
+    productQuantity.value = 1;
+    modalInstance.value.hide();
+};
 
-            if (response.status === "success") {
-                swal(
-                    "Product has been added to your cart!",
-                    "Check your cart.",
-                    "success"
-                );
-                productQuantity.value = 1;
-                modalInstance.value.hide();
+/**
+ * Adds a product to the cart after checking if the user is authenticated.
+ *
+ * @param {number} productId - The ID of the product to add to the cart.
+ * @param {number} quantity - The quantity of the product to add to the cart.
+ * @return {Promise<void>} - A promise that resolves when the product is successfully added to the cart.
+ */
+const addProductToCart = (productId, quantity) => {
+    // Check if user is authenticated before adding the product to cart
+    const isAuthenticated = checkUserIfAuthenticated();
+
+    // If user is not authenticated, redirect to login
+    if (!isAuthenticated) {
+        modalInstance.value.hide();
+        router.push({ name: "login" });
+        return;
+    }
+
+    // If user is authenticated, add to cart
+    AskUserModalMessage(
+        "Add to Cart",
+        "Do you want to add this product to your cart?",
+        "info",
+        (value) => {
+            if (value) {
+                handleAddProductToCart(productId, quantity);
             }
-        } else {
-            console.log("cancelled");
         }
-    });
+    );
 };
 </script>
 
