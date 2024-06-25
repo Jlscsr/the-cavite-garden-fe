@@ -137,11 +137,11 @@ const confirmPassword = ref("");
 const register = async () => {
     try {
         const customerData = {
-            first_name: firstName.value,
-            last_name: lastName.value,
+            firstName: firstName.value,
+            lastName: lastName.value,
             birthdate: birthday.value,
-            phone_number: phoneNumber.value,
-            email: email.value,
+            phoneNumber: phoneNumber.value,
+            customerEmail: email.value,
             password: password.value,
         };
         const response = await registerUser(customerData);
