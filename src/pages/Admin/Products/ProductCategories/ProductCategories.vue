@@ -126,16 +126,16 @@
                     :key="category.id"
                 >
                     <td class="fs-6 fs-medium p-3">
-                        {{ firstLetterUppercase(category.name) }}
+                        {{ firstLetterUppercase(category.categoryName) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ category.description }}
+                        {{ category.categoryDescription }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(category.created_at) }}
+                        {{ formatDate(category.createdAt) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(category.modified_at) }}
+                        {{ formatDate(category.modifiedAt) }}
                     </td>
                     <td class="text-center">
                         <div class="btn-group dropstart">
@@ -248,7 +248,9 @@
                                         :key="category.id"
                                     >
                                         {{
-                                            firstLetterUppercase(category.name)
+                                            firstLetterUppercase(
+                                                category.categoryName
+                                            )
                                         }}
                                     </option>
                                 </select>
@@ -352,8 +354,10 @@
                             <p class="fs-medium mb-0">Category Name:</p>
                             <p class="mb-0">
                                 {{
-                                    selectedCategory?.name &&
-                                    firstLetterUppercase(selectedCategory.name)
+                                    selectedCategory?.categoryName &&
+                                    firstLetterUppercase(
+                                        selectedCategory.categoryName
+                                    )
                                 }}
                             </p>
                         </div>
@@ -378,14 +382,14 @@
                                         </button>
                                     </h2>
                                     <div
-                                        v-for="subcategory in selectedCategory?.sub_categories"
+                                        v-for="subcategory in selectedCategory?.subCategories"
                                         :key="subcategory.id"
                                         id="flush-collapseOne"
                                         class="accordion-collapse collapse border"
                                         data-bs-parent="#accordionFlushExample"
                                     >
                                         <div class="accordion-body px-2 py-2">
-                                            {{ subcategory.name }}
+                                            {{ subcategory.subCategoryName }}
                                         </div>
                                     </div>
                                 </div>
@@ -396,7 +400,7 @@
                         >
                             <p class="fs-medium mb-0">Description:</p>
                             <p class="mb-0">
-                                {{ selectedCategory?.description }}
+                                {{ selectedCategory?.categoryDescription }}
                             </p>
                         </div>
                         <div
@@ -404,7 +408,7 @@
                         >
                             <p class="fs-medium mb-0">Date Added:</p>
                             <p class="mb-0">
-                                {{ formatDate(selectedCategory?.created_at) }}
+                                {{ formatDate(selectedCategory?.createdAt) }}
                             </p>
                         </div>
                         <div
@@ -412,7 +416,7 @@
                         >
                             <p class="fs-medium mb-0">Date Modified:</p>
                             <p class="mb-0">
-                                {{ formatDate(selectedCategory?.modified_at) }}
+                                {{ formatDate(selectedCategory?.modifiedAt) }}
                             </p>
                         </div>
                     </div>
@@ -437,11 +441,11 @@ import swal from "sweetalert";
 
 import { computed, onMounted, ref } from "vue";
 import {
-    getAllPlantCategories,
-    addNewCategory,
-    addNewSubCategory,
-    editCategory,
-    deleteCategory,
+    GetAllCategoriesAPI,
+    AddNewCategoryAPI,
+    EditCategoryAPI,
+    DeleteCategoryAPI,
+    AddNewSubCategoryAPI,
 } from "../../../../composables/Categories";
 import {
     formatDate,
@@ -479,7 +483,7 @@ const handleModalFormState = computed(() => {
 });
 
 const getAllCategories = () => {
-    getAllPlantCategories()
+    GetAllCategoriesAPI()
         .then((response) => {
             if (response.status === "success") {
                 productCategories.value = response.data;
@@ -509,20 +513,18 @@ const viewCategory = (id) => {
 
 const addSubCategory = async () => {
     try {
-        console.log(productCategories.value);
         const parentCategory = productCategories.value.find(
-            (category) => category.name === categoryName.value.toLowerCase()
+            (category) =>
+                category.categoryName === categoryName.value.toLowerCase()
         );
 
-        console.log(parentCategory);
-
         const subCategoryData = {
-            category_id: parentCategory.id,
-            sub_category_name: subCategoryName.value,
-            category_description: categoryDescription.value,
+            categoryID: parentCategory.id,
+            subCategoryName: subCategoryName.value,
+            subCategoryDescription: categoryDescription.value,
         };
 
-        const response = await addNewSubCategory(subCategoryData);
+        const response = await AddNewSubCategoryAPI(subCategoryData);
 
         if (!response.status === "success") {
             console.log(response);
@@ -551,11 +553,11 @@ const addSubCategory = async () => {
 const addCategory = async () => {
     try {
         const categoryData = {
-            category_name: categoryName.value.toLowerCase(),
-            category_description: categoryDescription.value,
+            categoryName: categoryName.value.toLowerCase(),
+            categoryDescription: categoryDescription.value,
         };
 
-        const response = await addNewCategory(categoryData);
+        const response = await AddNewCategoryAPI(categoryData);
 
         if (!response.status === "success") {
             console.log(response);
@@ -583,10 +585,10 @@ const addCategory = async () => {
 const editSelectedCategory = async () => {
     try {
         const newCategoryData = {
-            category_name: categoryName.value,
-            category_description: categoryDescription.value,
+            categoryName: categoryName.value,
+            categoryDescription: categoryDescription.value,
         };
-        const response = await editCategory(
+        const response = await EditCategoryAPI(
             selectedCategory.value.id,
             newCategoryData
         );
@@ -614,13 +616,13 @@ const toggleEditButton = (id) => {
         (category) => category.id === id
     );
 
-    categoryName.value = selectedCategory.value.name;
-    categoryDescription.value = selectedCategory.value.description;
+    categoryName.value = selectedCategory.value.categoryName;
+    categoryDescription.value = selectedCategory.value.categoryDescription;
 };
 
 const deleteSelectedCategory = async (id) => {
     try {
-        const response = await deleteCategory(id);
+        const response = await DeleteCategoryAPI(id);
 
         if (response.status !== "success") {
             handleError("Failed to delete category!", "Something went wrong.");

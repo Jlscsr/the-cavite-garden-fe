@@ -14,6 +14,19 @@ const getAllTransactions = async (status) => {
     }
 };
 
+const getTransactionsByCustomerID = async (id) => {
+    try {
+        const response = await API.get(`/transactions/customer/${id}`);
+        if (response.status !== 200) {
+            return false;
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error(error.message);
+    }
+};
+
 const addNewTransaction = async (data) => {
     try {
         const response = await API.post("/transaction/add", data);
@@ -49,4 +62,9 @@ const updateTransactionStatus = async (id, status) => {
     }
 };
 
-export { getAllTransactions, addNewTransaction, updateTransactionStatus };
+export {
+    getAllTransactions,
+    addNewTransaction,
+    updateTransactionStatus,
+    getTransactionsByCustomerID,
+};

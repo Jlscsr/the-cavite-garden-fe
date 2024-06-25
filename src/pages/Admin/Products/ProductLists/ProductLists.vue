@@ -278,10 +278,12 @@
                                     <option
                                         v-for="category in categories"
                                         :key="category.id"
-                                        :value="category.name"
+                                        :value="category.categoryName"
                                     >
                                         {{
-                                            firstLetterUppercase(category.name)
+                                            firstLetterUppercase(
+                                                category.categoryName
+                                            )
                                         }}
                                     </option>
                                 </select>
@@ -306,11 +308,11 @@
                                     <option
                                         v-for="subcategory in productSubCategories"
                                         :key="subcategory.id"
-                                        :value="subcategory.name"
+                                        :value="subcategory.subCategoryName"
                                     >
                                         {{
                                             firstLetterUppercase(
-                                                subcategory.name
+                                                subcategory.subCategoryName
                                             )
                                         }}
                                     </option>
@@ -662,14 +664,15 @@ const productSubCategories = ref([]);
 
 watch(productCategory, (newVal, oldVal) => {
     if (productCategory.value) {
+        console.log(productCategory.value);
         productSubCategories.value = categories.value.find(
-            (category) => category.name === newVal
+            (category) => category.categoryName === newVal
         );
 
-        if (productSubCategories.value.sub_categories) {
+        if (productSubCategories.value.subCategories) {
             productSubCategories.value =
-                productSubCategories.value.sub_categories.length > 0
-                    ? productSubCategories.value.sub_categories
+                productSubCategories.value.subCategories.length > 0
+                    ? productSubCategories.value.subCategories
                     : [];
         } else {
             productSubCategories.value = [];
@@ -696,14 +699,14 @@ const addNewProduct = async () => {
         );
 
         const newPlantData = {
-            product_photo_url: response,
-            product_name: productName.value,
-            product_category: productCategory.value,
-            product_sub_category: productSubCategory.value,
-            product_price: productPrice.value,
-            pot_size: potSize.value,
-            stock: productStock.value,
-            product_description: productDescription.value,
+            productPhotoURL: response,
+            productName: productName.value,
+            productCategory: productCategory.value,
+            productSubCategory: productSubCategory.value,
+            productPrice: productPrice.value,
+            productSize: potSize.value,
+            productStock: productStock.value,
+            productDescription: productDescription.value,
         };
 
         await AddNewProductAPI(newPlantData);
@@ -752,15 +755,14 @@ const editPlantWithImage = async () => {
     );
 
     const newPlantData = {
-        product_photo_url: imageUrlResponse,
-        product_name: productName.value,
-        product_category: productCategory.value,
-        product_sub_category: productSubCategory.value,
-        product_price: productPrice.value,
-        stock: productStock.value,
-        pot_size: potSize.value,
-        stock: productStock.value,
-        product_description: productDescription.value,
+        productPhotoURL: imageUrlResponse,
+        productName: productName.value,
+        productCategory: productCategory.value,
+        productSubCategory: productSubCategory.value,
+        productPrice: productPrice.value,
+        productStock: productStock.value,
+        productSize: potSize.value,
+        productDescription: productDescription.value,
     };
 
     const response = await EditProductAPI(
@@ -779,14 +781,14 @@ const editPlantWithImage = async () => {
 
 const editPlantMetadataOnly = async () => {
     const newPlantData = {
-        product_photo_url: imagePlacholder.value,
-        product_name: productName.value,
-        product_category: productCategory.value,
-        product_sub_category: productSubCategory.value,
-        stock: productStock.value,
-        product_price: productPrice.value,
-        pot_size: potSize.value,
-        product_description: productDescription.value,
+        productPhotoURL: imagePlacholder.value,
+        productName: productName.value,
+        productCategory: productCategory.value,
+        productSubCategory: productSubCategory.value,
+        productStock: productStock.value,
+        productPrice: productPrice.value,
+        productSize: potSize.value,
+        productDescription: productDescription.value,
     };
 
     const response = await EditProductAPI(
@@ -807,7 +809,7 @@ const deleteProduct = async (id) => {
         (product) => product.id === id
     );
 
-    await deleteImageFromFirebase(selectedProduct.product_image);
+    await deleteImageFromFirebase(selectedProduct.productImage);
 
     const response = await DeleteProductAPI(id);
 
@@ -833,15 +835,18 @@ const toggleEditBtn = (id) => {
         (product) => product.id === id
     );
 
-    imagePlacholder.value = selectedProduct.value.product_image;
+    console.log(selectedProduct.value.subCategoryName);
+    console.log(selectedProduct.value);
+
+    imagePlacholder.value = selectedProduct.value.productImage;
     previousImagePlaceholder.value = imagePlacholder.value;
-    productName.value = selectedProduct.value.product_name;
-    productCategory.value = selectedProduct.value.category_name;
-    productSubCategory.value = selectedProduct.value.sub_category_name;
+    productName.value = selectedProduct.value.productName;
+    productCategory.value = selectedProduct.value.categoryName;
+    productSubCategory.value = selectedProduct.value.subCategoryName;
     potSize.value = selectedProduct.value.size ?? null;
-    productStock.value = selectedProduct.value.stock;
-    productPrice.value = selectedProduct.value.product_price;
-    productDescription.value = selectedProduct.value.product_description;
+    productStock.value = selectedProduct.value.productStock;
+    productPrice.value = selectedProduct.value.productPrice;
+    productDescription.value = selectedProduct.value.productDescription;
 };
 
 const toggleDeleteBtn = async (id) => {

@@ -109,19 +109,19 @@
                         {{ order?.id }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ order?.costumer }}
+                        {{ order?.firstName }} {{ order?.lastName }}
                     </td>
                     <td
                         class="fs-6 fs-light p-3 text-truncate"
                         style="max-width: 200px"
                     >
                         {{
-                            order?.shipping_address
-                                ? order.shipping_address
+                            order?.shippingAddress
+                                ? order.shippingAddress
                                 : "N/A"
                         }}
                     </td>
-                    <td class="fs-6 fs-light p-3">₱{{ order?.total_price }}</td>
+                    <td class="fs-6 fs-light p-3">₱{{ order?.totalPrice }}</td>
                     <td
                         class="fs-6 fs-medium p-3"
                         :class="{
@@ -133,7 +133,7 @@
                         {{ firstLetterUppercase(order?.status) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(order?.transaction_date) }}
+                        {{ formatDate(order?.createdAt) }}
                     </td>
                     <td class="text-center">
                         <div class="btn-group dropstart">
@@ -228,7 +228,10 @@
                         </p>
                         <div class="d-flex justify-content-between w-100 mb-3">
                             <p class="fs-medium mb-0">Customer Name:</p>
-                            <p class="mb-0">{{ selectedOrder?.costumer }}</p>
+                            <p class="mb-0">
+                                {{ selectedOrder?.firstName }}
+                                {{ selectedOrder?.lastName }}
+                            </p>
                         </div>
                         <div class="d-flex justify-content-between w-100 mb-3">
                             <p class="fs-medium mb-0">Status:</p>
@@ -251,9 +254,7 @@
                         <div class="d-flex justify-content-between w-100 mb-3">
                             <p class="fs-medium mb-0">Transaction Date:</p>
                             <p class="mb-0">
-                                {{
-                                    formatDate(selectedOrder?.transaction_date)
-                                }}
+                                {{ formatDate(selectedOrder?.createdAt) }}
                             </p>
                         </div>
                         <p class="fs-5 fs-medium border-bottom">
@@ -263,24 +264,22 @@
                             <p class="fs-medium mb-0">Delivery Method:</p>
                             <p class="mb-0">
                                 {{
-                                    formatString(selectedOrder?.delivery_method)
+                                    formatString(selectedOrder?.deliveryMethod)
                                 }}
                             </p>
                         </div>
                         <div class="d-flex justify-content-between w-100 mb-3">
                             <p class="fs-medium mb-0">Payment Method:</p>
                             <p class="mb-0">
-                                {{
-                                    formatString(selectedOrder?.payment_method)
-                                }}
+                                {{ formatString(selectedOrder?.paymentMethod) }}
                             </p>
                         </div>
                         <div class="d-flex justify-content-between w-100 mb-3">
                             <p class="fs-medium mb-0 me-5">Shipping Address:</p>
                             <p class="mb-0 text-end">
                                 {{
-                                    selectedOrder?.shipping_address
-                                        ? selectedOrder.shipping_address
+                                    selectedOrder?.shippingAddress
+                                        ? selectedOrder.shippingAddress
                                         : "N/A"
                                 }}
                             </p>
@@ -289,7 +288,7 @@
                             Purchased products
                         </p>
                         <div
-                            v-for="product in selectedOrder?.products_purchased"
+                            v-for="product in selectedOrder?.productsPurchased"
                             :key="product.id"
                             class="mb-3"
                         >
@@ -297,14 +296,14 @@
                                 class="d-flex justify-content-between w-100 border-bottom"
                             >
                                 <p class="fs-medium mb-0">
-                                    {{ product.product_name }}
+                                    {{ product.productName }}
                                 </p>
                                 <div class="mb-0">
                                     <p class="mb-0 text-end">
-                                        x{{ product.purchased_quantity }}
+                                        x{{ product.productQuantity }}
                                     </p>
                                     <p class="mb-0">
-                                        ₱{{ product.product_price }}
+                                        ₱{{ product.productPrice }}
                                     </p>
                                 </div>
                             </div>
@@ -312,8 +311,8 @@
                                 <p class="mb-0">Total:</p>
                                 <p class="mb-0">
                                     ₱{{
-                                        product.purchased_quantity *
-                                        product.product_price
+                                        product.productQuantity *
+                                        product.productPrice
                                     }}.00
                                 </p>
                             </div>
@@ -323,7 +322,7 @@
                         >
                             <p class="fs-medium mb-0 fs-5">Grand Total:</p>
                             <p class="mb-0 fs-5">
-                                ₱{{ selectedOrder?.total_price }}
+                                ₱{{ selectedOrder?.totalPrice }}
                             </p>
                         </div>
                     </div>
@@ -388,7 +387,7 @@ const setNewTransactionStatus = async (id, status) => {
             try {
                 const response = await updateTransactionStatus(id, status);
 
-                if (response.status == "failed") {
+                if (response.status === "failed") {
                     swal("Something went wrong", "", "error");
                     return;
                 }
@@ -423,13 +422,12 @@ const getAllOrderTransactions = async () => {
     try {
         const response = await getAllTransactions("pending");
 
-        if (response.status === "success") {
-            if (response.hasOwnProperty("data")) {
-                pendingOrders.value = response.data;
-            } else {
-                pendingOrders.value = [];
-            }
+        if (response.status === "failed") {
+            pendingOrders.value = [];
+            return;
         }
+
+        pendingOrders.value = response.data;
     } catch (error) {
         console.error(error);
     }

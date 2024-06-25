@@ -120,13 +120,13 @@
                     :key="employee?.id"
                 >
                     <td class="fs-6 fs-light p-3">
-                        {{ employee?.first_name }} {{ employee?.last_name }}
+                        {{ employee?.firstName }} {{ employee?.lastName }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(employee?.date_started) }}
+                        {{ formatDate(employee?.dateStarted) }}
                     </td>
                     <td class="fs-6 fs-light p-3">
-                        {{ formatDate(employee?.updated_at) }}
+                        {{ formatDate(employee?.modifiedAt) }}
                     </td>
                     <td class="fs-6 fs-medium p-3">
                         <span class="text-success">
@@ -442,7 +442,7 @@
                                 >
                                     <p class="fs-medium mb-0">Last Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedEmployee?.last_name }}
+                                        {{ selectedEmployee?.firstName }}
                                     </p>
                                 </div>
                                 <div
@@ -450,7 +450,7 @@
                                 >
                                     <p class="fs-medium mb-0">First Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedEmployee?.first_name }}
+                                        {{ selectedEmployee?.lastName }}
                                     </p>
                                 </div>
                                 <div
@@ -458,7 +458,7 @@
                                 >
                                     <p class="fs-medium mb-0">Middle Name:</p>
                                     <p class="mb-0">
-                                        {{ selectedEmployee?.middle_name }}
+                                        {{ selectedEmployee?.middleName }}
                                     </p>
                                 </div>
                                 <div
@@ -524,7 +524,7 @@
                                     <p class="mb-0">
                                         {{
                                             formatDate(
-                                                selectedEmployee?.date_started
+                                                selectedEmployee?.dateStarted
                                             )
                                         }}
                                     </p>
@@ -536,7 +536,7 @@
                                     <p class="mb-0">
                                         {{
                                             formatDate(
-                                                selectedEmployee?.created_at
+                                                selectedEmployee?.createdAt
                                             )
                                         }}
                                     </p>
@@ -548,7 +548,7 @@
                                     <p class="mb-0">
                                         {{
                                             formatDate(
-                                                selectedEmployee?.updated_at
+                                                selectedEmployee?.modifiedAt
                                             )
                                         }}
                                     </p>
@@ -709,18 +709,18 @@ const toggleEditBtn = (id) => {
         (employee) => employee.id === id
     );
 
-    firstName.value = selectedEmployee.value.first_name;
-    middleName.value = selectedEmployee.value.middle_name;
-    lastName.value = selectedEmployee.value.last_name;
+    firstName.value = selectedEmployee.value.firstName;
+    middleName.value = selectedEmployee.value.middleName;
+    lastName.value = selectedEmployee.value.lastName;
     nickname.value = selectedEmployee.value.nickname;
     email.value = selectedEmployee.value.email;
     password.value = selectedEmployee.value.password;
     confirmPassword.value = selectedEmployee.value.password;
     sex.value = selectedEmployee.value.sex;
     birthDate.value = selectedEmployee.value.birthdate;
-    maritalStatus.value = selectedEmployee.value.marital_status;
+    maritalStatus.value = selectedEmployee.value.maritalStatus;
     role.value = selectedEmployee.value.role;
-    dateStarted.value = selectedEmployee.value.date_started;
+    dateStarted.value = selectedEmployee.value.dateStarted;
 };
 
 const addNewEmployee = async (payload) => {
@@ -772,17 +772,17 @@ const submitForm = async () => {
     }
 
     const newEmployeeData = {
-        first_name: firstName.value,
-        middle_name: middleName.value,
-        last_name: lastName.value,
+        firstName: firstName.value,
+        middleName: middleName.value,
+        lastName: lastName.value,
         nickname: nickname.value,
-        email: email.value,
+        employeeEmail: email.value,
         password: password.value,
         sex: sex.value,
-        birth_date: birthDate.value,
-        marital_status: maritalStatus.value,
+        birthdate: birthDate.value,
+        maritalStatus: maritalStatus.value,
         role: role.value,
-        date_started: dateStarted.value,
+        dateStarted: dateStarted.value,
     };
 
     if (modalFormState.value === "add") {

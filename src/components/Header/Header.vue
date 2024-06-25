@@ -166,7 +166,7 @@
                                             :to="{
                                                 name: 'track-orders',
                                                 params: {
-                                                    customerId: userData[0]?.id,
+                                                    customerId: userData?.id,
                                                 },
                                             }"
                                         >
@@ -457,10 +457,13 @@ onMounted(async () => {
     modalInstance.value = new bootstrap.Modal(headerActiveModal.value);
     addressLabels.value = [];
 
+    console.log(userData.value);
     if (userStore.isUserAuthenticated()) {
         userShippingAddresses.value = userData.value.shippingAddresses;
         userShippingAddresses.value.forEach((address) => {
-            addressLabels.value.push(firstLetterUppercase(address.label));
+            addressLabels.value.push(
+                firstLetterUppercase(address.addressLabel)
+            );
         });
 
         listenForTransactionChanges(userData.value.id);
@@ -503,14 +506,14 @@ const gotoTrackOrderPage = (transactionId, customer_id) => {
     );
     router.push({
         name: "track-orders",
-        params: { customerId: customer_id, transactionId: transactionId },
+        params: { customerId: customer_id },
     });
 };
 
 const listenForTransactionChanges = (customer_id) => {
     const transactionQuery = query(
         dbRef(database, "transaction"),
-        orderByChild("customerID"),
+        orderByChild("customer_id"),
         equalTo(customer_id)
     );
 
@@ -532,11 +535,12 @@ const listenForTransactionChanges = (customer_id) => {
 const setSelectedAddress = (event) => {
     const selectedLabel = event.target.value;
     const selectedAddress = userShippingAddresses.value.find(
-        (address) => address.label.toLowerCase() === selectedLabel.toLowerCase()
+        (address) =>
+            address.addressLabel.toLowerCase() === selectedLabel.toLowerCase()
     );
 
     selectedShippingAddress.value = selectedAddress
-        ? `${selectedAddress.street_blk_lot}, ${selectedAddress.barangay}, ${selectedAddress.municipality}, ${selectedAddress.province}, ${selectedAddress.region}, Philippines`
+        ? `${selectedAddress.streetBlkLt}, ${selectedAddress.barangay}, ${selectedAddress.municipality}, ${selectedAddress.province}, ${selectedAddress.region}, Philippines`
         : "";
 };
 
@@ -588,10 +592,10 @@ const deleteProductFromCart = async (id) => {
 
 const proceedToCheckout = async () => {
     const transactionData = {
-        delivery_method: deliveryMethod.value,
-        payment_method: paymentMethod.value,
-        shipping_address: selectedShippingAddress.value,
-        ...cartProducts.value,
+        deliveryMethod: deliveryMethod.value,
+        paymentMethod: paymentMethod.value,
+        shippingAddress: selectedShippingAddress.value,
+        purchasedProducts: cartProducts.value,
     };
 
     swal({
@@ -622,11 +626,11 @@ const proceedToCheckout = async () => {
                         set(
                             dbRef(
                                 database,
-                                "transaction/" + response.data.transaction_id
+                                "transaction/" + response.data.transactionID
                             ),
                             {
-                                id: response.data.transaction_id,
-                                customer_id: response.data.customer_id,
+                                id: response.data.transactionID,
+                                customer_id: response.data.customerID,
                                 status: response.data.status,
                             }
                         )

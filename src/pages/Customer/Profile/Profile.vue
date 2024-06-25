@@ -391,12 +391,12 @@ const landmark = ref(null);
 
 const addNewAddress = async () => {
     const newAddress = {
-        label: label.value.toLowerCase(),
+        addressLabel: label.value.toLowerCase(),
         region: region.value,
         province: province.value,
         city: city.value,
         barangay: barangay.value,
-        street_blk_lot: streetBlkLot.value,
+        streetBlkLt: streetBlkLot.value,
         landmark: landmark.value,
     };
 
@@ -478,14 +478,10 @@ const setBarangay = (event) => {
 };
 
 const selectAddress = (label) => {
-    console.log(label);
     selectedAddressLabel.value = firstLetterUppercase(label);
-    console.log(userPersonalInfo.value);
-    selectedAddress.value = userPersonalInfo.value.shipping_addresses.find(
-        (address) => address.label.toLowerCase() === label.toLowerCase()
+    selectedAddress.value = userPersonalInfo.value.shippingAddresses.find(
+        (address) => address.addressLabel.toLowerCase() === label.toLowerCase()
     );
-
-    console.log(selectedAddress.value);
 };
 
 const getUserInfo = async () => {
@@ -504,11 +500,13 @@ const getUserInfo = async () => {
 
         userPersonalInfo.value = response.data;
         selectedAddressLabel.value = firstLetterUppercase(
-            userPersonalInfo.value.shippingAddresses[0].label
+            userPersonalInfo.value.shippingAddresses[0].addressLabel
         );
         selectAddress(selectedAddressLabel.value.toLowerCase());
         userPersonalInfo.value.shippingAddresses.forEach((address) => {
-            addressLabels.value.push(firstLetterUppercase(address.label));
+            addressLabels.value.push(
+                firstLetterUppercase(address.addressLabel)
+            );
         });
     } catch (error) {
         console.error(error);

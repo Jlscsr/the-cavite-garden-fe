@@ -11,7 +11,7 @@ const getAllEmployees = async () => {
 
 const addNewEmployeeRequest = async (payload) => {
     try {
-        const response = await API.post("/employees/add", payload);
+        const response = await API.post("/employee/add", payload);
         return response.data;
     } catch (error) {
         return error.response.data;

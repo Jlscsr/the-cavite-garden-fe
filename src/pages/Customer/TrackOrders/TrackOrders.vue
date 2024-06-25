@@ -49,14 +49,16 @@
                             <h5 class="fs-6 m-0 fs-semi-bold text-secondary">
                                 Costumer Name:
                             </h5>
-                            <p classs="mb-0 mt-2">{{ order?.costumer }}</p>
+                            <p classs="mb-0 mt-2">
+                                {{ order?.firstName }} {{ order?.lastName }}
+                            </p>
                         </div>
                         <div class="d-flex flex-column gap-1">
                             <h5 class="fs-6 m-0 fs-semi-bold text-secondary">
                                 Transaction Date:
                             </h5>
                             <p classs="mb-0 mt-2">
-                                {{ formatDate(order?.transaction_date) }}
+                                {{ formatDate(order?.createdAt) }}
                             </p>
                         </div>
                         <div class="d-flex flex-column gap-1">
@@ -65,7 +67,7 @@
                             </h5>
                             <p classs="mb-0 mt-2">
                                 {{
-                                    firstLetterUppercase(order?.delivery_method)
+                                    firstLetterUppercase(order?.deliveryMethod)
                                 }}
                             </p>
                         </div>
@@ -74,7 +76,7 @@
                                 Payment Method:
                             </h5>
                             <p classs="mb-0 mt-2">
-                                {{ formatString(order?.payment_method) }}
+                                {{ formatString(order?.paymentMethod) }}
                             </p>
                         </div>
                     </div>
@@ -86,14 +88,14 @@
                                 Shipping Address:
                             </h5>
                             <p classs="mb-0 mt-2">
-                                {{ order?.shipping_address || "N/A" }}
+                                {{ order?.shippingAddress || "N/A" }}
                             </p>
                         </div>
                         <div class="container d-flex flex-column gap-1">
                             <h5 class="fs-6 m-0 fs-semi-bold text-secondary">
                                 Total Price:
                             </h5>
-                            <p classs="mb-0 mt-2">{{ order?.total_price }}</p>
+                            <p classs="mb-0 mt-2">{{ order?.totalPrice }}</p>
                         </div>
                         <div class="container d-flex flex-column gap-1">
                             <h5 class="fs-6 m-0 fs-semi-bold text-secondary">
@@ -116,7 +118,10 @@
                 </div>
             </div>
         </div>
-        <div v-if="pendingOrders.length === 1" class="order-items">
+        <div
+            v-if="pendingOrders.length === 1 && route.params.transactionId"
+            class="order-items"
+        >
             <div
                 v-for="order in pendingOrders"
                 :key="order?.id"
@@ -127,7 +132,7 @@
                     <div class="col">
                         <div class="list-group">
                             <div
-                                v-for="product in order?.products_purchased"
+                                v-for="product in order?.productsPurchased"
                                 :key="product.id"
                                 class="list-group-item my-2 d-flex flex-column gap-3 shadow p-3 rounded"
                             >
@@ -135,19 +140,19 @@
                                     class="d-flex w-100 justify-content-between mb-3"
                                 >
                                     <h5 class="mb-1">
-                                        {{ product?.product_name }}
+                                        {{ product?.productName }}
                                     </h5>
                                     <small
                                         >Price:
-                                        {{ product.product_price }}</small
+                                        {{ product.productPrice }}</small
                                     >
                                 </div>
                                 <p class="mb-1">
-                                    {{ product?.product_description }}
+                                    {{ product?.productDescription }}
                                 </p>
                                 <small
                                     >Quantity:
-                                    {{ product?.purchased_quantity }}</small
+                                    {{ product?.productQuantity }}</small
                                 >
                             </div>
                         </div>
@@ -161,7 +166,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { getAllTransactions } from "../../../composables/Transaction";
+import { getTransactionsByCustomerID } from "../../../composables/Transaction";
 import {
     formatDate,
     firstLetterUppercase,
@@ -192,8 +197,6 @@ const listenForTransactionChanges = (customer_id) => {
     onChildChanged(transactionQuery, (snapshot) => {
         const transactionId = snapshot.key;
 
-        console.log("Transaction ID:", typeof transactionId);
-
         if (transactionId) {
             const transactionData = snapshot.val();
             pendingOrders.value = pendingOrders.value.map((order) => {
@@ -213,18 +216,22 @@ const trackOrder = (orderId) => {
     pendingOrders.value = pendingOrders.value.filter(
         (order) => order.id === orderId
     );
-    router.push({ name: "track-orders", params: { transactionId: orderId } });
+    router.push({
+        name: "track-orders",
+        params: { customerId: route.params.customerId, transactionId: orderId },
+    });
 };
 
 const goBack = async () => {
     pendingOrders.value = [];
-    await getAllOrderTransactions();
     router.go(-1);
 };
 
-const getAllOrderTransactions = async () => {
+const getTransactionsByID = async () => {
     try {
-        const response = await getAllTransactions("approved-pending");
+        const response = await getTransactionsByCustomerID(
+            route.params.customerId
+        );
 
         if (response.status !== "success") {
             throw new Error("Something went wrong");
@@ -248,8 +255,8 @@ const getAllOrderTransactions = async () => {
     }
 };
 onMounted(async () => {
+    await getTransactionsByID(parseInt(route.params.customerId));
     listenForTransactionChanges(parseInt(route.params.customerId));
-    await getAllOrderTransactions();
     if (route.params.transactionId) {
         const selectedOrder = pendingOrders.value.find(
             (order) => order.id === parseInt(route.params.transactionId)
