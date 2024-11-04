@@ -457,7 +457,6 @@ onMounted(async () => {
     modalInstance.value = new bootstrap.Modal(headerActiveModal.value);
     addressLabels.value = [];
 
-    console.log(userData.value);
     if (userStore.isUserAuthenticated()) {
         userShippingAddresses.value = userData.value.shippingAddresses;
         userShippingAddresses.value.forEach((address) => {

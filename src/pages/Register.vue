@@ -119,7 +119,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { registerUser } from "../composables/Authentication";
+import { RegisterUserAPI } from "../composables/Authentication";
 import swal from "sweetalert";
 
 const router = useRouter();
@@ -144,7 +144,8 @@ const register = async () => {
             customerEmail: email.value,
             password: password.value,
         };
-        const response = await registerUser(customerData);
+
+        const response = await RegisterUserAPI(customerData);
 
         if (response.status !== "success") {
             swal("Failed to register user!", "Something went wrong.", "error");
@@ -158,7 +159,7 @@ const register = async () => {
             }
         });
     } catch (error) {
-        console.error(error);
+        swal("Failed to register user!", "Something went wrong.", "error");
     } finally {
         btnLoadingState.value = false;
     }

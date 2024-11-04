@@ -146,26 +146,32 @@ const submitForm = async () => {
         password: password.value,
     };
 
-    const response = await LoginUserAPI(userCredentials);
+    try {
+        const response = await LoginUserAPI(userCredentials);
 
-    if (response.status === "unauthorized") {
-        FailedModalMessage("Login Failed", "Invalid email or password.");
-        return;
-    }
-
-    if (response.status === "failed") {
-        FailedModalMessage(
-            "Login Failed",
-            "Something went wrong. Please try again."
-        );
-        return;
-    }
-
-    SuccessModalMessage("Logged in successfully!", "", (value) => {
-        if (value) {
-            handleSuccessLogin(response);
+        if (response.status === "unauthorized") {
+            FailedModalMessage("Login Failed", "Invalid email or password.");
+            return;
         }
-    });
+
+        if (response.status === "failed") {
+            FailedModalMessage(
+                "Login Failed",
+                "Something went wrong. Please try again."
+            );
+            return;
+        }
+
+        SuccessModalMessage("Logged in successfully!", "", (value) => {
+            if (value) {
+                handleSuccessLogin(response);
+            }
+        });
+    } catch (error) {
+        FailedModalMessage("Login Failed", "Something went wrong.");
+    } finally {
+        btnLoadingState.value = false;
+    }
 };
 
 const resetForm = () => {

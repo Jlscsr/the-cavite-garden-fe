@@ -29,6 +29,12 @@
             </div>
             <div class="sidebar-nav">
                 <ul class="sidebar-nav-list list-unstyled">
+                    <li class="sidebar-item p-3 cursor-pointer">
+                        <router-link :to="{ name: 'employees' }">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span class="fs-6">Dashboard</span>
+                        </router-link>
+                    </li>
                     <li class="sidebar-item cursor-pointer">
                         <div
                             class="sidebar-menu-toggle p-3"

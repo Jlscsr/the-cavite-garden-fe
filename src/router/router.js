@@ -1,9 +1,10 @@
+import swal from "sweetalert";
+import routes from "./routes";
+
 import { createRouter, createWebHistory } from "vue-router";
 import { CheckUserSessionAPI } from "@composables/Authentication";
 import { GetUserInfoAPI } from "@composables/Account";
 import { useUserStore } from "@stores/userStore";
-import swal from "sweetalert";
-import routes from "./routes";
 
 const router = createRouter({
     history: createWebHistory(),
