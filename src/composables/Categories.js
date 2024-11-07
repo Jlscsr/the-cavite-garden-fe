@@ -6,13 +6,13 @@ import { API } from "../boot/axios";
  * @return {Object} The data containing all categories.
  */
 const GetAllCategoriesAPI = async () => {
-    try {
-        const response = await API.get("/categories");
+  try {
+    const response = await API.get("/categories");
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -22,13 +22,13 @@ const GetAllCategoriesAPI = async () => {
  * @return {Object} The data returned from the API after adding the category.
  */
 const AddNewCategoryAPI = async (newCategoryInfo) => {
-    try {
-        const response = await API.post("/category/add", newCategoryInfo);
+  try {
+    const response = await API.post("/category/add", newCategoryInfo);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -38,13 +38,13 @@ const AddNewCategoryAPI = async (newCategoryInfo) => {
  * @return {Object} The data returned from the API after adding the subcategory.
  */
 const AddNewSubCategoryAPI = async (newSubcategoryInfo) => {
-    try {
-        const response = await API.post("/subcategory/add", newSubcategoryInfo);
+  try {
+    const response = await API.post("/subcategory/add", newSubcategoryInfo);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -55,16 +55,16 @@ const AddNewSubCategoryAPI = async (newSubcategoryInfo) => {
  * @return {Object} The data returned from the API after editing the category.
  */
 const EditCategoryAPI = async (categoryID, newCategoryInfo) => {
-    try {
-        const response = await API.put(
-            "/category/edit/" + categoryID,
-            newCategoryInfo
-        );
+  try {
+    const response = await API.put(
+      "/category/edit/" + categoryID,
+      newCategoryInfo
+    );
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -74,19 +74,30 @@ const EditCategoryAPI = async (categoryID, newCategoryInfo) => {
  * @return {Object} The data returned from the API after deleting the category.
  */
 const DeleteCategoryAPI = async (categoryID) => {
-    try {
-        const response = await API.delete("/category/delete/" + categoryID);
+  try {
+    const response = await API.delete("/category/delete/" + categoryID);
 
-        return response.data;
-    } catch (error) {
-        return response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return response.data;
+  }
+};
+
+const DeleteSubCategoryAPI = async (subCategoryID) => {
+  try {
+    const response = await API.delete("/subcategory/delete/" + subCategoryID);
+
+    return response.data;
+  } catch (error) {
+    return response.data;
+  }
 };
 
 export {
-    GetAllCategoriesAPI,
-    AddNewCategoryAPI,
-    AddNewSubCategoryAPI,
-    EditCategoryAPI,
-    DeleteCategoryAPI,
+  GetAllCategoriesAPI,
+  AddNewCategoryAPI,
+  AddNewSubCategoryAPI,
+  EditCategoryAPI,
+  DeleteCategoryAPI,
+  DeleteSubCategoryAPI,
 };

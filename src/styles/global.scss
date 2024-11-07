@@ -1,53 +1,185 @@
 /* Font Families */
 .fs-thin {
-    font-family: "Poppins Thin", sans-serif !important;
+  font-family: "Poppins Thin", sans-serif !important;
 }
 
 .fs-light {
-    font-family: "Poppins Light", sans-serif !important;
+  font-family: "Poppins Light", sans-serif !important;
 }
 
 .fs-regular {
-    font-family: "Poppins Regular", sans-serif !important;
+  font-family: "Poppins Regular", sans-serif !important;
 }
 
 .fs-medium {
-    font-family: "Poppins Medium", sans-serif !important;
+  font-family: "Poppins Medium", sans-serif !important;
 }
 
 .fs-semi-bold {
-    font-family: "Poppins SemiBold", sans-serif !important;
+  font-family: "Poppins SemiBold", sans-serif !important;
 }
 
 .fs-bold {
-    font-family: "Poppins Bold", sans-serif !important;
+  font-family: "Poppins Bold", sans-serif !important;
+}
+
+.fs-xsmall {
+  font-size: 0.56rem !important;
+}
+
+.fs-small {
+  font-size: 0.75rem !important;
+}
+
+.fs-paragraph {
+  font-size: 1rem !important;
+}
+
+.fs-heading-6 {
+  font-size: 1.3rem !important;
+}
+
+.fs-heading-5 {
+  font-size: 1.75rem !important;
+}
+
+.fs-heading-4 {
+  font-size: 2.38rem !important;
+}
+
+.fs-heading-3 {
+  font-size: 3.2rem !important;
+}
+
+.fs-heading-2 {
+  font-size: 4.2rem !important;
+}
+
+.fs-heading-1 {
+  font-size: 5.62rem !important;
+}
+
+.text-light {
+  color: $light-color !important;
+}
+
+.text-white {
+  color: $white-color !important;
+}
+
+.text-dark {
+  color: $dark-color !important;
+}
+
+.text-primary {
+  color: $primary-color !important;
+}
+
+.text-secondary {
+  color: $secondary-color !important;
+}
+
+.text-tertiary {
+  color: $tertiary-color !important;
+}
+
+.text-accent-1 {
+  color: $accent-1 !important;
+}
+
+.text-accent-2 {
+  color: $accent-2 !important;
+}
+
+.text-accent-3 {
+  color: $accent-3 !important;
+}
+
+.text-success {
+  color: $success-color !important;
+}
+
+.text-warning {
+  color: $warning-color !important;
+}
+
+.text-danger {
+  color: $danger-color !important;
+}
+
+.bg-light {
+  background-color: $light-color !important;
+}
+
+.bg-white {
+  background-color: $white-color !important;
+}
+
+.bg-dark {
+  background-color: $dark-color !important;
+}
+
+.bg-primary {
+  background-color: $primary-color !important;
+}
+
+.bg-secondary {
+  background-color: $secondary-color !important;
+}
+
+.bg-tertiary {
+  background-color: $tertiary-color !important;
+}
+
+.bg-accent-1 {
+  background-color: $accent-1 !important;
+}
+
+.bg-accent-2 {
+  background-color: $accent-2 !important;
+}
+
+.bg-accent-3 {
+  background-color: $accent-3 !important;
+}
+
+.bg-success {
+  background-color: $success-color !important;
+}
+
+.bg-warning {
+  background-color: $warning-color !important;
+}
+
+.bg-danger {
+  background-color: $danger-color !important;
 }
 
 .cursor-pointer {
-    cursor: pointer !important;
+  cursor: pointer !important;
 }
 
 /* Style for all the heading on each section */
 .main {
-    & > .section {
-        & > .heading {
-            position: relative;
-            font-size: 5rem;
-            color: transparent;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.2rem;
-            pointer-events: none;
-            -webkit-text-stroke: 0.05rem $main-color;
+  & > .section {
+    & > .heading {
+      position: relative;
+      font-size: 5rem;
+      color: transparent;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.2rem;
+      pointer-events: none;
+      -webkit-text-stroke: 0.05rem $dark-color;
 
-            & > span {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                width: 100%;
-                color: $main-color;
-                transform: translate(-50%, -50%);
-            }
-        }
+      & > span {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        color: $dark-color;
+        transform: translate(-50%, -50%);
+      }
     }
+  }
 }

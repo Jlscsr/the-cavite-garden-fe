@@ -1,0 +1,12 @@
+.authentication {
+  height: 100vh;
+  & > .d-flex {
+    & > .shadow {
+      & > .row {
+        & > .col:nth-of-type(2) {
+          width: 500px;
+        }
+      }
+    }
+  }
+}

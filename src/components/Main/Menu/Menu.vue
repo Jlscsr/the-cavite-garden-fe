@@ -1,270 +1,233 @@
 <template>
-    <!-- Menu Section -->
-    <section class="menu section" id="menu">
-        <h2 class="heading px-5 py-5">
-            Our Products
-            <span class="fs-3">Our Products</span>
-        </h2>
-        <div class="container text-center px-5 py-3">
-            <div class="container text-center">
-                <div class="row mt-4" id="btn-container">
-                    <div
-                        v-if="productsCategories.length > 0"
-                        v-for="category in productsCategories"
-                        class="col"
-                    >
-                        <button
-                            class="btn"
-                            :class="{
-                                active: category.id === selectedCategory?.id,
-                            }"
-                            @click="filterProductsByCategoryID(category.id)"
-                        >
-                            <span class="fs-5 text-black-50">
-                                {{
-                                    firstLetterUppercase(category.categoryName)
-                                }}
-                            </span>
-                        </button>
-                    </div>
-                </div>
-
-                <div v-if="subCategories.length > 0" class="subcategories mt-4">
-                    <button
-                        v-for="subcategory in subCategories"
-                        :key="subcategory.id"
-                        :class="{
-                            active: subcategory.id === selectedSubCategory?.id,
-                        }"
-                        class="btn mx-5"
-                        @click="filterProductsBySubCategoryID(subcategory.id)"
-                    >
-                        <span class="fs-5 text-black-50">
-                            {{ subcategory.subCategoryName }}
-                        </span>
-                    </button>
-                </div>
-
-                <div class="container-fluid mt-5">
-                    <div
-                        v-for="product in products"
-                        class="box d-flex justify-content-center align-items-center px-3 py-3"
-                        :key="product?.id"
-                    >
-                        <div class="content">
-                            <div class="img-container">
-                                <img
-                                    :src="product?.productImage"
-                                    :alt="product?.productName"
-                                />
-                            </div>
-                            <p class="fs-5 fs-medium">
-                                {{ product?.productName }}
-                            </p>
-                            <div
-                                class="button cursor-pointer"
-                                data-bs-toggle="modal"
-                                data-bs-target="#productDetailsModal"
-                                @click="viewProduct(product?.id)"
-                            >
-                                <i class="fs-3 fas fa-cart-plus"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div
-                        v-if="!loadingState && products.length === 0"
-                        class="d-flex align-items-center justify-content-center w-100"
-                    >
-                        <span class="d-block fs-5 fs-semi-bold"
-                            >No Products Found...</span
-                        >
-                    </div>
-                    <div
-                        v-if="loadingState"
-                        class="d-flex justify-content-center p-4"
-                        id="spinner"
-                    >
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div
-            ref="menuActiveModal"
-            class="modal fade"
-            id="productDetailsModal"
-            data-bs-backdrop="static"
-            data-bs-keyboard="false"
-            tabindex="-1"
-            aria-labelledby="productDetailsModalLabel"
-            aria-hidden="true"
-        >
-            <div
-                class="modal-dialog modal-dialog-scrollable modal-dialog-centered"
+  <!-- Menu Section -->
+  <section class="menu section" id="menu">
+    <h2 class="heading px-5 py-5">
+      Our Products
+      <span class="fs-3">Our Products</span>
+    </h2>
+    <div class="container text-center px-5 py-3">
+      <div class="container text-center">
+        <div class="row mt-4" id="btn-container">
+          <div
+            v-if="productsCategories.length > 0"
+            v-for="category in productsCategories"
+            class="col"
+          >
+            <button
+              class="btn"
+              :class="{
+                active: category.id === selectedCategory?.id,
+              }"
+              @click="filterProductsByCategoryID(category.id)"
             >
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1
-                            class="modal-title fs-5 fs-medium"
-                            id="productDetailsModalLabel"
-                        >
-                            Product Details
-                        </h1>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                        ></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="px-4 text-center">
-                            <div class="image-container">
-                                <img
-                                    :src="selectedProduct?.productImage"
-                                    :alt="selectedProduct?.productName"
-                                />
-                            </div>
-                            <hr />
-                            <div class="product-details">
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Category:</p>
-                                    <p class="mb-0">
-                                        {{
-                                            selectedProduct?.categoryName &&
-                                            firstLetterUppercase(
-                                                selectedProduct.categoryName
-                                            )
-                                        }}
-                                    </p>
-                                </div>
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Sub Category:</p>
-                                    <p class="mb-0">
-                                        {{
-                                            selectedProduct?.subCategoryName &&
-                                            firstLetterUppercase(
-                                                selectedProduct.subCategoryName
-                                            )
-                                        }}
-                                    </p>
-                                </div>
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Product Name:</p>
-                                    <p class="mb-0">
-                                        {{ selectedProduct?.productName }}
-                                    </p>
-                                </div>
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2 text-start"
-                                >
-                                    <p
-                                        class="fs-medium mb-0 align-self-baseline"
-                                    >
-                                        Description:
-                                    </p>
-                                    <p class="mb-0 text-justify text-end">
-                                        {{
-                                            selectedProduct?.productDescription
-                                        }}
-                                    </p>
-                                </div>
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Price:</p>
-                                    <p class="mb-0">
-                                        ₱{{ selectedProduct?.productPrice }}
-                                    </p>
-                                </div>
-                                <div
-                                    v-if="selectedProduct?.size"
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Size:</p>
-                                    <p class="mb-0">
-                                        {{
-                                            selectedProduct?.productSize ??
-                                            "N/A"
-                                        }}
-                                    </p>
-                                </div>
-                                <div
-                                    class="d-flex justify-content-between align-items-center border-bottom mt-2"
-                                >
-                                    <p class="fs-medium mb-0">Stock:</p>
-                                    <p class="mb-0">
-                                        {{ selectedProduct?.productStock }}
-                                    </p>
-                                </div>
-                                <div class="mt-3 text-start">
-                                    <label for="quantity" class="form-label">
-                                        Quantity<span class="text-danger"
-                                            >*</span
-                                        >
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        :max="selectedProduct?.productStock"
-                                        class="form-control"
-                                        v-model="productQuantity"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-outline-primary"
-                            data-bs-dismiss="modal"
-                        >
-                            <span> Buy Now </span>
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            @click="
-                                addProductToCart(
-                                    selectedProduct.id,
-                                    productQuantity
-                                )
-                            "
-                        >
-                            <span> Add to Cart </span>
-                        </button>
-                    </div>
-                </div>
-            </div>
+              <span class="fs-5 text-black-50">
+                {{ firstLetterUppercase(category.categoryName) }}
+              </span>
+            </button>
+          </div>
         </div>
-    </section>
+
+        <div v-if="subCategories.length > 0" class="subcategories mt-4">
+          <button
+            v-for="subcategory in subCategories"
+            :key="subcategory.id"
+            :class="{
+              active: subcategory.id === selectedSubCategory?.id,
+            }"
+            class="btn mx-5"
+            @click="filterProductsBySubCategoryID(subcategory.id)"
+          >
+            <span class="fs-5 text-black-50">
+              {{ subcategory.subCategoryName }}
+            </span>
+          </button>
+        </div>
+
+        <div class="container-fluid mt-5">
+          <div
+            v-for="product in products"
+            class="box d-flex justify-content-center align-items-center px-3 py-3"
+            :key="product?.id"
+          >
+            <div class="content">
+              <div class="img-container">
+                <img :src="product?.productImage" :alt="product?.productName" />
+              </div>
+              <p class="fs-5 fs-medium">
+                {{ product?.productName }}
+              </p>
+              <div
+                class="button cursor-pointer"
+                data-bs-toggle="modal"
+                data-bs-target="#productDetailsModal"
+                @click="viewProduct(product?.id)"
+              >
+                <i class="fs-3 fas fa-cart-plus"></i>
+              </div>
+            </div>
+          </div>
+          <div
+            v-if="!loadingState && products.length === 0"
+            class="d-flex align-items-center justify-content-center w-100"
+          >
+            <span class="d-block fs-5 fs-semi-bold">No Products Found...</span>
+          </div>
+          <div
+            v-if="loadingState"
+            class="d-flex justify-content-center p-4"
+            id="spinner"
+          >
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      ref="menuActiveModal"
+      class="modal fade"
+      id="productDetailsModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="productDetailsModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1
+              class="modal-title fs-5 fs-medium"
+              id="productDetailsModalLabel"
+            >
+              Product Details
+            </h1>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="px-4 text-center">
+              <div class="image-container">
+                <img
+                  :src="selectedProduct?.productImage"
+                  :alt="selectedProduct?.productName"
+                />
+              </div>
+              <hr />
+              <div class="product-details">
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Category:</p>
+                  <p class="mb-0">
+                    {{
+                      selectedProduct?.categoryName &&
+                      firstLetterUppercase(selectedProduct.categoryName)
+                    }}
+                  </p>
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Sub Category:</p>
+                  <p class="mb-0">
+                    {{
+                      selectedProduct?.subCategoryName &&
+                      firstLetterUppercase(selectedProduct.subCategoryName)
+                    }}
+                  </p>
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Product Name:</p>
+                  <p class="mb-0">
+                    {{ selectedProduct?.productName }}
+                  </p>
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2 text-start"
+                >
+                  <p class="fs-medium mb-0 align-self-baseline">Description:</p>
+                  <p class="mb-0 text-justify text-end">
+                    {{ selectedProduct?.productDescription }}
+                  </p>
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Price:</p>
+                  <p class="mb-0">₱{{ selectedProduct?.productPrice }}</p>
+                </div>
+                <div
+                  v-if="selectedProduct?.size"
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Size:</p>
+                  <p class="mb-0">
+                    {{ selectedProduct?.productSize ?? "N/A" }}
+                  </p>
+                </div>
+                <div
+                  class="d-flex justify-content-between align-items-center border-bottom mt-2"
+                >
+                  <p class="fs-medium mb-0">Stock:</p>
+                  <p class="mb-0">
+                    {{ selectedProduct?.productStock }}
+                  </p>
+                </div>
+                <div class="mt-3 text-start">
+                  <label for="quantity" class="form-label">
+                    Quantity<span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    :max="selectedProduct?.productStock"
+                    class="form-control"
+                    v-model="productQuantity"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              data-bs-dismiss="modal"
+            >
+              <span> Buy Now </span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-primary"
+              @click="addProductToCart(selectedProduct.id, productQuantity)"
+            >
+              <span> Add to Cart </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import { GetAllProductsAPI } from "@composables/Products";
-import { GetAllCategoriesAPI } from "@composables/Categories";
-import { firstLetterUppercase } from "@composables/Helpers";
 import { addToCart } from "@composables/Cart";
 import { useUserStore } from "@stores/userStore";
-import {
-    AuthRequiredModalMessage,
-    AskUserModalMessage,
-    SuccessModalMessage,
-    FailedModalMessage,
-} from "@composables/helpers/SweetAlertModals";
+import { GetAllProductsAPI } from "@composables/Products";
+import { firstLetterUppercase } from "@composables/Helpers";
+import { GetAllCategoriesAPI } from "@composables/Categories";
 
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
@@ -273,7 +236,6 @@ const menuActiveModal = ref(null);
 const modalInstance = ref(null);
 const userStore = useUserStore();
 
-// States
 const loadingState = ref(false);
 
 const products = ref([]);
@@ -295,23 +257,23 @@ const productQuantity = ref(1);
  * @returns {Promise<void>}
  */
 onMounted(async () => {
-    modalInstance.value = new bootstrap.Modal(menuActiveModal.value);
-    loadingState.value = true;
+  modalInstance.value = new bootstrap.Modal(menuActiveModal.value);
+  loadingState.value = true;
 
-    const [categoriesResponse, productsResponse] = await Promise.all([
-        GetAllCategoriesAPI(),
-        GetAllProductsAPI(),
-    ]);
+  const [categoriesResponse, productsResponse] = await Promise.all([
+    GetAllCategoriesAPI(),
+    GetAllProductsAPI(),
+  ]);
 
-    productsCategories.value = categoriesResponse.data ?? [];
-    products.value = productsResponse.data ?? [];
-    productsCopy.value = [...products.value];
+  productsCategories.value = categoriesResponse.data ?? [];
+  products.value = productsResponse.data ?? [];
+  productsCopy.value = [...products.value];
 
-    if (productsCategories.value.length > 0) {
-        filterProductsByCategoryID(productsCategories.value[0].id);
-    }
+  if (productsCategories.value.length > 0) {
+    filterProductsByCategoryID(productsCategories.value[0].id);
+  }
 
-    loadingState.value = false;
+  loadingState.value = false;
 });
 
 /**
@@ -320,15 +282,15 @@ onMounted(async () => {
  * @param {int} categoryId - The ID of the category to filter products by.
  */
 const filterProductsByCategoryID = (categoryId) => {
-    selectedCategory.value = productsCategories.value.find(
-        (category) => category.id === categoryId
-    );
+  selectedCategory.value = productsCategories.value.find(
+    (category) => category.id === categoryId
+  );
 
-    products.value = productsCopy.value.filter(
-        (product) => product.categoryID === selectedCategory.value.id
-    );
+  products.value = productsCopy.value.filter(
+    (product) => product.categoryID === selectedCategory.value.id
+  );
 
-    setSubCategories(selectedCategory.value.subCategories);
+  setSubCategories(selectedCategory.value.subCategories);
 };
 
 /**
@@ -338,7 +300,7 @@ const filterProductsByCategoryID = (categoryId) => {
  * @return {void}
  */
 const setSubCategories = (newSubCategories) => {
-    subCategories.value = newSubCategories || [];
+  subCategories.value = newSubCategories || [];
 };
 
 /**
@@ -348,13 +310,13 @@ const setSubCategories = (newSubCategories) => {
  * @return {type} description of return value
  */
 const filterProductsBySubCategoryID = (subcategoryId) => {
-    selectedSubCategory.value = subCategories.value.find(
-        (subcategory) => subcategory.id === subcategoryId
-    );
+  selectedSubCategory.value = subCategories.value.find(
+    (subcategory) => subcategory.id === subcategoryId
+  );
 
-    products.value = productsCopy.value.filter(
-        (product) => product.subCategoryID === subcategoryId
-    );
+  products.value = productsCopy.value.filter(
+    (product) => product.subCategoryID === subcategoryId
+  );
 };
 
 /**
@@ -364,7 +326,7 @@ const filterProductsBySubCategoryID = (subcategoryId) => {
  * @return {type} description of return value
  */
 const viewProduct = (id) => {
-    selectedProduct.value = products.value.find((plant) => plant.id === id);
+  selectedProduct.value = products.value.find((plant) => plant.id === id);
 };
 
 /**
@@ -375,15 +337,15 @@ const viewProduct = (id) => {
  * @return {Promise<boolean>} A Promise that resolves to true if the user is authenticated, and false otherwise.
  */
 const checkUserIfAuthenticated = () => {
-    if (!userStore.isUserAuthenticated()) {
-        AuthRequiredModalMessage(
+  if (!userStore.isUserAuthenticated()) {
+    /*  AuthRequiredModalMessage(
             "Login Required!",
             "Please login to add product to your cart!"
-        );
+        ); */
 
-        return false;
-    }
-    return true;
+    return false;
+  }
+  return true;
 };
 
 /**
@@ -394,28 +356,28 @@ const checkUserIfAuthenticated = () => {
  * @return {Promise<void>} - A promise that resolves when the product is successfully added to the cart.
  */
 const handleAddProductToCart = async (productId, quantity) => {
-    const payload = {
-        productID: productId,
-        productQuantity: quantity,
-        productBasePrice: selectedProduct.value.productPrice,
-    };
+  const payload = {
+    productID: productId,
+    productQuantity: quantity,
+    productBasePrice: selectedProduct.value.productPrice,
+  };
 
-    const response = await addToCart(payload);
+  const response = await addToCart(payload);
 
-    if (response.status === "failed") {
-        FailedModalMessage(
-            "Failed to add product to cart",
-            "Something went wrong. Please try again."
-        );
-        return;
-    }
+  if (response.status === "failed") {
+    /* FailedModalMessage(
+      "Failed to add product to cart",
+      "Something went wrong. Please try again."
+    ); */
+    return;
+  }
 
-    SuccessModalMessage(
-        "Product has been added to your cart!",
-        "Check your cart."
-    );
-    productQuantity.value = 1;
-    modalInstance.value.hide();
+  /*  SuccessModalMessage(
+    "Product has been added to your cart!",
+    "Check your cart."
+  ); */
+  productQuantity.value = 1;
+  modalInstance.value.hide();
 };
 
 /**
@@ -426,27 +388,27 @@ const handleAddProductToCart = async (productId, quantity) => {
  * @return {Promise<void>} - A promise that resolves when the product is successfully added to the cart.
  */
 const addProductToCart = (productId, quantity) => {
-    // Check if user is authenticated before adding the product to cart
-    const isAuthenticated = checkUserIfAuthenticated();
+  // Check if user is authenticated before adding the product to cart
+  const isAuthenticated = checkUserIfAuthenticated();
 
-    // If user is not authenticated, redirect to login
-    if (!isAuthenticated) {
-        modalInstance.value.hide();
-        router.push({ name: "login" });
-        return;
+  // If user is not authenticated, redirect to login
+  if (!isAuthenticated) {
+    modalInstance.value.hide();
+    router.push({ name: "login" });
+    return;
+  }
+
+  // If user is authenticated, add to cart
+  /* AskUserModalMessage(
+    "Add to Cart",
+    "Do you want to add this product to your cart?",
+    "info",
+    (value) => {
+      if (value) {
     }
-
-    // If user is authenticated, add to cart
-    AskUserModalMessage(
-        "Add to Cart",
-        "Do you want to add this product to your cart?",
-        "info",
-        (value) => {
-            if (value) {
-                handleAddProductToCart(productId, quantity);
-            }
-        }
-    );
+}
+); */
+  handleAddProductToCart(productId, quantity);
 };
 </script>
 
