@@ -1,48 +1,48 @@
 import { API } from "../boot/axios";
 
-const addToCart = async (data) => {
-    try {
-        const response = await API.post("/cart/add", data);
+const AddToCartAPI = async (data) => {
+  try {
+    const response = await API.post("/customer/cart/add", data);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 const GetAllProductsInUserCartAPI = async () => {
-    try {
-        const response = await API.get("/cart");
+  try {
+    const response = await API.get("/customer/cart");
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 const getProductsInCartByCustomerId = async (customerId) => {
-    try {
-        const response = await API.get(`/cart/customer/${customerId}`);
+  try {
+    const response = await API.get(`/cart/customer/${customerId}`);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 const DeleteProductFromCartAPI = async (id) => {
-    try {
-        const response = await API.delete(`/cart/delete/${id}`);
-        console.log(response);
+  try {
+    const response = await API.delete(`/cart/delete/${id}`);
+    console.log(response);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 export {
-    addToCart,
-    getProductsInCartByCustomerId,
-    GetAllProductsInUserCartAPI,
-    DeleteProductFromCartAPI,
+  AddToCartAPI,
+  getProductsInCartByCustomerId,
+  GetAllProductsInUserCartAPI,
+  DeleteProductFromCartAPI,
 };

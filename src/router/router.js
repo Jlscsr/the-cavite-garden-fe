@@ -17,78 +17,66 @@ const router = createRouter({
   routes,
 });
 
-const checkUserSession = async (userStore) => {
-  const response = await CheckUserSessionAPI();
+const checkAndFetchUser = async (userStore) => {
+  const sessionResponse = await CheckUserSessionAPI();
 
-  // Checks if the user session is expired
-  if (response.status === "unauthorized") {
+  if (sessionResponse.status === "unauthorized") {
     if (userStore.isUserAuthenticated()) {
       displaySessionExpiredAlert(() => {
         userStore.resetUserSession();
-        return false;
       });
     }
+    return false;
   }
 
   userStore.setUserAuthenticated(true);
+
+  const userInfoResponse = await GetUserInfoAPI();
+
+  if (userInfoResponse.status === "failed") {
+    displayAPIRequestErrorAlert(
+      "Something went wrong",
+      userInfoResponse.message,
+      () => {
+        userStore.resetUserSession();
+      }
+    );
+    return false;
+  }
+
+  userStore.setUserInfo(userInfoResponse.data);
   return true;
 };
 
-const getUserInfo = async (userStore) => {
-  const response = await GetUserInfoAPI();
-
-  if (response.status === "failed") {
-    displayAPIRequestErrorAlert(
-      "Something went wrong",
-      response.message,
-      () => {
-        userStore.resetUserSession();
-        return false;
-      }
-    );
-  }
-
-  userStore.setUserInfo(response.data);
-  userStore.setUserAuthenticated(true);
-
-  return userStore.getUserRole();
-};
-
 router.beforeEach(async (to, from, next) => {
-  if (to.name === "register" && from.name === "login") {
-    return next();
-  }
-
-  if (to.name === "login" && from.name === "register") {
+  if (
+    ["register", "login"].includes(to.name) &&
+    ["login", "register"].includes(from.name)
+  ) {
     return next();
   }
 
   const userStore = useUserStore();
-  const isAuthenticated = await checkUserSession(userStore);
+  const isAuthenticated = await checkAndFetchUser(userStore);
 
-  if (to.name === "home" && isAuthenticated) {
-    await getUserInfo(userStore);
+  if (
+    !isAuthenticated &&
+    to.matched.some((record) => record.meta.requiresAuth)
+  ) {
+    return displayLoginFirstAlert(() => next({ name: "login" }));
   }
 
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!isAuthenticated) {
-      displayLoginFirstAlert(() => {
-        return next({ name: "login" });
-      });
-    }
-
-    const userRole = await getUserInfo(userStore);
-
+  if (isAuthenticated) {
+    const userRole = userStore.getUserRole();
     if (
       to.matched.some(
         (record) => record.meta.role && record.meta.role !== userRole
       )
     ) {
-      displayUnauthorizedPageAccessAlert(() => {
-        return next({ name: "home" });
-      });
+      return displayUnauthorizedPageAccessAlert(() => next({ name: "home" }));
     }
   }
+
   next();
 });
 

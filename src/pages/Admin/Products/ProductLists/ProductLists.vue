@@ -162,24 +162,47 @@
           </div>
           <div class="modal-body">
             <div class="image-container mb-4">
-              <img :src="imagePlacholder" alt="Cavite Garden Logo" />
+              <img :src="imagePlaceholder" alt="Cavite Garden Logo" />
             </div>
             <form id="addProductForm">
               <div class="mb-3">
-                <label for="photoUrl" class="form-label fs-6"
-                  >Product Photo <span class="text-danger">*</span></label
-                >
+                <label for="photoUrl" class="form-label fs-6">
+                  Product Photo <span class="text-danger">*</span>
+                </label>
                 <input
                   class="form-control"
                   type="file"
                   id="photoUrl"
-                  v-on:change="handleFileChange"
+                  @change="handleFileChange"
                 />
               </div>
               <div class="mb-3">
-                <label for="productName" class="form-label"
-                  >Product Name <span class="text-danger">*</span></label
-                >
+                <label for="imageSequence" class="form-label fs-6">
+                  Image Sequence <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  type="file"
+                  id="imageSequence"
+                  multiple
+                  @change="handleImageSequenceChange"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="productVideo" class="form-label fs-6">
+                  Product Video <span class="text-danger">*</span>
+                </label>
+                <input
+                  class="form-control"
+                  type="file"
+                  id="productVideo"
+                  @change="handleVideoChange"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="productName" class="form-label">
+                  Product Name <span class="text-danger">*</span>
+                </label>
                 <input
                   type="text"
                   class="form-control"
@@ -188,9 +211,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="productCategory" class="form-label"
-                  >Product Category <span class="text-danger">*</span></label
-                >
+                <label for="productCategory" class="form-label">
+                  Product Category <span class="text-danger">*</span>
+                </label>
                 <select
                   class="form-select"
                   id="productCategory"
@@ -208,10 +231,9 @@
                 </select>
               </div>
               <div v-if="productSubCategories.length > 0" class="mb-3">
-                <label for="productSubCategory" class="form-label"
-                  >Product Sub Category
-                  <span class="text-danger">*</span></label
-                >
+                <label for="productSubCategory" class="form-label">
+                  Product Sub Category <span class="text-danger">*</span>
+                </label>
                 <select
                   class="form-select"
                   id="productSubCategory"
@@ -229,9 +251,9 @@
                 </select>
               </div>
               <div v-if="productCategory === 'pots'" class="mb-3">
-                <label for="size" class="form-label"
-                  >Size <span class="text-danger">*</span></label
-                >
+                <label for="size" class="form-label">
+                  Size <span class="text-danger">*</span>
+                </label>
                 <select
                   class="form-select"
                   id="size"
@@ -245,9 +267,9 @@
                 </select>
               </div>
               <div class="mb-3">
-                <label for="productPrice" class="form-label"
-                  >Price <span class="text-danger">*</span></label
-                >
+                <label for="productPrice" class="form-label">
+                  Price <span class="text-danger">*</span>
+                </label>
                 <input
                   type="text"
                   class="form-control"
@@ -256,9 +278,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="productStock" class="form-label"
-                  >Stock <span class="text-danger">*</span></label
-                >
+                <label for="productStock" class="form-label">
+                  Stock <span class="text-danger">*</span>
+                </label>
                 <input
                   type="number"
                   min="1"
@@ -268,9 +290,9 @@
                 />
               </div>
               <div class="mb-3">
-                <label for="productDescription" class="form-label"
-                  >Description <span class="text-danger">*</span></label
-                >
+                <label for="productDescription" class="form-label">
+                  Description <span class="text-danger">*</span>
+                </label>
                 <textarea
                   class="form-control"
                   placeholder="Product description"
@@ -468,8 +490,17 @@ import {
   DeleteProductAPI,
 } from "@composables/Products";
 import { GetAllCategoriesAPI } from "@composables/Categories";
+import { displaySuccessNotification } from "@composables/helpers/NotificationService";
+import {
+  displayInfoAlert,
+  displayAPIRequestErrorAlert,
+} from "@composables/helpers/AlertService";
 import { formatDate, firstLetterUppercase } from "@composables/Helpers";
-import { uploadImage, deleteImageFromFirebase } from "@composables/UploadImage";
+import {
+  uploadImage,
+  deleteImageFromFirebase,
+  uploadFiles,
+} from "@composables/UploadImage";
 
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
@@ -510,8 +541,10 @@ const modalFormState = ref("add");
 const productLists = ref([]);
 const categories = ref([]);
 
-const imagePlacholder = ref("/cavite-garden-logo.png");
+const imagePlaceholder = ref("/cavite-garden-logo.png");
 const productPhotoUrl = ref("");
+const imageSequence = ref([]);
+const productVideo = ref(null);
 const productName = ref("");
 const productCategory = ref("");
 const productSubCategory = ref("");
@@ -539,7 +572,6 @@ const productSubCategories = ref([]);
 
 watch(productCategory, (newVal, oldVal) => {
   if (productCategory.value) {
-    console.log(productCategory.value);
     productSubCategories.value = categories.value.find(
       (category) => category.categoryName === newVal
     );
@@ -568,13 +600,25 @@ const submitForm = async () => {
 
 const addNewProduct = async () => {
   try {
-    const response = await uploadImage(
+    const imageUrlResponse = await uploadImage(
       productPhotoUrl.value,
       productCategory.value
     );
 
-    const newPlantData = {
-      productPhotoURL: response,
+    const imageSequenceUrls = await uploadFiles(
+      imageSequence.value,
+      `${productCategory.value}/image-sequence`
+    );
+
+    const videoUrlResponse = await uploadImage(
+      productVideo.value,
+      `${productCategory.value}/video`
+    );
+
+    const newProductData = {
+      productPhotoURL: imageUrlResponse,
+      imageSequenceURLs: imageSequenceUrls,
+      productVideoURL: videoUrlResponse,
       productName: productName.value,
       productCategory: productCategory.value,
       productSubCategory: productSubCategory.value,
@@ -584,12 +628,16 @@ const addNewProduct = async () => {
       productDescription: productDescription.value,
     };
 
-    await AddNewProductAPI(newPlantData);
+    const response = await AddNewProductAPI(newProductData);
 
-    /*  swal("New Product has been added!", "", "success").then((success) => {
-      if (success) {
-      }
-    }); */
+    if (response.status === "failed") {
+      return displayAPIRequestErrorAlert(
+        "Failed to add new product!",
+        response.message
+      );
+    }
+
+    displaySuccessNotification("Product has been added successfully!");
     getProducts();
   } catch (error) {
     handleError("Failed to add new product!", "Something went wrong.", error);
@@ -599,150 +647,69 @@ const addNewProduct = async () => {
   }
 };
 
-const editProduct = async () => {
-  try {
-    if (previousImagePlaceholder.value !== imagePlacholder.value) {
-      await editPlantWithImage();
-    } else {
-      await editPlantMetadataOnly();
-    }
-  } catch (error) {
-    handleError("Failed to update product!", "Something went wrong.", error);
-  } finally {
-    completeOperation();
-  }
-};
+const handleFileChange = (event) => {
+  const { target: { files = [] } = {} } = event;
+  const [file] = files;
 
-const editPlantWithImage = async () => {
-  await deleteImageFromFirebase(previousImagePlaceholder.value);
-
-  const imageUrlResponse = await uploadImage(
-    productPhotoUrl.value,
-    productCategory.value
-  );
-
-  const newPlantData = {
-    productPhotoURL: imageUrlResponse,
-    productName: productName.value,
-    productCategory: productCategory.value,
-    productSubCategory: productSubCategory.value,
-    productPrice: productPrice.value,
-    productStock: productStock.value,
-    productSize: potSize.value,
-    productDescription: productDescription.value,
-  };
-
-  const response = await EditProductAPI(selectedProduct.value.id, newPlantData);
-
-  if (response.status !== "success") {
-    // swal("Failed to update product!", "Something went wrong.", "error");
+  if (!file) {
+    productPhotoUrl.value = "";
     return;
   }
 
-  resetForm();
-  editSuccess();
-};
+  const { name = "" } = file;
+  const [, extension] = /.(\w+)$/.exec(name);
 
-const editPlantMetadataOnly = async () => {
-  const newPlantData = {
-    productPhotoURL: imagePlacholder.value,
-    productName: productName.value,
-    productCategory: productCategory.value,
-    productSubCategory: productSubCategory.value,
-    productStock: productStock.value,
-    productPrice: productPrice.value,
-    productSize: potSize.value,
-    productDescription: productDescription.value,
-  };
+  const allowedExtensions = new Set(["jpeg", "jpg", "png"]);
 
-  const response = await EditProductAPI(selectedProduct.value.id, newPlantData);
-
-  if (response.status !== "success") {
-    // swal("Failed to update product!", "Something went wrong.", "error");
-    return;
+  if (!allowedExtensions.has(extension.toLowerCase())) {
+    displayInfoAlert(
+      "Invalid File Type",
+      "Only JPEG, JPG, and PNG files are allowed",
+      () => {
+        event.target.value = "";
+        return;
+      }
+    );
   }
-  resetForm();
-  editSuccess();
+
+  productPhotoUrl.value = file;
+  imagePlaceholder.value = URL.createObjectURL(file);
 };
 
-const deleteProduct = async (id) => {
-  const selectedProduct = productLists.value.find(
-    (product) => product.id === id
+const handleImageSequenceChange = (event) => {
+  const { target: { files = [] } = {} } = event;
+
+  imageSequence.value = Array.from(files).sort((a, b) =>
+    a.name.localeCompare(b.name)
   );
+};
 
-  await deleteImageFromFirebase(selectedProduct.productImage);
+const handleVideoChange = (event) => {
+  const { target: { files = [] } = {} } = event;
+  const [file] = files;
 
-  const response = await DeleteProductAPI(id);
-
-  if (response.status !== "success") {
-    // swal("Failed to delete product!", "Something went wrong.", "error");
+  if (!file) {
+    productVideo.value = null;
     return;
   }
 
-  //   swal("Product has been deleted!", "", "success");
-  getProducts();
-};
+  const { name = "" } = file;
+  const [, extension] = /.(\w+)$/.exec(name);
 
-const viewProduct = (id) => {
-  selectedProduct.value = productLists.value.find(
-    (product) => product.id === id
-  );
-};
+  const allowedExtensions = new Set(["mp4", "webm", "ogg"]);
 
-const toggleEditBtn = (id) => {
-  modalInstance.value.show();
-  modalFormState.value = "edit";
-  selectedProduct.value = productLists.value.find(
-    (product) => product.id === id
-  );
+  if (!allowedExtensions.has(extension.toLowerCase())) {
+    displayInfoAlert(
+      "Invalid File Type",
+      "Only MP4, WEBM, and OGG files are allowed",
+      () => {
+        event.target.value = "";
+        return;
+      }
+    );
+  }
 
-  imagePlacholder.value = selectedProduct.value.productImage;
-  previousImagePlaceholder.value = imagePlacholder.value;
-  productName.value = selectedProduct.value.productName;
-  productCategory.value = selectedProduct.value.categoryName;
-  productSubCategory.value = selectedProduct.value.subCategoryName;
-  potSize.value = selectedProduct.value.size ?? null;
-  productStock.value = selectedProduct.value.productStock;
-  productPrice.value = selectedProduct.value.productPrice;
-  productDescription.value = selectedProduct.value.productDescription;
-};
-
-const toggleDeleteBtn = async (id) => {
-  /*  swal({
-    title: "Are you sure?",
-    text: "This action cannot be undone!",
-    icon: "warning",
-    dangerMode: true,
-    buttons: {
-      cancel: "Cancel",
-      confirm: {
-        text: "Yes, delete it!",
-        value: true,
-        visible: true,
-        closeModal: true,
-      },
-    },
-  }).then(async (value) => {
-    if (value) {
-    } else {
-        swal("Cancelled", "Product is safe :)", "info");
-    }
-}); */
-  await deleteProduct(id);
-};
-
-const resetForm = () => {
-  imagePlacholder.value = "/cavite-garden-logo.png";
-  productPhotoUrl.value = "";
-  [
-    productName,
-    productCategory,
-    productSubCategory,
-    potSize,
-    productPrice,
-    productStock,
-    productDescription,
-  ].forEach((ref) => (ref.value = ""));
+  productVideo.value = file;
 };
 
 const isFormInvalid = computed(() => {
@@ -762,58 +729,22 @@ const isFormInvalid = computed(() => {
       return (
         commonValidation() ||
         productPhotoUrl.value === "" ||
-        potSize.value === ""
+        potSize.value === "" ||
+        imageSequence.value.length === 0 ||
+        !productVideo.value
       );
     } else {
-      return commonValidation() || productPhotoUrl.value === "";
+      return (
+        commonValidation() ||
+        productPhotoUrl.value === "" ||
+        imageSequence.value.length === 0 ||
+        !productVideo.value
+      );
     }
   } else if (modalFormState.value === "edit") {
     return commonValidation();
   }
 });
-
-const handleFileChange = (event) => {
-  const { target: { files = [] } = {} } = event;
-  const [file] = files;
-
-  if (!file) {
-    productPhotoUrl.value = "";
-    return;
-  }
-
-  const { name = "" } = file;
-  const [, extension] = /.(\w+)$/.exec(name);
-
-  const allowedExtensions = new Set(["jpeg", "jpg", "png"]);
-
-  if (!allowedExtensions.has(extension.toLowerCase())) {
-    /* swal(
-      "Invalid File Type",
-      "Only JPEG, JPG, and PNG files are allowed",
-      "error"
-    ); */
-    event.target.value = "";
-    return;
-  }
-
-  productPhotoUrl.value = file;
-  imagePlacholder.value = URL.createObjectURL(file);
-};
-
-const completeOperation = () => {
-  modalInstance.value.hide();
-  btnLoadingState.value = false;
-};
-
-const editSuccess = () => {
-  //   swal("Product has been updated!", "", "success");
-  getProducts();
-};
-
-const handleError = (title, message, error) => {
-  //   swal(title, message, "error");
-  console.error(error);
-};
 </script>
 
 <style scoped lang="scss">

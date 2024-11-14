@@ -131,6 +131,19 @@ const displayWarningAlert = (title, message, callback = () => {}) => {
   });
 };
 
+const displayInfoAlert = (title, message, callback = () => {}) => {
+  Swal.fire({
+    title: title,
+    text: message,
+    icon: "info",
+    confirmButtonText: "OK",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      callback();
+    }
+  });
+};
+
 export {
   displaySessionExpiredAlert,
   displayUnauthorizedPageAccessAlert,
@@ -142,4 +155,5 @@ export {
   displaySuccessAlert,
   displayErrorAlert,
   displayWarningAlert,
+  displayInfoAlert,
 };

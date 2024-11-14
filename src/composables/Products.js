@@ -6,13 +6,23 @@ import { API } from "../boot/axios";
  * @return {Object} The data containing all products.
  */
 const GetAllProductsAPI = async () => {
-    try {
-        const response = await API.get("/products");
+  try {
+    const response = await API.get("/products");
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
+};
+
+const GetProductByIDAPI = async (productID) => {
+  try {
+    const response = await API.get(`/product/id/${productID}`);
+
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -22,13 +32,13 @@ const GetAllProductsAPI = async () => {
  * @return {Object} The data containing products of the specified category.
  */
 const GetAllProductsByCategoryIDAPI = async (categoryId) => {
-    try {
-        const response = await API.get("/products/category/" + categoryId);
+  try {
+    const response = await API.get("/products/category/" + categoryId);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -38,13 +48,13 @@ const GetAllProductsByCategoryIDAPI = async (categoryId) => {
  * @return {Object} The data returned from the API after adding the new product.
  */
 const AddNewProductAPI = async (newProductInfo) => {
-    try {
-        const response = await API.post("/product/add", newProductInfo);
+  try {
+    const response = await API.post("/product/add", newProductInfo);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -55,16 +65,16 @@ const AddNewProductAPI = async (newProductInfo) => {
  * @return {Object} The data returned from the API after editing the product.
  */
 const EditProductAPI = async (productID, newProductInfo) => {
-    try {
-        const response = await API.put(
-            `/product/edit/${productID}`,
-            newProductInfo
-        );
+  try {
+    const response = await API.put(
+      `/product/edit/${productID}`,
+      newProductInfo
+    );
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 /**
@@ -74,19 +84,20 @@ const EditProductAPI = async (productID, newProductInfo) => {
  * @return {Object} The data returned from the API after deleting the product.
  */
 const DeleteProductAPI = async (productID) => {
-    try {
-        const response = await API.delete(`/product/delete/${productID}`);
+  try {
+    const response = await API.delete(`/product/delete/${productID}`);
 
-        return response.data;
-    } catch (error) {
-        return error.response.data;
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 export {
-    GetAllProductsAPI,
-    GetAllProductsByCategoryIDAPI,
-    AddNewProductAPI,
-    EditProductAPI,
-    DeleteProductAPI,
+  GetAllProductsAPI,
+  GetAllProductsByCategoryIDAPI,
+  GetProductByIDAPI,
+  AddNewProductAPI,
+  EditProductAPI,
+  DeleteProductAPI,
 };

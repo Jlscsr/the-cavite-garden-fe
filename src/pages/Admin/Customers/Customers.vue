@@ -92,25 +92,25 @@
           :key="customer?.id"
         >
           <td class="fs-6 fs-light p-3">
-            {{ customer?.first_name }} {{ customer?.last_name }}
+            {{ customer?.firstName }} {{ customer?.lastName }}
           </td>
           <td class="fs-6 fs-light p-3">
             {{ customer?.email }}
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ customer?.phone_number }}
+            {{ customer?.phoneNumber }}
           </td>
           <td class="fs-6 fs-light p-3" style="max-width: 100px">
-            {{ formatShippingAddress(customer?.shipping_address) }}
+            {{ formatShippingAddress(customer?.shippingAddresses) }}
             <span
               class="fst-italic"
-              v-if="customer?.shipping_address.length > 1"
+              v-if="customer?.shippingAddress?.length > 1"
             >
-              {{ `+ ${customer?.shipping_address.length - 1} more` }}
+              {{ `+ ${customer?.shippingAddress?.length - 1} more` }}
             </span>
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ formatDate(customer?.created_at) }}
+            {{ formatDate(customer?.createdAt) }}
           </td>
           <td class="text-center">
             <div class="btn-group dropstart">
@@ -183,8 +183,8 @@
                 >
                   <p class="fs-medium mb-0">Customer Name:</p>
                   <p class="mb-0">
-                    {{ selectedCustomer?.first_name }}
-                    {{ selectedCustomer?.last_name }}
+                    {{ selectedCustomer?.firstName }}
+                    {{ selectedCustomer?.lastName }}
                   </p>
                 </div>
                 <div
@@ -200,7 +200,7 @@
                 >
                   <p class="fs-medium mb-0">Phone Number:</p>
                   <p class="mb-0">
-                    {{ selectedCustomer?.phone_number }}
+                    {{ selectedCustomer?.phoneNumber }}
                   </p>
                 </div>
                 <div class="text-start border-bottom mt-2">
@@ -222,7 +222,7 @@
                         </button>
                       </h2>
                       <div
-                        v-for="address in selectedCustomer?.shipping_address"
+                        v-for="address in selectedCustomer?.shippingAddress"
                         :key="address.id"
                         id="flush-collapseOne"
                         class="accordion-collapse collapse border"
@@ -240,7 +240,7 @@
                 >
                   <p class="fs-medium mb-0">Date Creataed:</p>
                   <p class="mb-0">
-                    {{ formatDate(selectedCustomer?.created_at) }}
+                    {{ formatDate(selectedCustomer?.createdAt) }}
                   </p>
                 </div>
               </div>
@@ -266,7 +266,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 import { formatDate } from "../../../composables/Helpers";
-import { getAllEmployeesRequest } from "../../../composables/Customers";
+import { GetAllCustomersAPI } from "../../../composables/Customers";
 
 import Table from "../../../components/Table/Table.vue";
 
@@ -299,7 +299,7 @@ const selectedCustomer = ref([]);
 
 const stringShippingAddress = (address) => {
   if (address) {
-    return `${address.street_blk_lot}, ${address.barangay}, ${address.municipality}, ${address.province}`;
+    return `${address.streetAddress}, ${address.barangay}, ${address.municipality}, ${address.province}`;
   }
 };
 
@@ -309,9 +309,7 @@ const formatShippingAddress = (address) => {
       return "No Shipping Address";
     }
 
-    console.log(address);
-
-    const addressString = `${address[0].street_blk_lot}, ${address[0].barangay}, ${address[0].municipality}, ${address[0].province}`;
+    const addressString = `${address[0].streetAddress}, ${address[0].barangay}, ${address[0].municipality}, ${address[0].province}`;
 
     const shortenedAddress = addressString.substring(0, 20) + "...";
     return shortenedAddress;
@@ -325,7 +323,7 @@ const viewCustomerDetails = (customerId) => {
 };
 onMounted(async () => {
   try {
-    const response = await getAllEmployeesRequest();
+    const response = await GetAllCustomersAPI();
 
     if (response.status === "unauthorized") {
       /* swal(

@@ -28,7 +28,7 @@
                 Modified Date
               </li>
               <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Status
+                Role
               </li>
               <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
                 Actions
@@ -104,12 +104,12 @@
             {{ formatDate(employee?.dateStarted) }}
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ formatDate(employee?.modifiedAt) }}
+            {{ formatDate(employee?.updatedAt) }}
           </td>
-          <td class="fs-6 fs-medium p-3">
-            <span class="text-success">
-              {{ firstLetterUppercase(employee?.status) }}
-            </span>
+          <td class="fs-6 fs-light p-3">
+            {{
+              firstLetterUppercase(employee?.role === 0 ? "employee" : "admin")
+            }}
           </td>
           <td class="text-center">
             <div class="btn-group dropstart">

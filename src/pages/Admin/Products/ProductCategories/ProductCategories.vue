@@ -495,11 +495,12 @@ const addCategory = async () => {
 
     const response = await AddNewCategoryAPI(categoryData);
 
-    if (!response.status === "failed") {
-      return displayAPIRequestErrorAlert(
+    if (response.status === "failed") {
+      displayAPIRequestErrorAlert(
         "Failed to add new category!",
         response.message
       );
+      return;
     }
 
     displaySuccessNotification("New Category has been added!");
