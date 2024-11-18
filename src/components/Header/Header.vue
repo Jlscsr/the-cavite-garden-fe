@@ -27,7 +27,11 @@
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link fs-6 text-black" href="#about">About</a>
+              <a
+                class="nav-link fs-6 text-black cursor-pointer"
+                @click="goToOrSlideTo('about')"
+                >About</a
+              >
             </li>
             <li class="nav-item">
               <router-link
@@ -38,7 +42,11 @@
               >
             </li>
             <li class="nav-item">
-              <a class="nav-link fs-6 text-black" href="#reviews">Reviews</a>
+              <a
+                class="nav-link fs-6 text-black cursor-pointer"
+                @click="goToOrSlideTo('reviews')"
+                >Reviews</a
+              >
             </li>
           </ul>
         </div>
@@ -154,7 +162,7 @@
                     >
                   </li>
                   <li>
-                    <button class="btn dropdown-item" @click="logoutUser">
+                    <button class="btn dropdown-item" @click="handleLogoutUser">
                       Logout
                     </button>
                   </li>
@@ -169,7 +177,7 @@
 </template>
 
 <script setup>
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 
 import NotificationBellIcon from "@assets/icons/NotificationBellIcon.vue";
@@ -189,8 +197,10 @@ import {
 import { useUserStore } from "@stores/userStore.js";
 import { firstLetterUppercase } from "@composables/Helpers";
 import { LogoutUserAPI } from "@composables/Authentication";
+import Swal from "sweetalert2";
 
 const router = useRouter();
+const route = useRoute();
 
 const userStore = useUserStore();
 const deliveryMethod = ref("");
@@ -245,32 +255,35 @@ const listenForTransactionChanges = (customer_id) => {
   });
 };
 
-const resetForm = () => {
-  deliveryMethod.value = "";
-  paymentMethod.value = "";
-  selectedShippingAddress.value = "";
-};
-
 const handleLogoutUser = async () => {
-  await LogoutUserAPI();
+  Swal.fire({
+    title: "Log out",
+    text: "Are you sure you want to logout?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      await LogoutUserAPI();
+      userStore.setUserInfo({});
+      userStore.setUserAuthenticated(false);
 
-  userStore.setUserInfo({});
-  userStore.setUserAuthenticated(false);
-
-  router.push({ name: "home" });
+      router.go();
+    }
+  });
 };
 
-const logoutUser = async () => {
-  /* AskUserModalMessage(
-    "Logout",
-    "Are you sure you want to logout?",
-    "warning",
-    (value) => {
-      if (value) {
+const goToOrSlideTo = (sectionId) => {
+  if (route.name === "home") {
+    // Scroll to the section if on the home page
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
     }
-}
-); */
-  handleLogoutUser();
+  } else {
+    // Navigate to the home page with a hash
+    router.push({ name: "home", hash: `#${sectionId}` });
+  }
 };
 
 const goToCart = () => {

@@ -1,11 +1,8 @@
 <template>
   <RouterView />
-  <!-- <Test /> -->
 </template>
 
-<script setup>
-import Test from "./Test.vue";
-</script>
+<script setup></script>
 
 <style scoped lang="scss">
 .main {

@@ -20,14 +20,4 @@ const getEmployeeInfo = async () => {
   }
 };
 
-const addNewUserAddress = async (address) => {
-  try {
-    const response = await API.post("/customer/address/add", address);
-
-    return response.data;
-  } catch (error) {
-    return error.response.data;
-  }
-};
-
-export { GetUserInfoAPI, addNewUserAddress, getEmployeeInfo };
+export { GetUserInfoAPI, getEmployeeInfo };

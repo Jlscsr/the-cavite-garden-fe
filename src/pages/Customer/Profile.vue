@@ -72,7 +72,7 @@ import { RouterLink, RouterView } from "vue-router";
 }
 
 .nav-link.active {
-  color: #fff;
+  color: #fff !important;
   background-color: #198754;
 }
 

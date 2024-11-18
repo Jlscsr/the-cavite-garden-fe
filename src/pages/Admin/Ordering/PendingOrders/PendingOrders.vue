@@ -12,35 +12,6 @@
             data-bs-toggle="dropdown"
             aria-expanded="false"
           >
-            Show visibility
-          </button>
-          <div class="dropdown-menu">
-            <ul class="d-flex list-unstyled mb-0">
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Order #
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Costumer
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Address
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Transaction Date
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Actions
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="dropdown">
-          <button
-            class="btn btn-outline-dark dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
             Show 10 Rows
           </button>
           <div class="dropdown-menu">
@@ -84,15 +55,16 @@
           :key="order?.id"
         >
           <td class="fs-6 fs-light p-3">
-            {{ order?.id }}
+            {{ order?.id?.split("-")[4] }}
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ order?.firstName }} {{ order?.lastName }}
+            {{ order?.customerInfo?.firstName }}
+            {{ order?.customerInfo?.lastName }}
           </td>
-          <td class="fs-6 fs-light p-3 text-truncate" style="max-width: 200px">
-            {{ order?.shippingAddress ? order.shippingAddress : "N/A" }}
+          <td class="fs-6 fs-light p-3">
+            {{ order?.products?.length }}
           </td>
-          <td class="fs-6 fs-light p-3">₱{{ order?.totalPrice }}</td>
+          <td class="fs-6 fs-light p-3">₱{{ order?.totalTransactionPrice }}</td>
           <td
             class="fs-6 fs-medium p-3"
             :class="{
@@ -127,14 +99,176 @@
                     View
                   </button>
                 </li>
-                <li class="px-2 mb-1 cursor-pointer text-center fs-light">
+                <li
+                  v-if="
+                    order?.paymentType === 'over the counter' &&
+                    order?.orderType === 'pickup' &&
+                    order?.status === 'pending'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
                   <button
                     class="btn btn-success w-100"
-                    @click="setNewTransactionStatus(order?.id, 'approved')"
+                    @click="setNewTransactionStatus(order?.id, 'PickedUp')"
                   >
-                    Approve Order
+                    Picked Up
                   </button>
                 </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'over the counter' &&
+                    order?.orderType === 'pickup' &&
+                    order?.status === 'PickedUp'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'completed')"
+                  >
+                    Completed
+                  </button>
+                </li>
+
+                <li
+                  v-if="
+                    order?.paymentType === 'over the counter' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'pending'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'Preparing')"
+                  >
+                    Start Preparing
+                  </button>
+                </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'over the counter' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'Preparing'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'To Ship')"
+                  >
+                    Ship Order
+                  </button>
+                </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'over the counter' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'To Ship'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'completed')"
+                  >
+                    Completed
+                  </button>
+                </li>
+
+                <li
+                  v-if="
+                    order?.paymentType === 'gcash' &&
+                    order?.orderType === 'pickup' &&
+                    order?.status === 'Preparing'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'To Pick Up')"
+                  >
+                    Ready for Pickup
+                  </button>
+                </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'gcash' &&
+                    order?.orderType === 'pickup' &&
+                    order?.status === 'To Pick Up'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'completed')"
+                  >
+                    Completed
+                  </button>
+                </li>
+
+                <li
+                  v-if="
+                    order?.paymentType === 'gcash' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'Preparing'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'To Ship')"
+                  >
+                    Ship Order
+                  </button>
+                </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'gcash' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'To Ship'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'completed')"
+                  >
+                    Completed
+                  </button>
+                </li>
+
+                <li
+                  v-if="
+                    order?.paymentType === 'cod' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'pending'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'To Ship')"
+                  >
+                    Ship Order
+                  </button>
+                </li>
+                <li
+                  v-if="
+                    order?.paymentType === 'cod' &&
+                    order?.orderType === 'delivery' &&
+                    order?.status === 'To Ship'
+                  "
+                  class="px-2 mb-1 cursor-pointer text-center fs-light"
+                >
+                  <button
+                    class="btn btn-success w-100"
+                    @click="setNewTransactionStatus(order?.id, 'completed')"
+                  >
+                    Completed
+                  </button>
+                </li>
+
                 <li class="px-2 mb-1 cursor-pointer text-center fs-light">
                   <button
                     class="btn btn-danger w-100"
@@ -179,8 +313,8 @@
             <div class="d-flex justify-content-between w-100 mb-3">
               <p class="fs-medium mb-0">Customer Name:</p>
               <p class="mb-0">
-                {{ selectedOrder?.firstName }}
-                {{ selectedOrder?.lastName }}
+                {{ selectedOrder?.customerInfo?.firstName }}
+                {{ selectedOrder?.customerInfo?.lastName }}
               </p>
             </div>
             <div class="d-flex justify-content-between w-100 mb-3">
@@ -206,13 +340,13 @@
             <div class="d-flex justify-content-between w-100 mb-3">
               <p class="fs-medium mb-0">Delivery Method:</p>
               <p class="mb-0">
-                {{ formatString(selectedOrder?.deliveryMethod) }}
+                {{ formatString(selectedOrder?.orderType) }}
               </p>
             </div>
             <div class="d-flex justify-content-between w-100 mb-3">
               <p class="fs-medium mb-0">Payment Method:</p>
               <p class="mb-0">
-                {{ formatString(selectedOrder?.paymentMethod) }}
+                {{ formatString(selectedOrder?.paymentType) }}
               </p>
             </div>
             <div class="d-flex justify-content-between w-100 mb-3">
@@ -220,36 +354,38 @@
               <p class="mb-0 text-end">
                 {{
                   selectedOrder?.shippingAddress
-                    ? selectedOrder.shippingAddress
+                    ? selectedOrder?.shippingAddress
                     : "N/A"
                 }}
               </p>
             </div>
             <p class="fs-5 fs-medium border-bottom">Purchased products</p>
             <div
-              v-for="product in selectedOrder?.productsPurchased"
+              v-for="product in selectedOrder?.products"
               :key="product.id"
               class="mb-3"
             >
               <div class="d-flex justify-content-between w-100 border-bottom">
                 <p class="fs-medium mb-0">
-                  {{ product.productName }}
+                  {{ product?.productInfo?.productName }}
                 </p>
                 <div class="mb-0">
-                  <p class="mb-0 text-end">x{{ product.productQuantity }}</p>
+                  <p class="mb-0 text-end">x{{ product.purchasedQuantity }}</p>
                   <p class="mb-0">₱{{ product.productPrice }}</p>
                 </div>
               </div>
               <div class="d-flex justify-content-between">
                 <p class="mb-0">Total:</p>
                 <p class="mb-0">
-                  ₱{{ product.productQuantity * product.productPrice }}.00
+                  ₱{{ product.purchasedQuantity * product.productPrice }}.00
                 </p>
               </div>
             </div>
             <div class="d-flex justify-content-between w-100 mt-3 border-top">
               <p class="fs-medium mb-0 fs-5">Grand Total:</p>
-              <p class="mb-0 fs-5">₱{{ selectedOrder?.totalPrice }}</p>
+              <p class="mb-0 fs-5">
+                ₱{{ selectedOrder?.totalTransactionPrice }}
+              </p>
             </div>
           </div>
           <div class="modal-footer">
@@ -277,61 +413,58 @@ import {
   formatString,
 } from "../../../../composables/Helpers";
 import {
-  getAllTransactions,
-  updateTransactionStatus,
+  GetAllTransactionAPI,
+  UpdateTransactionStatus,
 } from "../../../../composables/Transaction";
 
 import Table from "../../../../components/Table/Table.vue";
-import swal from "sweetalert";
+import Swal from "sweetalert2";
 
 const pendingOrders = ref([]);
 const selectedOrder = ref("");
 
 const setNewTransactionStatus = async (id, status) => {
-  let swalMessage = null;
-  let swalMessageAfterReq = null;
+  Swal.fire({
+    title: "Are you sure?",
+    text: `You're about to change the status of this order to ${status}`,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, change it!",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        const payload = {
+          status,
+        };
+        const response = await UpdateTransactionStatus(id, payload);
 
-  if (status === "approved") {
-    swalMessage = {
-      title: "Confirm Order Approval",
-      text: "Are you sure you want to approve this order?",
-      icon: "info",
-      buttons: ["Cancel", "Yes, approve order"],
-    };
-    swalMessageAfterReq = "Order has been approved!";
-  } else if (status === "cancelled") {
-    swalMessage = {
-      title: "Confirm Cancel Approval",
-      text: "Are you sure you want to cancel this order?",
-      icon: "warning",
-      buttons: ["Cancel", "Yes, cancel order"],
-    };
-    swalMessageAfterReq = "Order has been cancelled!";
-  }
+        if (response.status === "failed") {
+          Swal.fire({
+            icon: "error",
+            title: "Oops, something went wrong!",
+            text: response.message,
+          });
+          return;
+        }
 
-  /*  swal(swalMessage).then(async (value) => {
-    if (value) {
+        // add realtime database update base on the id here
+        // const transactionRef = dbRef(database, `transaction/${id}`);
+
+        // await update(transactionRef, { status });
+
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "The order status has been successfully updated.",
+        });
+        await getAllOrderTransactions();
+      } catch (error) {
+        console.error(error);
+      }
     }
-  }); */
-
-  try {
-    const response = await updateTransactionStatus(id, status);
-
-    if (response.status === "failed") {
-      //   swal("Something went wrong", "", "error");
-      return;
-    }
-
-    // add realtime database update base on the id here
-    const transactionRef = dbRef(database, `transaction/${id}`);
-
-    await update(transactionRef, { status });
-
-    // swal(swalMessageAfterReq, "", status === "approved" ? "success" : "error");
-    await getAllOrderTransactions();
-  } catch (error) {
-    console.error(error);
-  }
+  });
 };
 
 const viewOrderDetails = (id) => {
@@ -344,7 +477,7 @@ const viewOrderDetails = (id) => {
 
 const getAllOrderTransactions = async () => {
   try {
-    const response = await getAllTransactions("pending");
+    const response = await GetAllTransactionAPI("all");
 
     if (response.status === "failed") {
       pendingOrders.value = [];
@@ -352,6 +485,20 @@ const getAllOrderTransactions = async () => {
     }
 
     pendingOrders.value = response.data;
+
+    pendingOrders.value = pendingOrders.value.map((order) => {
+      let totalTransactionPrice = 0;
+
+      // Calculate the total price for all products in the order
+      for (const item of order.products) {
+        totalTransactionPrice += parseFloat(item.totalPrice);
+      }
+
+      return {
+        ...order,
+        totalTransactionPrice,
+      };
+    });
   } catch (error) {
     console.error(error);
   }

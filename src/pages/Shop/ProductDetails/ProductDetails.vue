@@ -42,6 +42,19 @@
                   class="form-control quantity-input mx-2"
                   v-model="quantity"
                   min="1"
+                  :max="product?.productStock"
+                  @input="
+                    quantity = Math.max(
+                      1,
+                      Math.min(quantity, product?.productStock)
+                    )
+                  "
+                  @change="
+                    quantity = Math.max(
+                      1,
+                      Math.min(quantity, product?.productStock)
+                    )
+                  "
                 />
                 <button
                   class="btn btn-outline-secondary"
@@ -76,9 +89,7 @@
     <div class="description-section mt-5">
       <h3>Description</h3>
       <p>
-        Mecardonia, Commonly Called Axilflower, Is A Genus Of About 12 Species
-        Of Herbaceous Plants Native To Western South America North Through
-        Central America To The Southeastern United States
+        {{ product?.productDescription }}
       </p>
     </div>
 
@@ -87,30 +98,49 @@
       <h3>Reviews</h3>
 
       <!-- Individual Review -->
-      <div v-for="review in reviews" :key="review.id" class="review-card mb-4">
+      <div
+        v-if="product?.reviews?.length !== 0"
+        v-for="(review, index) in product?.reviews"
+        :key="index"
+        class="review-card mb-4"
+      >
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <h5 class="reviewer-name mb-0">{{ review.name }}</h5>
+          <h5 class="reviewer-name mb-0">
+            {{ review?.firstName }} {{ review?.lastName }}
+          </h5>
           <div class="rating">
-            <span class="stars">{{ "★".repeat(review.rating) }}</span>
-            <span class="rating-number">{{ review.rating.toFixed(1) }}</span>
+            <span class="stars">{{ "★".repeat(review?.userRating) }}</span>
+            <span class="rating-number">{{
+              review?.userRating.toFixed(1)
+            }}</span>
           </div>
         </div>
-        <p class="review-text">{{ review.text }}</p>
+        <p class="review-text">{{ review?.userComment }}</p>
         <div class="review-images">
           <div class="row g-2">
             <div
               class="col-4"
-              v-for="(image, index) in review.images"
+              v-for="(media, index) in review?.reviewMedia"
               :key="index"
             >
               <img
-                :src="image"
+                v-if="media?.mediaType === 'image/jpeg'"
+                :src="media?.mediaURL"
                 :alt="`Review image ${index + 1}`"
                 class="img-fluid rounded"
               />
+              <video
+                v-if="media?.mediaType === 'video/mp4'"
+                :src="media?.mediaURL"
+                :alt="`Review image ${index + 1}`"
+                class="img-fluid rounded"
+              ></video>
             </div>
           </div>
         </div>
+      </div>
+      <div v-else class="">
+        <p class="text-center">No reviews yet</p>
       </div>
     </div>
   </div>
@@ -142,6 +172,9 @@ onMounted(() => {
 });
 
 const incrementQuantity = () => {
+  if (quantity.value >= product.value.productStock) {
+    return;
+  }
   quantity.value++;
 };
 
@@ -150,42 +183,6 @@ const decrementQuantity = () => {
     quantity.value--;
   }
 };
-
-const reviews = ref([
-  {
-    id: 1,
-    name: "Julius R.",
-    rating: 5.0,
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    images: [
-      "/path-to-review-image-1.jpg",
-      "/path-to-review-image-2.jpg",
-      "/path-to-review-image-3.jpg",
-    ],
-  },
-  {
-    id: 2,
-    name: "Mayoa K.",
-    rating: 4.0,
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    images: [
-      "/path-to-review-image-4.jpg",
-      "/path-to-review-image-5.jpg",
-      "/path-to-review-image-6.jpg",
-    ],
-  },
-  {
-    id: 3,
-    name: "Jane D.",
-    rating: 3.0,
-    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-    images: [
-      "/path-to-review-image-7.jpg",
-      "/path-to-review-image-8.jpg",
-      "/path-to-review-image-9.jpg",
-    ],
-  },
-]);
 
 const getProductByID = async () => {
   try {
@@ -201,6 +198,7 @@ const getProductByID = async () => {
     }
 
     product.value = response.data || [];
+    console.log(product.value);
   } catch (error) {
     console.error(error);
   }

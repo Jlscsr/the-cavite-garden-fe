@@ -28,11 +28,13 @@
                 @change="toggleItemSelection(index)"
               />
             </div>
-            <img
-              :src="item.productInfo.productImageURL"
-              :alt="item.productInfo.productName"
+            <video
+              :src="item.productInfo.productVideoURL"
+              autoplay
+              loop
+              muted
               class="product-image"
-            />
+            ></video>
             <div class="product-info">
               <h6 class="product-name mb-1">
                 {{ item?.productInfo?.productName }}
@@ -141,8 +143,6 @@ onMounted(async () => {
       totalPrice:
         parseFloat(item.productInfo.productPrice) * item.productQuantity,
     }));
-
-    console.log(cartItems.value);
   } catch (error) {
     console.error(error);
   }
@@ -199,14 +199,14 @@ const checkout = async () => {
     // Proceed to checkout immediately
     const selectedItems = cartItems.value
       .filter((item) => item.selected)
-      .map((item) => item.productID);
+      .map((item) => item.id);
     const idsString = selectedItems.join(",");
 
     router.push({ name: "checkout", params: { id: idsString } });
     return;
   }
 
-  const updatePromises = changedItems.map((item) => {
+  const updatePromises = changedItems.map(async (item) => {
     const payload = {
       productID: item.productID,
       productQuantity: item.productQuantity,
@@ -226,7 +226,7 @@ const checkout = async () => {
 
     const itemIds = cartItems.value
       .filter((item) => item.selected)
-      .map((item) => item.productID);
+      .map((item) => item.id);
     const idsString = itemIds.join(",");
 
     router.push({ name: "checkout", params: { id: idsString } });

@@ -76,17 +76,17 @@
             {{ formatDate(product?.createdAt) }}
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ formatDate(product?.modifiedAt) }}
+            {{ formatDate(product?.updatedAt) }}
           </td>
           <td class="fs-6 fs-light p-3">
             <span
               class="chip"
               :class="{
-                available: product?.productStatus === 'Available',
-                unavailable: product?.productStatus === 'Unavailable',
+                available: product?.productStatus === 'available',
+                unavailable: product?.productStatus === 'unavailable',
               }"
             >
-              {{ product?.productStatus }}
+              {{ firstLetterUppercase(product?.productStatus) }}
             </span>
           </td>
           <td class="text-center">
@@ -162,32 +162,9 @@
           </div>
           <div class="modal-body">
             <div class="image-container mb-4">
-              <img :src="imagePlaceholder" alt="Cavite Garden Logo" />
+              <img :src="imagePlaceHolder" alt="Cavite Garden Logo" />
             </div>
             <form id="addProductForm">
-              <div class="mb-3">
-                <label for="photoUrl" class="form-label fs-6">
-                  Product Photo <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  type="file"
-                  id="photoUrl"
-                  @change="handleFileChange"
-                />
-              </div>
-              <div class="mb-3">
-                <label for="imageSequence" class="form-label fs-6">
-                  Image Sequence <span class="text-danger">*</span>
-                </label>
-                <input
-                  class="form-control"
-                  type="file"
-                  id="imageSequence"
-                  multiple
-                  @change="handleImageSequenceChange"
-                />
-              </div>
               <div class="mb-3">
                 <label for="productVideo" class="form-label fs-6">
                   Product Video <span class="text-danger">*</span>
@@ -198,6 +175,42 @@
                   id="productVideo"
                   @change="handleVideoChange"
                 />
+                <div v-if="isProcessing" class="mb-3">
+                  <div class="progress">
+                    <div
+                      class="progress-bar"
+                      role="progressbar"
+                      :style="{ width: uploadProgress + '%' }"
+                      :aria-valuenow="uploadProgress"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      {{ Math.round(uploadProgress) }}%
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Display frames -->
+                <div v-if="frames.length" class="mb-3">
+                  <h3 class="fs-heading-6">Generating Frames...</h3>
+                  <div class="d-flex flex-wrap gap-2">
+                    <div
+                      v-for="frame in frames"
+                      :key="frame.index"
+                      class="card"
+                      style="width: 200px"
+                    >
+                      <img
+                        :src="frame.url"
+                        class="card-img-top"
+                        :alt="'Frame ' + frame.index"
+                      />
+                      <div class="card-body">
+                        <p class="card-text">Frame {{ frame.index + 1 }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="mb-3">
                 <label for="productName" class="form-label">
@@ -315,7 +328,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              :disabled="isFormInvalid"
+              :disabled="isFormInvalid || isProcessing"
               @click="submitForm"
             >
               <span v-if="!btnLoadingState">
@@ -364,12 +377,15 @@
           <div class="modal-body">
             <div class="px-4 text-center">
               <div class="">
-                <img
-                  :src="selectedProduct?.productImage"
-                  :alt="selectedProduct?.productName"
+                <video
+                  :src="selectedProduct?.productVideoURL"
                   width="250"
+                  height="250"
+                  autoplay
+                  loop
+                  muted
                   class="rounded"
-                />
+                ></video>
               </div>
               <hr />
               <div class="">
@@ -496,11 +512,14 @@ import {
   displayAPIRequestErrorAlert,
 } from "@composables/helpers/AlertService";
 import { formatDate, firstLetterUppercase } from "@composables/Helpers";
+import { storage, database, set } from "../../../../boot/firebase";
 import {
-  uploadImage,
-  deleteImageFromFirebase,
-  uploadFiles,
-} from "@composables/UploadImage";
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+
+import { ref as databaseRef } from "firebase/database";
 
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
@@ -541,10 +560,9 @@ const modalFormState = ref("add");
 const productLists = ref([]);
 const categories = ref([]);
 
-const imagePlaceholder = ref("/cavite-garden-logo.png");
-const productPhotoUrl = ref("");
-const imageSequence = ref([]);
-const productVideo = ref(null);
+const imagePlaceHolder = ref("/images/image-placeholder.png");
+const videoFile = ref(null);
+const videoName = ref("");
 const productName = ref("");
 const productCategory = ref("");
 const productSubCategory = ref("");
@@ -555,7 +573,10 @@ const productDescription = ref("");
 
 const selectedProduct = ref(null);
 
-const previousImagePlaceholder = ref("");
+// Add these to your reactive variables
+const frames = ref([]);
+const isProcessing = ref(false);
+const uploadProgress = ref(0);
 
 onMounted(async () => {
   modalInstance.value = new bootstrap.Modal(productModalForm.value);
@@ -600,25 +621,14 @@ const submitForm = async () => {
 
 const addNewProduct = async () => {
   try {
-    const imageUrlResponse = await uploadImage(
-      productPhotoUrl.value,
-      productCategory.value
-    );
-
-    const imageSequenceUrls = await uploadFiles(
-      imageSequence.value,
-      `${productCategory.value}/image-sequence`
-    );
-
-    const videoUrlResponse = await uploadImage(
-      productVideo.value,
-      `${productCategory.value}/video`
+    const processVideoResponse = await processVideo(
+      videoFile.value,
+      videoName.value
     );
 
     const newProductData = {
-      productPhotoURL: imageUrlResponse,
-      imageSequenceURLs: imageSequenceUrls,
-      productVideoURL: videoUrlResponse,
+      productVideoURL: processVideoResponse[0],
+      imageSequenceFolderURL: processVideoResponse[1],
       productName: productName.value,
       productCategory: productCategory.value,
       productSubCategory: productSubCategory.value,
@@ -640,64 +650,38 @@ const addNewProduct = async () => {
     displaySuccessNotification("Product has been added successfully!");
     getProducts();
   } catch (error) {
-    handleError("Failed to add new product!", "Something went wrong.", error);
+    console.log("Failed to add new product!", "Something went wrong.", error);
   } finally {
     resetForm();
-    completeOperation();
   }
 };
 
-const handleFileChange = (event) => {
-  const { target: { files = [] } = {} } = event;
-  const [file] = files;
-
-  if (!file) {
-    productPhotoUrl.value = "";
-    return;
-  }
-
-  const { name = "" } = file;
-  const [, extension] = /.(\w+)$/.exec(name);
-
-  const allowedExtensions = new Set(["jpeg", "jpg", "png"]);
-
-  if (!allowedExtensions.has(extension.toLowerCase())) {
-    displayInfoAlert(
-      "Invalid File Type",
-      "Only JPEG, JPG, and PNG files are allowed",
-      () => {
-        event.target.value = "";
-        return;
-      }
-    );
-  }
-
-  productPhotoUrl.value = file;
-  imagePlaceholder.value = URL.createObjectURL(file);
-};
-
-const handleImageSequenceChange = (event) => {
-  const { target: { files = [] } = {} } = event;
-
-  imageSequence.value = Array.from(files).sort((a, b) =>
-    a.name.localeCompare(b.name)
+const viewProduct = (id) => {
+  selectedProduct.value = productLists.value.find(
+    (product) => product.id === id
   );
 };
 
-const handleVideoChange = (event) => {
+const sanitizeFileName = (filename) => {
+  const timestamp = Date.now();
+  const randomString = Math.random().toString(36).substring(2, 8);
+  return `video_${timestamp}_${randomString}`;
+};
+
+const eventHandler = ref(null);
+const extensionHandler = ref("");
+const handleVideoChange = async (event) => {
   const { target: { files = [] } = {} } = event;
   const [file] = files;
-
   if (!file) {
-    productVideo.value = null;
+    videoFile.value = null;
+    videoName.value = "";
     return;
   }
-
+  // Check file extension
   const { name = "" } = file;
   const [, extension] = /.(\w+)$/.exec(name);
-
   const allowedExtensions = new Set(["mp4", "webm", "ogg"]);
-
   if (!allowedExtensions.has(extension.toLowerCase())) {
     displayInfoAlert(
       "Invalid File Type",
@@ -707,9 +691,135 @@ const handleVideoChange = (event) => {
         return;
       }
     );
+    return;
   }
 
-  productVideo.value = file;
+  videoFile.value = file;
+  videoName.value = name;
+  eventHandler.value = event;
+  extensionHandler.value = extension;
+};
+
+const processVideo = async (file, name) => {
+  try {
+    isProcessing.value = true;
+    frames.value = [];
+    // Generate a safe unique ID for this video
+    const videoId = sanitizeFileName(name);
+
+    // First, upload the video file
+    const videoStorageRef = storageRef(
+      storage,
+      `videos/${videoId}/video.${extensionHandler.value}`
+    );
+    const videoSnapshot = await uploadBytes(videoStorageRef, file);
+    const videoURL = await getDownloadURL(videoSnapshot.ref);
+
+    // Create video element to extract frames
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(file);
+    await new Promise((resolve) => {
+      video.onloadedmetadata = () => {
+        resolve();
+      };
+    });
+    // Create canvas for frame extraction
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Calculate frame intervals for 8-10 frames
+    const numberOfFrames = 9; // You can adjust this between 8-10
+    const duration = video.duration;
+    const interval = duration / (numberOfFrames - 1); // -1 to include both start and end frames
+
+    video.currentTime = 0;
+    for (let i = 0; i < numberOfFrames; i++) {
+      await new Promise((resolve) => {
+        video.onseeked = async () => {
+          // Draw current frame to canvas
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // Convert canvas to blob
+          const blob = await new Promise((resolve) => {
+            canvas.toBlob(resolve, "image/jpeg", 0.8);
+          });
+          // Generate unique frame identifier
+          const frameId = `frame_${i}`;
+          // Upload frame to Firebase Storage using videoId in path
+          const frameRef = storageRef(
+            storage,
+            `frames/${videoId}/${frameId}.jpg`
+          );
+          await uploadBytes(frameRef, blob);
+          // Get download URL
+          const downloadURL = await getDownloadURL(frameRef);
+          // Store frame info in array
+          frames.value.push({
+            index: i,
+            url: downloadURL,
+            frameId,
+            timestamp: i * interval, // Store the timestamp of the frame
+          });
+          // Update progress
+          uploadProgress.value = ((i + 1) / numberOfFrames) * 100;
+          resolve();
+        };
+        // Set video current time based on interval
+        video.currentTime = i * interval;
+      });
+    }
+
+    // Store video and frames data in Realtime Database using videoId
+    const videoRef = databaseRef(database, `videos/${videoId}`);
+    await set(videoRef, {
+      id: videoId,
+      originalName: name,
+      videoUrl: videoURL,
+      videoExtension: extensionHandler.value,
+      duration: video.duration,
+      width: video.videoWidth,
+      height: video.videoHeight,
+      frames: frames.value,
+      timestamp: Date.now(),
+    });
+
+    // Assuming the folder URL for the frames is the base path where they're uploaded
+    const imageSequenceFolderURL = `frames/${videoId}`;
+
+    // Return both videoURL and imageSequenceFolderURL
+    return [videoURL, imageSequenceFolderURL];
+  } catch (error) {
+    console.error("Error processing video:", error);
+    displayInfoAlert(
+      "Error",
+      "Failed to process video. Please try again.",
+      () => {
+        eventHandler.value.target.value = "";
+      }
+    );
+  } finally {
+    isProcessing.value = false;
+    uploadProgress.value = 0;
+  }
+};
+
+const resetForm = () => {
+  productName.value = "";
+  productCategory.value = "";
+  productSubCategory.value = "";
+  potSize.value = "";
+  productPrice.value = "";
+  productStock.value = 0;
+  productDescription.value = "";
+  videoFile.value = null;
+  videoName.value = "";
+  frames.value = [];
+  uploadProgress.value = 0;
+  isProcessing.value = false;
+  btnLoadingState.value = false;
+  modalInstance.value.hide();
+  modalFormState.value = "add";
 };
 
 const isFormInvalid = computed(() => {
@@ -724,22 +834,10 @@ const isFormInvalid = computed(() => {
   };
 
   if (modalFormState.value === "add") {
-    console.log(productCategory.value);
     if (productCategory.value === "pots") {
-      return (
-        commonValidation() ||
-        productPhotoUrl.value === "" ||
-        potSize.value === "" ||
-        imageSequence.value.length === 0 ||
-        !productVideo.value
-      );
+      return commonValidation() || potSize.value === "" || !videoFile.value;
     } else {
-      return (
-        commonValidation() ||
-        productPhotoUrl.value === "" ||
-        imageSequence.value.length === 0 ||
-        !productVideo.value
-      );
+      return commonValidation() || !videoFile.value;
     }
   } else if (modalFormState.value === "edit") {
     return commonValidation();

@@ -1,70 +1,48 @@
 import { API } from "../boot/axios";
 
-const getAllTransactions = async (status) => {
-    try {
-        const response = await API.get(`/transactions/${status}`);
-        console.log(response);
-        if (response.status !== 200) {
-            return false;
-        }
+const GetAllTransactionAPI = async (status) => {
+  try {
+    const response = await API.get(`/transactions/status/${status}`);
 
-        return response.data;
-    } catch (error) {
-        console.error(error.message);
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
-const getTransactionsByCustomerID = async (id) => {
-    try {
-        const response = await API.get(`/transactions/customer/${id}`);
-        if (response.status !== 200) {
-            return false;
-        }
+const GetAllCustomerTransactionsByID = async (id) => {
+  try {
+    const response = await API.get(`/transactions/customer/id/${id}`);
 
-        return response.data;
-    } catch (error) {
-        console.error(error.message);
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
-const addNewTransaction = async (data) => {
-    try {
-        const response = await API.post("/transaction/add", data);
+const AddNewTransactionAPI = async (data) => {
+  try {
+    const response = await API.post("/transaction/add", data);
 
-        if (response.status !== 201) {
-            return false;
-        }
-
-        return response.data;
-    } catch (error) {
-        console.log(error.message);
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
-const updateTransactionStatus = async (id, status) => {
-    try {
-        const selectedStatus = {
-            status: status,
-        };
+const UpdateTransactionStatus = async (id, payload) => {
+  try {
+    const response = await API.put(`/transaction/status/update/${id}`, payload);
 
-        const response = await API.put(
-            `/transaction/status/${id}`,
-            selectedStatus
-        );
-
-        if (response.status !== 201) {
-            return false;
-        }
-
-        return response.data;
-    } catch (error) {
-        console.log(error.message);
-    }
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
 };
 
 export {
-    getAllTransactions,
-    addNewTransaction,
-    updateTransactionStatus,
-    getTransactionsByCustomerID,
+  GetAllTransactionAPI,
+  AddNewTransactionAPI,
+  UpdateTransactionStatus,
+  GetAllCustomerTransactionsByID,
 };

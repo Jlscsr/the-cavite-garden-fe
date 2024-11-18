@@ -14,6 +14,7 @@
           <label class="form-label text-muted">Choose payment method</label>
           <select class="form-select" v-model="paymentMethod">
             <option value="counter">Over the counter</option>
+            <option value="cod">Cash On Delivery</option>
             <option value="gcash">GCash</option>
           </select>
         </div>
@@ -21,8 +22,19 @@
         <div class="mb-4">
           <label class="form-label text-muted">Choose delivery method</label>
           <select class="form-select" v-model="deliveryMethod">
-            <option value="pickup">Pickup</option>
+            <option v-if="paymentMethod !== 'cod'" value="pickup">
+              Pickup
+            </option>
             <option value="delivery">Delivery</option>
+          </select>
+        </div>
+
+        <div v-if="deliveryMethod === 'delivery'" class="mb-4">
+          <label class="form-label text-muted">Your address</label>
+          <select class="form-select" v-model="selectedAddress">
+            <option v-for="(address, index) in userAddressses" :key="index">
+              {{ address?.addressLabel }}
+            </option>
           </select>
         </div>
 
@@ -39,15 +51,15 @@
 
             <!-- Product List -->
             <div
-              v-for="(item, index) in cartItems"
+              v-for="(item, index) in productCarts"
               :key="index"
               class="d-flex mb-3"
             >
-              <img
-                :src="item.image"
+              <video
+                :src="item.video"
                 class="me-3"
                 style="width: 60px; height: 60px; object-fit: cover"
-              />
+              ></video>
               <div class="flex-grow-1">
                 <h6 class="mb-0">{{ item.name }}</h6>
                 <small class="text-muted">Qty: {{ item.quantity }}</small>
@@ -67,8 +79,16 @@
           </div>
         </div>
 
-        <button @click="processCheckout" class="btn btn-success w-100 mt-3">
-          Checkout
+        <button
+          @click="processCheckout"
+          class="btn btn-success w-100 mt-3"
+          :disabled="btnLoadingState"
+        >
+          <!-- Add loading spinner in bootstrap -->
+          <span v-if="!btnLoadingState">Place Order</span>
+          <span v-else class="spinner-border spinner-border-sm text-center">
+            <span class="visually-hidden">Loading...</span>
+          </span>
         </button>
       </div>
     </div>
@@ -78,20 +98,30 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { GetAllProductsInUserCartAPI } from "../../composables/Cart"; // Ensure this API can accept an array of IDs to fetch specific cart items
+import { GetCartProductByID } from "../../composables/Cart";
+import { useUserStore } from "../../store/userStore";
 import Swal from "sweetalert2";
+import { AddNewTransactionAPI } from "../../composables/Transaction";
 
 const route = useRoute();
 const router = useRouter();
 
+const userStore = useUserStore();
+
+const btnLoadingState = ref(false);
+
 // Form data
 const paymentMethod = ref("counter");
 const deliveryMethod = ref("pickup");
+const selectedAddress = ref("");
 const cartItems = ref([]);
+const productCarts = ref([]);
+
+const userAddressses = ref(userStore.getUserInfo().shippingAddresses);
 
 // Computed order total
 const orderTotal = computed(() => {
-  return cartItems.value.reduce((total, item) => {
+  return productCarts.value.reduce((total, item) => {
     return total + item.totalPrice;
   }, 0);
 });
@@ -102,12 +132,51 @@ const backToCart = () => {
 };
 
 const processCheckout = async () => {
-  console.log("Processing checkout", {
-    paymentMethod: paymentMethod.value,
-    deliveryMethod: deliveryMethod.value,
-    items: cartItems.value,
-    total: orderTotal.value,
-  });
+  btnLoadingState.value = true;
+  let formatUserAddress;
+
+  if (deliveryMethod.value === "delivery") {
+    const userAddress = userAddressses.value.find(
+      (address) => address.addressLabel === selectedAddress.value
+    );
+
+    formatUserAddress = `${userAddress.streetAddress}, ${userAddress.municipality}, ${userAddress.province}, ${userAddress.region}`;
+  } else {
+    formatUserAddress = null;
+  }
+
+  let status;
+  if (paymentMethod.value === "counter" && deliveryMethod.value === "pickup") {
+    status = "pending";
+  } else if (
+    paymentMethod.value === "counter" &&
+    deliveryMethod.value === "delivery"
+  ) {
+    status = "pending";
+  } else if (
+    paymentMethod.value === "gcash" &&
+    deliveryMethod.value === "pickup"
+  ) {
+    status = "preparing";
+  } else if (
+    paymentMethod.value === "gcash" &&
+    deliveryMethod.value === "delivery"
+  ) {
+    status = "preparing";
+  } else if (
+    paymentMethod.value === "cod" &&
+    deliveryMethod.value === "delivery"
+  ) {
+    status = "pending";
+  }
+
+  const checkOutData = {
+    orderType: deliveryMethod.value,
+    paymentType: paymentMethod.value,
+    shippingAddress: formatUserAddress,
+    status,
+    purchasedProducts: cartItems.value,
+  };
 
   if (paymentMethod.value === "gcash") {
     Swal.fire({
@@ -175,11 +244,27 @@ const processCheckout = async () => {
               title: "Payment Success",
               text: "Your payment was successful.",
               icon: "success",
-            }).then(() => {
-              // Proceed with order processing
-              console.log("Payment successful. Proceeding with order.");
+            }).then(async () => {
+              checkOutData.status = "preparing";
+
+              const response = await AddNewTransactionAPI(checkOutData);
+
+              if (response.status === "failed") {
+                Swal.fire({
+                  icon: "error",
+                  title: "Oops, something went wrong!",
+                  text: response.message,
+                });
+                return;
+              }
+
+              Swal.fire({
+                icon: "success",
+                title: "Order Placed",
+                text: "Your order has been placed successfully.",
+              });
+
               router.push({ name: "shop" });
-              // Add your order processing logic here
             });
           }, 5000); // Simulate a 5-second delay
         }
@@ -191,19 +276,11 @@ const processCheckout = async () => {
         text: "An error occurred while processing your payment.",
       });
       console.error("Payment error:", error);
+    } finally {
+      btnLoadingState.value = false;
     }
   } else {
-    // Handle other payment methods
-    console.log("Proceed with non-GCash payment method.");
-  }
-};
-
-// Fetch cart items based on URL parameter IDs on mount
-onMounted(async () => {
-  const ids = route.params.id.split(",");
-
-  try {
-    const response = await GetAllProductsInUserCartAPI({ ids });
+    const response = await AddNewTransactionAPI(checkOutData);
 
     if (response.status === "failed") {
       Swal.fire({
@@ -214,18 +291,69 @@ onMounted(async () => {
       return;
     }
 
-    cartItems.value = response.data || [];
+    Swal.fire({
+      icon: "success",
+      title: "Order Placed",
+      text: "Your order has been placed successfully.",
+    });
 
-    cartItems.value = cartItems.value.map((item) => ({
+    btnLoadingState.value = false;
+    router.push({ name: "shop" });
+  }
+};
+
+onMounted(async () => {
+  let ids;
+
+  if (route.params.id.includes(",")) {
+    ids = route.params.id.split(",");
+  } else {
+    ids = [route.params.id];
+  }
+
+  try {
+    if (ids.length > 1) {
+      for (const id of ids) {
+        const response = await GetCartProductByID(id);
+
+        if (response.status === "failed") {
+          Swal.fire({
+            icon: "error",
+            title: "Oops, something went wrong!",
+            text: response.message,
+          });
+          return;
+        }
+
+        cartItems.value.push(response.data);
+        console.log("Multiple items", cartItems.value);
+      }
+    } else {
+      const response = await GetCartProductByID(ids[0]);
+
+      if (response.status === "failed") {
+        Swal.fire({
+          icon: "error",
+          title: "Oops, something went wrong!",
+          text: response.message,
+        });
+        return;
+      }
+
+      cartItems.value.push(response.data);
+    }
+
+    productCarts.value = cartItems.value.map((item) => ({
       name: item.productInfo.productName,
       quantity: item.productQuantity,
       price: parseFloat(item.productInfo.productPrice),
-      image: item.productInfo.productImageURL,
+      video: item.productInfo.productVideoURL,
       totalPrice:
         parseFloat(item.productInfo.productPrice) * item.productQuantity,
     }));
 
     console.log(cartItems.value);
+    console.log(productCarts.value);
   } catch (error) {
     console.error(error);
   }

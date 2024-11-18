@@ -66,7 +66,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="col-10">
+        <div class="main col-10">
           <!-- Header with Plants title and filters -->
           <div
             class="content-header d-flex justify-content-between align-items-center mb-4"
@@ -100,27 +100,38 @@
                   class="product-image-container"
                   @click="goToProductDetails(product.id)"
                 >
-                  <Product360Viewer class="product-image w-100" />
+                  <Product360Viewer
+                    class="product-image w-100"
+                    :imageSequence="product.imageSequence"
+                  />
                 </div>
                 <div class="product-info">
                   <div class="d-flex justify-content-between">
                     <h5 class="product-name">{{ product.productName }}</h5>
                     <div class="rating">
                       <span class="stars">
-                        <i class="fas fa-star"></i>
+                        <span>
+                          {{ "★".repeat(Math.round(product.averageRating)) }}
+                          {{
+                            "☆".repeat(5 - Math.round(product.averageRating))
+                          }}
+                        </span>
                       </span>
-                      <span class="rating-count">5.0</span>
+                      <span class="rating-count">
+                        {{ product.reviewCount }} reviews
+                      </span>
                     </div>
                   </div>
-                  <p class="product-category text-muted">
-                    {{ product.categoryName }}
-                  </p>
-
                   <div
-                    class="d-flex justify-content-between align-items-center"
+                    class="d-flex justify-content-between align-items-center mt-3"
                   >
-                    <span class="price">₱{{ product.productPrice }}</span>
-                    <span> 18 solds </span>
+                    <p class="product-category text-muted">
+                      {{ product.categoryName }}
+                    </p>
+
+                    <p class="product-category text-muted">
+                      {{ product.subCategoryName }}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -139,9 +150,11 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { getDownloadURL, listAll, ref as storageRef } from "firebase/storage";
+import { storage } from "../../boot/firebase";
 import { GetAllProductsAPI } from "@composables/Products";
 
-import Product360Viewer from "../../Test.vue";
+import Product360Viewer from "../../360Viewer.vue";
 import ProductDetails from "./ProductDetails/ProductDetails.vue";
 
 const selectedCategory = ref("Plants");
@@ -155,17 +168,63 @@ const products = ref([]);
 onMounted(async () => {
   try {
     const response = await GetAllProductsAPI();
-
     if (response.status === "failed") {
       console.log(response.message);
       return;
     }
-
-    products.value = response.data || [];
+    const productData = response.data || [];
+    for (const product of productData) {
+      product.imageSequence = await getImageSequenceFromFirebase(
+        product.imageSequenceFolderURL
+      );
+      if (product.reviews && product.reviews.length > 0) {
+        product.averageRating = calculateAverageRating(product.reviews);
+        product.reviewCount = product.reviews.length;
+      } else {
+        product.averageRating = 0;
+        product.reviewCount = 0;
+      }
+    }
+    products.value = productData;
   } catch (error) {
     console.log(error);
   }
 });
+
+const getImageSequenceFromFirebase = async (folderURL) => {
+  const listRef = storageRef(storage, folderURL);
+  const imageSequence = [];
+
+  try {
+    const res = await listAll(listRef);
+    const urls = await Promise.all(
+      res.items.map(async (itemRef) => {
+        const url = await getDownloadURL(itemRef);
+        return url;
+      })
+    );
+
+    // Sort URLs based on the frame number
+    urls.sort((a, b) => {
+      const numA = parseInt(a.match(/frame_(\d+)\.jpg/)[1]); // Extract frame number from URL
+      const numB = parseInt(b.match(/frame_(\d+)\.jpg/)[1]);
+      return numA - numB; // Sort numerically
+    });
+
+    return urls;
+  } catch (error) {
+    console.error("Error retrieving image sequence from Firebase:", error);
+    return imageSequence;
+  }
+};
+
+const calculateAverageRating = (reviews) => {
+  const totalRating = reviews.reduce(
+    (sum, review) => sum + review.userRating,
+    0
+  );
+  return reviews.length ? totalRating / reviews.length : 0;
+};
 
 const goToProductDetails = (id) => {
   selectedProduct.value = products.value.find((product) => product.id === id);

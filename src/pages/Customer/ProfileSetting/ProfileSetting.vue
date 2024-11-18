@@ -76,7 +76,7 @@
               >
                 <h5 class="card-title">Address {{ index + 1 }}</h5>
                 <button
-                  @click="removeAddress(index)"
+                  @click="removeAddress(address.id)"
                   class="btn btn-link text-danger p-0"
                 >
                   Remove
@@ -141,7 +141,12 @@
                 />
               </div>
 
-              <button @click="saveAddress(index)" class="btn btn-primary mt-4">
+              <!-- Conditional Save Button -->
+              <button
+                v-if="address.isNew"
+                @click="saveAddress(index)"
+                class="btn btn-primary mt-4"
+              >
                 Save
               </button>
             </div>
@@ -156,9 +161,13 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "../../../store/userStore";
-import { UpdateCustomerDataAPI } from "../../../composables/Customers";
-import { addNewUserAddress } from "../../../composables/Account";
+import {
+  UpdateCustomerDataAPI,
+  AddNewCustomerAddressAPI,
+  DeleteCustomerAddressAPI,
+} from "../../../composables/Customers";
 import Swal from "sweetalert2";
+import { displaySuccessNotification } from "../../../composables/helpers/NotificationService";
 
 const router = useRouter();
 
@@ -183,11 +192,40 @@ const addAddress = () => {
     barangay: "",
     streetAddress: "",
     landmark: "",
+    isNew: true,
   });
 };
 
-const removeAddress = (index) => {
-  profile.value.addresses.splice(index, 1);
+const removeAddress = async (addressID) => {
+  try {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await DeleteCustomerAddressAPI(addressID);
+
+        if (response.status === "failed") {
+          Swal.fire({
+            icon: "error",
+            title: "Failed to delete address",
+            text: response.message,
+          });
+          return;
+        }
+
+        displaySuccessNotification("Address deleted successfully");
+        profile.value.addresses = profile.value.addresses.filter(
+          (address) => address.id !== addressID
+        );
+      }
+    });
+  } catch (error) {}
 };
 
 const saveProfile = async () => {
@@ -198,6 +236,20 @@ const saveProfile = async () => {
       phoneNumber: profile.value.phoneNumber,
       birthdate: profile.value.birthdate,
     };
+
+    // Check if the old data is same with the new data
+    if (
+      profile.value.firstName === user.firstName &&
+      profile.value.lastName === user.lastName &&
+      profile.value.phoneNumber === user.phoneNumber &&
+      profile.value.birthdate === user.birthdate
+    ) {
+      Swal.fire({
+        icon: "info",
+        title: "No changes made",
+      });
+      return;
+    }
 
     const response = await UpdateCustomerDataAPI(payload);
 
@@ -236,7 +288,7 @@ const saveAddress = async (index) => {
       landmark: address.landmark,
     };
 
-    const response = await addNewUserAddress(payload);
+    const response = await AddNewCustomerAddressAPI(payload);
 
     if (response.status === "failed") {
       Swal.fire({
@@ -250,10 +302,9 @@ const saveAddress = async (index) => {
     Swal.fire({
       icon: "success",
       title: "Address added successfully",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        router.go();
-      }
+    }).then(() => {
+      address.isNew = false; // Mark as saved
+      router.go();
     });
   } catch (error) {
     console.error(error);

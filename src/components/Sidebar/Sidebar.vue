@@ -103,12 +103,6 @@
               <span class="fs-6">Customers</span>
             </router-link>
           </li>
-          <li class="sidebar-item p-3 cursor-pointer">
-            <router-link :to="{ name: 'back-logs' }">
-              <i class="fas fa-clock me-2"></i>
-              <span class="fs-6">Back Logs</span>
-            </router-link>
-          </li>
         </ul>
       </div>
       <div class="profile px-3">
@@ -131,6 +125,7 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { LogoutUserAPI } from "@composables/Authentication";
 import { useUserStore } from "@stores/userStore";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -139,13 +134,21 @@ const isShopOpen = ref(true);
 const activeMenu = ref("");
 
 const logoutUser = async () => {
-  const response = await LogoutUserAPI();
+  Swal.fire({
+    title: "Log out",
+    text: "Are you sure you want to logout?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      await LogoutUserAPI();
+      userStore.setUserInfo({});
+      userStore.setUserAuthenticated(false);
 
-  if (response.status === "success") {
-    userStore.setUserInfo({});
-    userStore.setUserAuthenticated(false);
-    router.push({ name: "home" });
-  }
+      router.go();
+    }
+  });
 };
 
 const toggleShopStatus = () => {

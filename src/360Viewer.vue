@@ -31,6 +31,15 @@
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import * as THREE from "three";
 
+const props = defineProps({
+  imageSequence: {
+    type: Array,
+    required: true,
+  },
+});
+
+console.log("imageSequence", props.imageSequence);
+
 // Refs and state
 const canvasRef = ref(null);
 const isWebGLAvailable = ref(true);
@@ -63,27 +72,21 @@ const loadTextures = async () => {
   textures = []; // Reset textures array
 
   const loader = new THREE.TextureLoader();
-  const texturePromises = [];
-
-  for (let i = 1; i <= totalFrames; i++) {
-    const promise = loader
-      .loadAsync(`src/assets/tests/echeveria_elegan_frame_${i}.png`)
-      .then((texture) => {
-        texture.encoding = THREE.sRGBEncoding;
-        return texture;
-      })
-      .catch((error) => {
-        throw new Error(`Failed to load frame ${i}: ${error.message}`);
-      });
-    texturePromises.push(promise);
-  }
 
   try {
-    textures = await Promise.all(texturePromises);
+    textures = await Promise.all(
+      props.imageSequence.map((url) =>
+        loader.loadAsync(url).then((texture) => {
+          texture.encoding = THREE.sRGBEncoding;
+          return texture;
+        })
+      )
+    );
     isLoading.value = false; // Textures loaded, hide loading spinner
   } catch (error) {
     loadingError.value = `Error loading textures: ${error.message}`;
-    throw error;
+    console.error("Failed to load textures:", error);
+    isLoading.value = false;
   }
 };
 

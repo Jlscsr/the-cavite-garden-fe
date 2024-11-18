@@ -4,7 +4,8 @@
       <div class="shadow">
         <div class="row">
           <div
-            class="col d-flex align-items-center justify-content-center img-container"
+            class="col d-flex align-items-center justify-content-center img-container cursor-pointer"
+            @click="router.push({ name: 'home' })"
           >
             <div class="img-container">
               <img

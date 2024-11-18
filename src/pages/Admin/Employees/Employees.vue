@@ -5,38 +5,6 @@
     </div>
     <div class="content mt-5 d-flex justify-content-between align-items-center">
       <div class="buttons">
-        <button type="button" class="btn btn-outline-dark">PDF</button>
-
-        <div class="dropdown">
-          <button
-            class="btn btn-outline-dark dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            Show visibility
-          </button>
-          <div class="dropdown-menu">
-            <ul class="d-flex list-unstyled mb-0">
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Employee Name
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Created Date
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Modified Date
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Role
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Actions
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <div class="dropdown">
           <button
             class="btn btn-outline-dark dropdown-toggle"
@@ -147,7 +115,6 @@
       </Table>
     </div>
 
-    <!-- Modal For Adding Product Form -->
     <div
       ref="employeeFormModal"
       class="modal fade"
@@ -329,7 +296,7 @@
             <button
               type="button"
               class="btn btn-primary"
-              :disabled="isFormInvalid"
+              :disabled="!isFormInvalid"
               @click="submitForm"
             >
               <span v-if="!btnLoadingState">
@@ -513,6 +480,7 @@ import { firstLetterUppercase, formatDate } from "../../../composables/Helpers";
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
 import Table from "../../../components/Table/Table.vue";
+import Swal from "sweetalert2";
 
 const router = useRouter();
 const btnLoadingState = ref(false);
@@ -654,33 +622,38 @@ const addNewEmployee = async (payload) => {
     const response = await addNewEmployeeRequest(payload);
 
     if (response.message === "Email already exist") {
-      /* swal(
-        "Email already exists",
-        "Please try again with a different email",
-        "error"
-      ); */
+      Swal.fire({
+        icon: "error",
+        title: "Email already exist",
+        text: "Please try again with a different email",
+      });
       return;
     }
 
     if (response.status === "unauthorized") {
-      /* swal(
-        "Unauthorized",
-        "You are not authorized to perform this action or try login again",
-        "error"
-      ); */
+      Swal.fire({
+        icon: "error",
+        title: "Unauthorized",
+        text: "You are not authorized to perform this action or try login again",
+      });
       router.push({ name: "home" });
       return;
     }
 
     if (response.status === "failed") {
-      // swal("Failed", "Something went wrong", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Something went wrong",
+      });
       return;
     }
 
-    /*   swal("New Employee has been added!", "", "success").then((success) => {
-      if (success) {
-      }
-    }); */
+    Swal.fire({
+      icon: "success",
+      title: "Employee has been added",
+      text: "",
+    });
     getEmployees();
     resetForm();
   } catch (error) {
@@ -693,7 +666,11 @@ const addNewEmployee = async (payload) => {
 
 const submitForm = async () => {
   if (password.value !== confirmPassword.value) {
-    // swal("Passwords do not match", "Please try again.", "error");
+    Swal.fire({
+      icon: "error",
+      title: "Password does not match",
+      text: "Please try again",
+    });
     return;
   }
 
@@ -723,17 +700,21 @@ const getEmployees = async () => {
     const response = await getAllEmployees();
 
     if (response.status === "unauthorized") {
-      /* swal(
-        "Unauthorized",
-        "You are not authorized to perform this action or try log in again",
-        "error"
-      ); */
+      Swal.fire({
+        icon: "error",
+        title: "Unauthorized",
+        text: "You are not authorized to perform this action or try login again",
+      });
       router.push({ name: "home" });
       return;
     }
 
     if (response.status === "failed") {
-      // swal("Failed", "Something went wrong", "error");
+      Swal.fire({
+        icon: "error",
+        title: "Failed",
+        text: "Something went wrong",
+      });
       return;
     }
 

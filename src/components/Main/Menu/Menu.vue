@@ -19,7 +19,10 @@
               favorite. Shop our top picks today!
             </p>
 
-            <router-link :to="''" class="text-accent-2 fs-heading-6 fs-medium">
+            <router-link
+              :to="{ name: 'shop' }"
+              class="text-accent-2 fs-heading-6 fs-medium"
+            >
               <span class="me-4">Go to Shop</span>
               <ArrowIcon size="60" color="#ffffff" />
             </router-link>
@@ -45,9 +48,31 @@
                     <p class="fs-small">Miniature Roses</p>
                     <div class="meta d-flex align-items-center">
                       <p class="text-black fs-xsmall mb-0">
-                        200 <span class="text-accent-3">Sales</span>
+                        10 <span class="text-accent-3">Stock</span>
                       </p>
-                      <p class="text-black fs-xsmall mb-0">&nbsp; · &nbsp;</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col m-0">
+              <div class="product-card shadow px-4 py-3 rounded bg-white">
+                <div class="d-flex aling-items-center">
+                  <div class="img-container rounded me-3">
+                    <img
+                      class="rounded"
+                      src="../../../assets/images/flower-sample.jpg"
+                      alt="Flower"
+                      width="50"
+                    />
+                  </div>
+                  <div
+                    class="details d-flex flex-column justify-content-center"
+                  >
+                    <h5 class="fs-paragraph fs-semi-bold mb-1">₱150</h5>
+                    <p class="fs-small">Miniature Roses</p>
+                    <div class="meta d-flex align-items-center">
                       <p class="text-black fs-xsmall mb-0">
                         10 <span class="text-accent-3">Stock</span>
                       </p>
@@ -75,10 +100,6 @@
                     <p class="fs-small">Miniature Roses</p>
                     <div class="meta d-flex align-items-center">
                       <p class="text-black fs-xsmall mb-0">
-                        200 <span class="text-accent-3">Sales</span>
-                      </p>
-                      <p class="text-black fs-xsmall mb-0">&nbsp; · &nbsp;</p>
-                      <p class="text-black fs-xsmall mb-0">
                         10 <span class="text-accent-3">Stock</span>
                       </p>
                     </div>
@@ -104,40 +125,6 @@
                     <h5 class="fs-paragraph fs-semi-bold mb-1">₱150</h5>
                     <p class="fs-small">Miniature Roses</p>
                     <div class="meta d-flex align-items-center">
-                      <p class="text-black fs-xsmall mb-0">
-                        200 <span class="text-accent-3">Sales</span>
-                      </p>
-                      <p class="text-black fs-xsmall mb-0">&nbsp; · &nbsp;</p>
-                      <p class="text-black fs-xsmall mb-0">
-                        10 <span class="text-accent-3">Stock</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col m-0">
-              <div class="product-card shadow px-4 py-3 rounded bg-white">
-                <div class="d-flex aling-items-center">
-                  <div class="img-container rounded me-3">
-                    <img
-                      class="rounded"
-                      src="../../../assets/images/flower-sample.jpg"
-                      alt="Flower"
-                      width="50"
-                    />
-                  </div>
-                  <div
-                    class="details d-flex flex-column justify-content-center"
-                  >
-                    <h5 class="fs-paragraph fs-semi-bold mb-1">₱150</h5>
-                    <p class="fs-small">Miniature Roses</p>
-                    <div class="meta d-flex align-items-center">
-                      <p class="text-black fs-xsmall mb-0">
-                        200 <span class="text-accent-3">Sales</span>
-                      </p>
-                      <p class="text-black fs-xsmall mb-0">&nbsp; · &nbsp;</p>
                       <p class="text-black fs-xsmall mb-0">
                         10 <span class="text-accent-3">Stock</span>
                       </p>
@@ -153,7 +140,9 @@
   </section>
 </template>
 
-<script setup></script>
+<script setup>
+import ArrowIcon from "../../../assets/icons/ArrowIcon.vue";
+</script>
 
 <style scoped lang="scss">
 @import "./Menu.scss";
