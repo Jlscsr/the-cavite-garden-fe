@@ -1,24 +1,26 @@
-import { query } from "firebase/database";
-
 const routes = [
   {
     path: "/login",
     name: "login",
     component: () => import("../pages/Authentication/Login.vue"),
+    meta: { role: ["customer", "admin"] },
   },
   {
     path: "/register",
     name: "register",
     component: () => import("../pages/Authentication/Register.vue"),
+    meta: { role: ["customer", "admin"] },
   },
   {
     path: "/",
     component: () => import("../App.vue"),
     redirect: "home",
+    meta: { requiresAuth: false },
     children: [
       {
         path: "",
         component: () => import("../pages/Index.vue"),
+        meta: { requiresAuth: false },
         children: [
           {
             path: "home",
@@ -26,7 +28,6 @@ const routes = [
             component: () => import("../pages/Home/Home.vue"),
             meta: {
               requiresAuth: false,
-              role: "customer",
             },
           },
           {
@@ -34,7 +35,7 @@ const routes = [
             name: "profile",
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
             component: () => import("../pages/Customer/Profile.vue"),
             children: [
@@ -64,7 +65,7 @@ const routes = [
             component: () => import("../pages/Shop/Shop.vue"),
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
           },
           {
@@ -73,7 +74,7 @@ const routes = [
             component: () => import("../pages/Cart/Cart.vue"),
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
           },
           {
@@ -82,28 +83,28 @@ const routes = [
             component: () => import("../pages/Checkout/Checkout.vue"),
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
           },
-          /* {
+          {
             path: "track-orders/:customerId?/:transactionId?",
             name: "track-orders",
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
             component: () =>
               import("../pages/Customer/TrackOrders/TrackOrders.vue"),
-          }, */
-          /* {
+          },
+          {
             path: "payment",
             name: "payment",
             meta: {
               requiresAuth: true,
-              role: "customer",
+              role: ["customer"],
             },
             component: () => import("../pages/Payment.vue"),
-          }, */
+          },
         ],
       },
 
@@ -112,7 +113,7 @@ const routes = [
         name: "admin",
         meta: {
           requiresAuth: true,
-          role: "admin",
+          role: ["admin"],
         },
         component: () => import("../pages/Admin.vue"),
 
@@ -122,7 +123,7 @@ const routes = [
             name: "peding-orders",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () =>
               import("../pages/Admin/Ordering/PendingOrders/PendingOrders.vue"),
@@ -132,7 +133,7 @@ const routes = [
             name: "transaction-history",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () =>
               import(
@@ -144,7 +145,7 @@ const routes = [
             name: "product-lists",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () =>
               import("../pages/Admin/Products/ProductLists/ProductLists.vue"),
@@ -154,7 +155,7 @@ const routes = [
             name: "product-categories",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () =>
               import(
@@ -166,7 +167,7 @@ const routes = [
             name: "employees",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () => import("../pages/Admin/Employees/Employees.vue"),
           },
@@ -175,7 +176,7 @@ const routes = [
             name: "customers",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () => import("../pages/Admin/Customers/Customers.vue"),
           },
@@ -184,7 +185,7 @@ const routes = [
             name: "back-logs",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () => import("../pages/Admin/Backlogs/Backlogs.vue"),
           },
@@ -193,7 +194,7 @@ const routes = [
             name: "admin-details",
             meta: {
               requiresAuth: true,
-              role: "admin",
+              role: ["admin"],
             },
             component: () =>
               import("../pages/Admin/AdminDetails/AdminDetails.vue"),
@@ -204,7 +205,6 @@ const routes = [
   },
 
   // Always leave this as last one,
-  // but you can also remove it
   {
     path: "/:catchAll(.*)*",
     component: () => import("../pages/ErrorNotFound.vue"),

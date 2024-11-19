@@ -15,20 +15,24 @@ const router = createRouter({
   routes,
 });
 
-const checkAndFetchUser = async (userStore) => {
+const checkAndFetchUser = async (to, userStore) => {
   const sessionResponse = await CheckUserSessionAPI();
 
+  // If session is unauthorized, check if the route does not require auth
   if (sessionResponse.status === "unauthorized") {
-    if (userStore.isUserAuthenticated()) {
-      displaySessionExpiredAlert(() => {
-        userStore.resetUserSession();
-      });
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+      if (userStore.isUserAuthenticated()) {
+        displaySessionExpiredAlert(() => {
+          userStore.resetUserSession();
+        });
+      }
+      return false;
     }
-    return false;
+    return true; // Allow access to routes without requiresAuth
   }
 
+  // Proceed with authentication logic
   userStore.setUserAuthenticated(true);
-
   const userInfoResponse = await GetUserInfoAPI();
 
   if (userInfoResponse.status === "failed") {
@@ -49,7 +53,7 @@ const checkAndFetchUser = async (userStore) => {
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore();
 
-  // Handle login and register routes
+  // Allow unauthenticated access to login and register
   if (["login", "register"].includes(to.name)) {
     if (userStore.isUserAuthenticated()) {
       return { name: "home" };
@@ -58,27 +62,35 @@ router.beforeEach(async (to, from) => {
   }
 
   // Check authentication status
-  const isAuthenticated = await checkAndFetchUser(userStore);
+  const isAuthenticated = await checkAndFetchUser(to, userStore);
 
+  // Allow unauthenticated access to `home` or other public routes
   if (!isAuthenticated) {
-    if (to.matched.some((record) => record.meta.requiresAuth)) {
-      displayLoginFirstAlert(() => router.push({ name: "login" }));
-      return false; // Stop navigation
+    if (!to.matched.some((record) => record.meta.requiresAuth)) {
+      return true; // Public route, allow access
     }
-    return true;
+
+    displayLoginFirstAlert(() => router.push({ name: "login" }));
+    return false; // Stop navigation to protected routes
   }
 
-  // Handle role-based access
+  // Handle role-based access for authenticated users
   const userRole = userStore.getUserRole();
-  if (
-    to.matched.some(
-      (record) => record.meta.role && record.meta.role !== userRole
-    )
-  ) {
+
+  // Check if the route has a defined role array in meta
+  const allowedRoles = to.matched.some(
+    (record) =>
+      record.meta.role && Array.isArray(record.meta.role)
+        ? record.meta.role.includes(userRole) // Role check for allowed roles
+        : record.meta.role === userRole // If there's only one role
+  );
+
+  if (!allowedRoles) {
     displayUnauthorizedPageAccessAlert(() => router.push({ name: "home" }));
-    return false; // Stop navigation
+    return false; // Stop navigation if user role doesn't match
   }
 
-  return true; // Allow navigation
+  return true; // Allow navigation if all checks pass
 });
+
 export default router;
