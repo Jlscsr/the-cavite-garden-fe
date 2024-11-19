@@ -331,7 +331,7 @@ import {
     firstLetterUppercase,
     formatString,
 } from "../../../../composables/Helpers";
-import { getAllTransactions } from "../../../../composables/Transaction";
+import { GetAllTransactionAPI } from "../../../../composables/Transaction";
 import Table from "../../../../components/Table/Table.vue";
 
 const transactionHistory = ref([]);
@@ -347,7 +347,7 @@ const viewTransactionDetails = (id) => {
 
 const getAllTransactionHistory = async () => {
     try {
-        const response = await getAllTransactions("approved-cancelled");
+        const response = await GetAllTransactionAPI("completed");
 
         if (response.status !== "success") {
             throw new Error("Something went wrong");

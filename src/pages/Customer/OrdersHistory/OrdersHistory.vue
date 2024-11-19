@@ -349,7 +349,7 @@ const handleMediaUpload = async (event) => {
   let files = Array.from(event.target.files);
   isUploading.value = true;
 
-  for (const file of files) {
+  for (let file of files) {
     if (file.size > 10 * 1024 * 1024) {
       Swal.fire({
         icon: "error",

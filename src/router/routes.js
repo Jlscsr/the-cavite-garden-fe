@@ -85,7 +85,7 @@ const routes = [
               role: "customer",
             },
           },
-          {
+          /* {
             path: "track-orders/:customerId?/:transactionId?",
             name: "track-orders",
             meta: {
@@ -94,8 +94,8 @@ const routes = [
             },
             component: () =>
               import("../pages/Customer/TrackOrders/TrackOrders.vue"),
-          },
-          {
+          }, */
+          /* {
             path: "payment",
             name: "payment",
             meta: {
@@ -103,7 +103,7 @@ const routes = [
               role: "customer",
             },
             component: () => import("../pages/Payment.vue"),
-          },
+          }, */
         ],
       },
 
