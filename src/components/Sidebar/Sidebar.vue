@@ -130,7 +130,7 @@ const logoutUser = async () => {
       userStore.setUserInfo({});
       userStore.setUserAuthenticated(false);
 
-      router.go();
+      router.push({name: 'home'});
     }
   });
 };
