@@ -90,7 +90,16 @@
           <button class="btn btn-outline-secondary" @click="backToShop">
             Back to shop
           </button>
-          <button class="btn btn-primary" @click="checkout">Checkout</button>
+          <button
+            class="btn btn-primary"
+            @click="checkout"
+            :disabled="btnLoadingState || cartItems?.length === 0"
+          >
+            <div v-if="btnLoadingState" class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <span v-else>Checkout</span>
+          </button>
         </div>
       </div>
     </div>
@@ -107,6 +116,9 @@ import {
 import Swal from "sweetalert2";
 
 const router = useRouter();
+
+const btnLoadingState = ref(false);
+
 const cartItems = ref([]);
 
 onMounted(async () => {
@@ -179,6 +191,7 @@ const backToShop = () => {
 };
 
 const checkout = async () => {
+  btnLoadingState.value = true;
   const changedItems = cartItems.value.filter(
     (item) => item.selected && item.productQuantity !== item.initialQuantity
   );
@@ -191,6 +204,7 @@ const checkout = async () => {
     const idsString = selectedItems.join(",");
 
     router.push({ name: "checkout", params: { id: idsString } });
+    btnLoadingState.value = false;
     return;
   }
 
@@ -225,6 +239,8 @@ const checkout = async () => {
       text: error.message,
     });
     console.error("Error updating cart items:", error);
+  } finally {
+    btnLoadingState.value = false;
   }
 };
 </script>

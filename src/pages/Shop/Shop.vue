@@ -77,8 +77,14 @@
             </div>
           </div>
 
+          <div v-if="pageLoadingState" class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+
           <!-- Product Grid -->
-          <div class="row g-4">
+          <div v-if="!pageLoadingState" class="row g-4">
             <div
               v-for="product in filteredProducts"
               :key="product.id"
@@ -147,6 +153,8 @@ const selectedPlantType = ref(null); // New variable for selected plant type
 const searchQuery = ref(""); // New variable for search query
 const selectedProduct = ref(null);
 
+const pageLoadingState = ref(false);
+
 const route = useRoute();
 const router = useRouter();
 
@@ -162,6 +170,7 @@ onBeforeUnmount(() => {
 });
 
 onMounted(async () => {
+  pageLoadingState.value = true;
   try {
     window.addEventListener("resize", handleResize);
 
@@ -184,6 +193,7 @@ onMounted(async () => {
       }
     }
     products.value = productData;
+    pageLoadingState.value = false;
   } catch (error) {
     console.log(error);
   }

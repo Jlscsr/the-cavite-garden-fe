@@ -249,6 +249,24 @@
                   v-model="dateStarted"
                 />
               </div>
+              <div class="mb-3">
+                <label for="sex" class="form-label"
+                  >Role<span class="text-danger">*</span></label
+                >
+                <select
+                  class="form-select"
+                  id="sex"
+                  placeholder="Select Employee sex"
+                  aria-label="Select Employee sex"
+                  v-model="role"
+                >
+                  <option value="" selected disabled>
+                    Select employee role
+                  </option>
+                  <option value="0">Admin</option>
+                  <option value="1">Employee</option>
+                </select>
+              </div>
               <div v-if="modalFormState === 'add'" lass="mb-3">
                 <label for="email" class="form-label"
                   >Email <span class="text-danger">*</span></label
@@ -418,9 +436,9 @@
                 <div
                   class="d-flex justify-content-between align-items-center border-bottom mt-2"
                 >
-                  <p class="fs-medium mb-0">Status:</p>
+                  <p class="fs-medium mb-0">Role:</p>
                   <p class="mb-0 text-success">
-                    {{ firstLetterUppercase(selectedEmployee?.status) }}
+                    {{ firstLetterUppercase(selectedEmployee?.role) }}
                   </p>
                 </div>
                 <div
@@ -444,7 +462,7 @@
                 >
                   <p class="fs-medium mb-0">Modified At:</p>
                   <p class="mb-0">
-                    {{ formatDate(selectedEmployee?.modifiedAt) }}
+                    {{ formatDate(selectedEmployee?.updatedAt) }}
                   </p>
                 </div>
               </div>
@@ -499,7 +517,7 @@ const confirmPassword = ref("");
 const sex = ref("");
 const birthDate = ref("");
 const maritalStatus = ref("");
-const role = ref("regular");
+const role = ref("employee");
 const dateStarted = ref("");
 
 const tableHeaders = ref([
@@ -517,7 +535,7 @@ const tableHeaders = ref([
   },
   {
     id: 4,
-    label: "Status",
+    label: "Role",
   },
 ]);
 const employeesLists = ref([]);

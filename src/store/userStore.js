@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import { LogoutUserAPI } from "@composables/Authentication";
 
 export const useUserStore = defineStore("user", () => {
   const userInfo = ref({});
@@ -25,7 +26,8 @@ export const useUserStore = defineStore("user", () => {
     return isAuthenticated.value;
   };
 
-  const resetUserSession = () => {
+  const resetUserSession = async () => {
+    await LogoutUserAPI();
     setUserInfo({});
     setUserAuthenticated(false);
   };

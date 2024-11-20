@@ -10,7 +10,10 @@
     viewBox="0 0 1560 1560"
     style="enable-background: new 0 0 512 512"
     xml:space="preserve"
-    class=""
+    :class="{
+      'arrow-right': direction === 'right',
+      'arrow-left': direction === 'left',
+    }"
   >
     <g>
       <path
@@ -41,7 +44,22 @@ const props = defineProps({
     type: String,
     default: "#121b1e",
   },
+  direction: {
+    type: String,
+    default: "right",
+  },
 });
 const iconSize = ref(props.size);
 const iconColor = ref(props.color);
+const direction = ref(props.direction);
 </script>
+
+<style lang="scss" scoped>
+.arrow-left {
+  transform: rotate(180deg);
+}
+
+.arrow-right {
+  transform: rotate(0deg);
+}
+</style>

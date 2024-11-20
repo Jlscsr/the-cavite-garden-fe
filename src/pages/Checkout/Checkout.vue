@@ -82,7 +82,12 @@
         <button
           @click="processCheckout"
           class="btn btn-success w-100 mt-3"
-          :disabled="btnLoadingState"
+          :disabled="
+            btnLoadingState ||
+            paymentMethod === '' ||
+            deliveryMethod === '' ||
+            (deliveryMethod === 'delivery' && selectedAddress === '')
+          "
         >
           <!-- Add loading spinner in bootstrap -->
           <span v-if="!btnLoadingState">Place Order</span>
@@ -100,8 +105,9 @@ import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { GetCartProductByID } from "../../composables/Cart";
 import { useUserStore } from "../../store/userStore";
-import Swal from "sweetalert2";
 import { AddNewTransactionAPI } from "../../composables/Transaction";
+import { ref as dbRef, set, database } from "../../boot/firebase";
+import Swal from "sweetalert2";
 
 const route = useRoute();
 const router = useRouter();
@@ -258,6 +264,8 @@ const processCheckout = async () => {
                 return;
               }
 
+              await addNewOrderInFirebase(response.data);
+
               Swal.fire({
                 icon: "success",
                 title: "Order Placed",
@@ -266,7 +274,7 @@ const processCheckout = async () => {
 
               router.push({ name: "shop" });
             });
-          }, 5000); // Simulate a 5-second delay
+          }, 7000);
         }
       });
     } catch (error) {
@@ -291,6 +299,8 @@ const processCheckout = async () => {
       return;
     }
 
+    await addNewOrderInFirebase(response.data);
+
     Swal.fire({
       icon: "success",
       title: "Order Placed",
@@ -300,6 +310,14 @@ const processCheckout = async () => {
     btnLoadingState.value = false;
     router.push({ name: "shop" });
   }
+};
+
+const addNewOrderInFirebase = async (orderData) => {
+  const orderRef = dbRef(database, `orders/${orderData.orderID}`);
+  await set(orderRef, {
+    ...orderData,
+    notificationStatus: "unread",
+  });
 };
 
 onMounted(async () => {

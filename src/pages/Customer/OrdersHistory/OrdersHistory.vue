@@ -33,8 +33,6 @@
           <div class="mt-3">
             <button
               class="btn btn-success me-2"
-              data-bs-toggle="modal"
-              data-bs-target="#staticBackdrop"
               @click="viewOrderDetails(order?.id)"
             >
               View Details
@@ -47,18 +45,19 @@
 
   <!-- Order Details Modal -->
   <div
+    ref="viewProductModal"
     class="modal fade"
-    id="staticBackdrop"
+    id="viewProductModal"
     data-bs-backdrop="static"
     data-bs-keyboard="false"
     tabindex="-1"
-    aria-labelledby="staticBackdropLabel"
+    aria-labelledby="viewProductModalLabel"
     aria-hidden="true"
   >
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">
+          <h1 class="modal-title fs-5" id="viewProductModalLabel">
             Order Details # {{ selectedOrder?.id }}
           </h1>
           <button
@@ -150,7 +149,9 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="reviewModalLabel">Leave a Review</h1>
+          <h1 class="modal-title fs-5" id="reviewModalLabel">
+            Leave a Review (either for the product or the store)
+          </h1>
           <button
             type="button"
             class="btn-close"
@@ -160,7 +161,7 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="rate" class="form-label">Rate</label>
+            <label for="rate" class="form-label">Rate (1-5)</label>
             <input
               type="number"
               min="1"
@@ -287,7 +288,9 @@ const uploadedMedia = ref([]);
 
 const uploadProgress = ref(0);
 const reviewModal = ref(null);
-const modalInstance = ref(null);
+const viewProductModal = ref(null);
+const reviewModalInstance = ref(null);
+const viewProductModalInstance = ref(null);
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -298,13 +301,19 @@ const formatDate = (dateString) => {
 };
 
 onMounted(async () => {
-  modalInstance.value = new bootstrap.Modal(reviewModal.value);
+  reviewModalInstance.value = new bootstrap.Modal(reviewModal.value);
+  viewProductModalInstance.value = new bootstrap.Modal(viewProductModal.value);
+
   try {
     const userID = userStore.getUserInfo().id;
     const response = await GetAllCustomerTransactionsByID(userID);
 
     if (response.status === "failed") {
-      console.error(response.message);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.message,
+      });
       return;
     }
 
@@ -327,7 +336,9 @@ onMounted(async () => {
       };
     });
 
-    console.log(pendingOrders.value);
+    if (route.params.id) {
+      viewOrderDetails(route.params.id);
+    }
   } catch (error) {
     console.error(error);
   }
@@ -337,13 +348,16 @@ const viewOrderDetails = (orderID) => {
   selectedOrder.value = pendingOrders.value.find(
     (order) => order.id === orderID
   );
+
+  viewProductModalInstance.value.show();
 };
 
 const toggleAddReviewModal = (productID) => {
   selectedProduct.value = selectedOrder.value.products.find(
     (product) => product?.productInfo?.id === productID
   );
-  modalInstance.value.show();
+  viewProductModalInstance.value.hide();
+  reviewModalInstance.value.show();
 };
 
 const handleMediaUpload = async (event) => {
@@ -402,6 +416,16 @@ const submitReview = async (productID) => {
       return;
     }
 
+    if (rate.value < 1 || rate.value > 5) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid Rating",
+        text: "Please provide a rating between 1 and 5.",
+      });
+      rate.value = null;
+      return;
+    }
+
     const userID = userStore.getUserInfo().id;
 
     const payload = {
@@ -433,7 +457,7 @@ const submitReview = async (productID) => {
     rate.value = null;
     review.value = "";
     uploadedMedia.value = [];
-    modalInstance.value.hide();
+    reviewModalInstance.value.hide();
   } catch (error) {
     console.error(error);
   }

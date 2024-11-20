@@ -70,7 +70,9 @@ router.beforeEach(async (to, from) => {
       return true; // Public route, allow access
     }
 
-    displayLoginFirstAlert(() => router.push({ name: "login" }));
+    displayLoginFirstAlert(() => {
+      return { name: "login" };
+    });
     return false; // Stop navigation to protected routes
   }
 

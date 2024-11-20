@@ -12,9 +12,10 @@
               <p class="text-muted">{{ formatDate(order?.updatedAt) }}</p>
             </div>
             <span
-              class="badge"
+              class="badge text-black"
               :class="{
                 'bg-warning': order?.status === 'pending',
+                'bg-warning': order?.status === 'preparing',
                 'bg-danger': order?.status === 'cancelled',
               }"
               >{{ firstLetterUppercase(order?.status) }}</span
@@ -49,18 +50,19 @@
 
   <!-- Modal -->
   <div
+    ref="viewProductModal"
     class="modal fade"
-    id="staticBackdrop"
+    id="viewProductModal"
     data-bs-backdrop="static"
     data-bs-keyboard="false"
     tabindex="-1"
-    aria-labelledby="staticBackdropLabel"
+    aria-labelledby="viewProductModalLabel"
     aria-hidden="true"
   >
     <div class="modal-dialog modal-dialog-centered modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h1 class="modal-title fs-5" id="staticBackdropLabel">
+          <h1 class="modal-title fs-5" id="viewProductModalLabel">
             Order Details # {{ selectedOrder?.id }}
           </h1>
           <button
@@ -103,7 +105,7 @@
             </thead>
             <tbody>
               <tr v-for="product in selectedOrder?.products" :key="product?.id">
-                <td>{{ product?.productName }}</td>
+                <td>{{ product?.productInfo?.productName }}</td>
                 <td>{{ product?.purchasedQuantity }}</td>
                 <td>₱{{ product?.totalPrice }}</td>
               </tr>
@@ -131,15 +133,21 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-
+import { useRoute } from "vue-router";
 import { useUserStore } from "../../../store/userStore";
 import { GetAllCustomerTransactionsByID } from "../../../composables/Transaction";
 import { firstLetterUppercase } from "../../../composables/Helpers";
+import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
+import Swal from "sweetalert2";
+
+const route = useRoute();
 
 const userStore = useUserStore();
 
 const pendingOrders = ref([]);
 const selectedOrder = ref(null);
+const viewProductModal = ref(false);
+const modalInstance = ref(null);
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -151,17 +159,26 @@ const formatDate = (dateString) => {
 
 onMounted(async () => {
   try {
+    modalInstance.value = new bootstrap.Modal(viewProductModal.value);
     const userID = userStore.getUserInfo().id;
     const response = await GetAllCustomerTransactionsByID(userID);
 
     if (response.status === "failed") {
-      console.error(response.message);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: response.message,
+      });
       return;
     }
 
+    console.log(response.data);
+
     pendingOrders.value = response.data.filter(
-      (order) => order.status === "pending"
+      (order) => order.status !== "completed" || order.status !== "cancelled"
     );
+
+    console.log(pendingOrders.value);
 
     pendingOrders.value = pendingOrders.value.map((order) => {
       let totalTransactionPrice = 0;
@@ -178,16 +195,22 @@ onMounted(async () => {
       };
     });
 
-    console.log(pendingOrders.value);
+    if (route.params.id) {
+      viewOrderDetails(route.params.id);
+    }
   } catch (error) {
     console.error(error);
   }
 });
 
 const viewOrderDetails = (orderID) => {
-  selectedOrder.value = pendingOrders.value.find(
-    (order) => order.id === orderID
-  );
+  if (pendingOrders.value.length > 0) {
+    selectedOrder.value = pendingOrders.value.find(
+      (order) => order.id === orderID
+    );
+
+    modalInstance.value.show();
+  }
 };
 </script>
 

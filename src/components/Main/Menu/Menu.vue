@@ -24,7 +24,7 @@
               class="text-accent-2 fs-heading-6 fs-medium"
             >
               <span class="me-4">Go to Shop</span>
-              <ArrowIcon size="60" color="#ffffff" />
+              <ArrowIcon size="60" color="#ffffff" direction="right" />
             </router-link>
           </div>
         </div>

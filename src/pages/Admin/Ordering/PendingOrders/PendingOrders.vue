@@ -211,7 +211,7 @@
                   v-if="
                     order?.paymentType === 'gcash' &&
                     order?.orderType === 'delivery' &&
-                    order?.status === 'Preparing'
+                    order?.status === 'preparing'
                   "
                   class="px-2 mb-1 cursor-pointer text-center fs-light"
                 >
@@ -404,7 +404,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted } from "vue";
 import { tableHeaders } from "./componentData";
 import { database, ref as dbRef, update } from "../../../../boot/firebase";
 import {
@@ -449,10 +449,12 @@ const setNewTransactionStatus = async (id, status) => {
           return;
         }
 
-        // add realtime database update base on the id here
-        // const transactionRef = dbRef(database, `transaction/${id}`);
-
-        // await update(transactionRef, { status });
+        const orderRef = dbRef(database, `orders/${id}`);
+        update(
+          orderRef,
+          { notificationStatus: "unread", status },
+          { merge: true }
+        );
 
         Swal.fire({
           icon: "success",

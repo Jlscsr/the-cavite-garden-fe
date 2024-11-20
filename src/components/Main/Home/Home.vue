@@ -8,7 +8,7 @@
           <div class="carousel-content mt-5">
             <p class="hero-text fs-1 text-white fs-semi-bold fs-heading-1">
               Blooms of Elegance,
-              <span class="text-emphasis d-block">Roots of Serinity</span>
+              <span class="text-emphasis d-block">Roots of Serenity</span>
               - Your Oasis In Cavite
             </p>
           </div>

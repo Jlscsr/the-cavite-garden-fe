@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <aside class="sidebar-wrapper">
-      <div class="sidebar-logo py-4 px-3">
+      <div class="sidebar-logo py-4 px-3 mb-3">
         <div class="img-container me-3">
           <img
             src="../../assets/images/cavite_garden_logo.png"
@@ -10,23 +10,7 @@
         </div>
         <span class="fs-5 fs-bold">THE CAVITE GARDEN</span>
       </div>
-      <div
-        class="store-status py-1 text-center mb-3"
-        :class="{ open: isShopOpen, close: !isShopOpen }"
-      >
-        <button class="btn" @click="toggleShopStatus">
-          <i
-            class="fas fa-toggle-off fs-6 d-block"
-            :class="{
-              'fa-toggle-on': isShopOpen,
-              'fa-toggle-off': !isShopOpen,
-            }"
-          ></i>
-          <span class="fs-6 fs-medium d-block"
-            >Shop is {{ isShopOpen ? "OPEN" : "CLOSE" }}</span
-          >
-        </button>
-      </div>
+
       <div class="sidebar-nav">
         <ul class="sidebar-nav-list list-unstyled">
           <li class="sidebar-item cursor-pointer">

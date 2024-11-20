@@ -87,15 +87,11 @@
                 <ul class="dropdown-menu" v-if="notificationContainer">
                   <li
                     v-for="notification in notificationContainer"
-                    class="cursor-pointer px-3 py-2 text-white mb-2"
-                    :class="{
-                      'bg-success': notification.status === 'approved',
-                      'bg-danger': notification.status === 'cancelled',
-                    }"
+                    class="cursor-pointer px-3 py-2 text-black mb-2 border-bottom"
                     @click="
-                      gotoTrackOrderPage(
-                        notification.id,
-                        notification.customer_id
+                      gotoPendingOrdersPage(
+                        notification.orderID,
+                        notification.status
                       )
                     "
                   >
@@ -104,9 +100,11 @@
                       <h6 class="fs-medium mb-0 ms-2">Order Notification</h6>
                     </div>
                     <p class="mb-0">
-                      Your Order #{{ notification.id }}
-                      has been
-                      {{ firstLetterUppercase(notification.status) }}
+                      Your Order #{{ notification?.orderID?.split("-")[4] }}
+                      status:
+                      <span class="fw-bold">
+                        {{ firstLetterUppercase(notification.status) }}
+                      </span>
                     </p>
                   </li>
                 </ul>
@@ -187,11 +185,12 @@ import ProfileIcon from "@assets/icons/ProfileIcon.vue";
 import {
   database,
   ref as dbRef,
-  set,
+  update,
   query,
   orderByChild,
   equalTo,
   onChildChanged,
+  onValue,
 } from "../../boot/firebase";
 
 import { useUserStore } from "@stores/userStore.js";
@@ -203,54 +202,63 @@ const router = useRouter();
 const route = useRoute();
 
 const userStore = useUserStore();
-const deliveryMethod = ref("");
-const paymentMethod = ref("");
-const selectedShippingAddress = ref("");
-const addressLabels = ref([]);
-const userShippingAddresses = ref("");
 const userData = ref(userStore.getUserInfo());
 const notificationContainer = ref([]);
 
 onMounted(async () => {
-  addressLabels.value = [];
-
-  console.log(userData.value);
-  if (userStore.isUserAuthenticated()) {
-    userShippingAddresses.value = userData.value.shippingAddresses;
-    userShippingAddresses.value.forEach((address) => {
-      addressLabels.value.push(firstLetterUppercase(address.addressLabel));
-    });
-
-    listenForTransactionChanges(userData.value.id);
-  }
+  listenForTransactionChanges(userData.value.id);
 });
 
-const gotoTrackOrderPage = (transactionId, customer_id) => {
-  // Remoe the clicked notification base on transaction id
+const gotoPendingOrdersPage = (orderID, status) => {
+  // Update the notification status in firebase to read
+  const orderRef = dbRef(database, `orders/${orderID}`);
+  update(orderRef, { notificationStatus: "read" }, { merge: true });
+
   notificationContainer.value = notificationContainer.value.filter(
-    (notification) => notification.id !== transactionId
+    (notification) => notification.id !== orderID
   );
-  router.push({
-    name: "track-orders",
-    params: { customerId: customer_id },
-  });
+
+  if (status !== "completed") {
+    router.push({
+      name: "pendingOrders",
+      params: { id: orderID },
+    });
+  } else {
+    router.push({
+      name: "ordersHistory",
+      params: { id: orderID },
+    });
+  }
 };
 
-const listenForTransactionChanges = (customer_id) => {
-  const transactionQuery = query(
-    dbRef(database, "transaction"),
-    orderByChild("customer_id"),
-    equalTo(customer_id)
+const listenForTransactionChanges = (customerID) => {
+  const ordersQuery = query(
+    dbRef(database, "orders"),
+    orderByChild("customerID"),
+    equalTo(customerID)
   );
 
-  onChildChanged(transactionQuery, (snapshot) => {
-    const transactionId = snapshot.key;
-
+  onChildChanged(ordersQuery, (snapshot) => {
+    const orderData = snapshot.val();
     if (snapshot.exists()) {
-      const transactionData = snapshot.val();
-      notificationContainer.value.push(transactionData);
-    } else {
-      console.log("No data available for transaction with ID:", transactionId);
+      if (orderData) {
+        notificationContainer.value = Object.values(orderData).filter(
+          (order) =>
+            order.status !== "pending" && order.notificationStatus === "unread"
+        );
+      }
+    }
+  });
+
+  onValue(ordersQuery, (snapshot) => {
+    const orderData = snapshot.val();
+    if (snapshot.exists()) {
+      if (orderData) {
+        notificationContainer.value = Object.values(orderData).filter(
+          (order) =>
+            order.status !== "pending" && order.notificationStatus === "unread"
+        );
+      }
     }
   });
 };
@@ -268,7 +276,7 @@ const handleLogoutUser = async () => {
       userStore.setUserInfo({});
       userStore.setUserAuthenticated(false);
 
-      router.go();
+      router.push({ name: "home" });
     }
   });
 };

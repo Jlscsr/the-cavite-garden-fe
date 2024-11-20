@@ -1,5 +1,8 @@
 <template>
   <div class="container product-details">
+    <div class="arror" @click="router.go(-1)">
+      <ArrowIcon size="60" color="#ffffff" direction="left" />
+    </div>
     <div class="row">
       <!-- Product Image and Basic Info -->
       <div class="col-md-6">
@@ -151,8 +154,11 @@ import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { AddToCartAPI } from "../../../composables/Cart";
 import { useUserStore } from "../../../store/userStore";
-import Swal from "sweetalert2";
 import { GetProductByIDAPI } from "../../../composables/Products";
+import Swal from "sweetalert2";
+
+import ArrowIcon from "../../../assets/icons/ArrowIcon.vue";
+import router from "../../../router/router";
 
 const route = useRoute();
 

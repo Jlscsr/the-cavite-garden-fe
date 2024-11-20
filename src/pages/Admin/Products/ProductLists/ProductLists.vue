@@ -6,31 +6,25 @@
     <div class="content mt-5 d-flex justify-content-between align-items-center">
       <div class="buttons">
         <div class="dropdown">
-          <button
-            class="btn btn-outline-dark dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
+          <select
+            class="form-select"
+            id="productCategory"
+            placeholder="Select Category"
+            aria-label="Select Category"
+            v-model="selectedCategory"
           >
-            Show 10 Rows
-          </button>
-          <div class="dropdown-menu">
-            <ul class="d-flex list-unstyled mb-0">
-              <li class="dropdown-item cursor-pointer d-block">10</li>
-              <li class="dropdown-item cursor-pointer d-block">20</li>
-              <li class="dropdown-item cursor-pointer d-block">30</li>
-              <li class="dropdown-item cursor-pointer d-block">50</li>
-              <li class="dropdown-item cursor-pointer d-block">All</li>
-            </ul>
-          </div>
+            <option selected disabled>Select Categories</option>
+            <option value="all">All</option>
+            <option
+              v-for="category in categories"
+              :key="category.id"
+              :value="category.categoryName"
+            >
+              {{ firstLetterUppercase(category.categoryName) }}
+            </option>
+          </select>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#addProductModal"
-          @click="modalFormState = 'add'"
-        >
+        <button type="button" class="btn btn-primary" @click="toggleAddProduct">
           Add Product
         </button>
       </div>
@@ -42,6 +36,7 @@
             placeholder="Search..."
             aria-label="Product Name"
             aria-describedby="button-addon2"
+            v-model="searchProduct"
           />
           <button
             class="btn btn-outline-secondary"
@@ -113,7 +108,7 @@
                 <li class="px-2 mb-1 cursor-pointer text-center fs-light">
                   <button
                     class="btn btn-warning w-100"
-                    @click="toggleEditBtn(product?.id)"
+                    @click="toggleEditProduct(product?.id)"
                   >
                     Edit
                   </button>
@@ -121,7 +116,7 @@
                 <li class="px-2 mb-1 cursor-pointer text-center fs-light">
                   <button
                     class="btn btn-danger w-100"
-                    @click="toggleDeleteBtn(product?.id)"
+                    @click="toggleDeleteProduct(product?.id)"
                   >
                     Delete
                   </button>
@@ -161,9 +156,6 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="image-container mb-4">
-              <img :src="imagePlaceHolder" alt="Cavite Garden Logo" />
-            </div>
             <form id="addProductForm">
               <div class="mb-3">
                 <label for="productVideo" class="form-label fs-6">
@@ -263,7 +255,7 @@
                   </option>
                 </select>
               </div>
-              <div v-if="productCategory === 'pots'" class="mb-3">
+              <div v-if="productCategory === 'Pots'" class="mb-3">
                 <label for="size" class="form-label">
                   Size <span class="text-danger">*</span>
                 </label>
@@ -406,8 +398,9 @@
                   <p class="fs-medium mb-0">Sub Category:</p>
                   <p class="mb-0">
                     {{
-                      selectedProduct?.subCategoryName &&
-                      firstLetterUppercase(selectedProduct.subCategoryName)
+                      selectedProduct?.subCategoryName
+                        ? firstLetterUppercase(selectedProduct.subCategoryName)
+                        : "N/A"
                     }}
                   </p>
                 </div>
@@ -439,9 +432,9 @@
                   <p class="fs-medium mb-0">Size:</p>
                   <p class="mb-0">
                     {{
-                      selectedProduct?.size
-                        ? selectedProduct?.productSize
-                        : "---"
+                      selectedProduct?.productSize
+                        ? firstLetterUppercase(selectedProduct?.productSize)
+                        : "N/A"
                     }}
                   </p>
                 </div>
@@ -458,7 +451,7 @@
                 >
                   <p class="fs-medium mb-0">Status:</p>
                   <p class="mb-0 text-success">
-                    {{ selectedProduct?.productStatus }}
+                    {{ firstLetterUppercase(selectedProduct?.productStatus) }}
                   </p>
                 </div>
                 <div
@@ -474,7 +467,7 @@
                 >
                   <p class="fs-medium mb-0">Date Modified:</p>
                   <p class="mb-0">
-                    {{ formatDate(selectedProduct?.modifiedAt) }}
+                    {{ formatDate(selectedProduct?.updatedAt) }}
                   </p>
                 </div>
               </div>
@@ -517,6 +510,8 @@ import {
   ref as storageRef,
   uploadBytes,
   getDownloadURL,
+  deleteObject,
+  listAll,
 } from "firebase/storage";
 
 import { ref as databaseRef } from "firebase/database";
@@ -524,6 +519,7 @@ import { ref as databaseRef } from "firebase/database";
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
 import Table from "@components/Table/Table.vue";
+import Swal from "sweetalert2";
 
 const tableHeaders = [
   {
@@ -558,9 +554,11 @@ const modalInstance = ref(null);
 const modalFormState = ref("add");
 
 const productLists = ref([]);
+const productListsCopy = ref([]);
 const categories = ref([]);
+const searchProduct = ref("");
+const selectedCategory = ref("all");
 
-const imagePlaceHolder = ref("/images/image-placeholder.png");
 const videoFile = ref(null);
 const videoName = ref("");
 const productName = ref("");
@@ -570,6 +568,9 @@ const potSize = ref("");
 const productPrice = ref("");
 const productStock = ref(0);
 const productDescription = ref("");
+
+const eventHandler = ref(null);
+const extensionHandler = ref("");
 
 const selectedProduct = ref(null);
 
@@ -612,11 +613,17 @@ const getProducts = async () => {
   const response = await GetAllProductsAPI();
 
   productLists.value = response.data || [];
+  productListsCopy.value = response.data || [];
 };
 
 const submitForm = async () => {
   btnLoadingState.value = true;
   modalFormState.value === "add" ? addNewProduct() : editProduct();
+};
+
+const toggleAddProduct = () => {
+  modalFormState.value = "add";
+  modalInstance.value.show();
 };
 
 const addNewProduct = async () => {
@@ -662,14 +669,186 @@ const viewProduct = (id) => {
   );
 };
 
+const editProduct = async () => {
+  try {
+    // Show loading Swal
+    const loadingAlert = Swal.fire({
+      title: "Editing Product...",
+      text: "Please wait while we update the product details.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading(); // Show loading spinner
+      },
+    });
+
+    // Check if there is a new video file
+    if (eventHandler.value) {
+      const processVideoResponse = await processVideo(
+        videoFile.value,
+        videoName.value
+      );
+
+      // Step 1: Delete video from Firebase Storage
+      const videoRef = storageRef(
+        storage,
+        selectedProduct.value.productVideoURL
+      );
+      await deleteObject(videoRef);
+
+      // Step 2: Delete files in the frames folder
+      const framesFolderRef = storageRef(
+        storage,
+        selectedProduct.value.imageSequenceFolderURL
+      );
+      const fileList = await listAll(framesFolderRef);
+
+      for (const item of fileList.items) {
+        await deleteObject(item);
+      }
+
+      // Step 2: Update video and frames
+      selectedProduct.value.productVideoURL = processVideoResponse[0];
+      selectedProduct.value.imageSequenceFolderURL = processVideoResponse[1];
+    }
+
+    // Step 3: Update product details
+    const productID = selectedProduct.value.id;
+    const newPayload = {
+      productName: productName.value,
+      productCategory: productCategory.value,
+      productSubCategory: productSubCategory.value,
+      productPrice: productPrice.value,
+      productSize: potSize.value,
+      productStock: productStock.value,
+      productDescription: productDescription.value,
+      productVideoURL: selectedProduct.value.productVideoURL,
+      imageSequenceFolderURL: selectedProduct.value.imageSequenceFolderURL,
+    };
+
+    const response = await EditProductAPI(productID, newPayload);
+
+    if (response.status === "failed") {
+      loadingAlert.close(); // Close loading alert
+      displayAPIRequestErrorAlert("Failed to edit product!", response.message);
+      resetForm();
+      modalFormState.value = "add";
+      modalInstance.value.hide();
+      return;
+    }
+
+    // Close loading alert and display success
+    loadingAlert.close();
+    displaySuccessNotification("Product has been updated successfully!");
+    getProducts();
+  } catch (error) {
+    displayAPIRequestErrorAlert(
+      "Failed to edit product!",
+      "Something went wrong."
+    );
+    console.log(error);
+  } finally {
+    resetForm();
+    modalFormState.value = "add";
+    modalInstance.value.hide();
+    btnLoadingState.value = false;
+  }
+};
+
+const toggleEditProduct = (productID) => {
+  selectedProduct.value = productLists.value.find(
+    (product) => product.id === productID
+  );
+
+  productName.value = selectedProduct.value.productName;
+  productCategory.value = selectedProduct.value.categoryName;
+  productSubCategory.value = selectedProduct.value.subCategoryName;
+  potSize.value = selectedProduct.value.productSize;
+  productPrice.value = selectedProduct.value.productPrice;
+  productStock.value = selectedProduct.value.productStock;
+  productDescription.value = selectedProduct.value.productDescription;
+
+  modalFormState.value = "edit";
+  modalInstance.value.show();
+};
+
+const deleteProduct = async (productID) => {
+  const selectedProduct = productLists.value.find(
+    (product) => product.id === productID
+  );
+
+  try {
+    // Show loading Swal
+    const loadingAlert = Swal.fire({
+      title: "Deleting Product...",
+      text: "Please wait while we remove the product and its associated files.",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading(); // Show loading spinner
+      },
+    });
+
+    // Step 1: Delete video from Firebase Storage
+    const videoRef = storageRef(storage, selectedProduct.productVideoURL);
+    await deleteObject(videoRef);
+
+    // Step 2: Delete files in the frames folder
+    const framesFolderRef = storageRef(
+      storage,
+      selectedProduct.imageSequenceFolderURL
+    );
+    const fileList = await listAll(framesFolderRef);
+
+    for (const item of fileList.items) {
+      await deleteObject(item);
+    }
+
+    // Step 3: Delete product from the database (API call)
+    const response = await DeleteProductAPI(productID);
+
+    if (response.status === "failed") {
+      loadingAlert.close(); // Close loading alert
+      return displayAPIRequestErrorAlert(
+        "Failed to delete product!",
+        response.message
+      );
+    }
+
+    // Close loading alert and display success
+    loadingAlert.close();
+    displaySuccessNotification("Product has been deleted successfully!");
+    getProducts();
+  } catch (error) {
+    loadingAlert.close(); // Close loading alert
+    displayAPIRequestErrorAlert(
+      "Failed to delete product!",
+      "Something went wrong."
+    );
+    console.log(error);
+  }
+};
+
+const toggleDeleteProduct = (productID) => {
+  Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      deleteProduct(productID);
+    }
+  });
+};
+
 const sanitizeFileName = (filename) => {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 8);
   return `video_${timestamp}_${randomString}`;
 };
 
-const eventHandler = ref(null);
-const extensionHandler = ref("");
 const handleVideoChange = async (event) => {
   const { target: { files = [] } = {} } = event;
   const [file] = files;
@@ -803,7 +982,6 @@ const processVideo = async (file, name) => {
     uploadProgress.value = 0;
   }
 };
-
 const resetForm = () => {
   productName.value = "";
   productCategory.value = "";
@@ -818,8 +996,8 @@ const resetForm = () => {
   uploadProgress.value = 0;
   isProcessing.value = false;
   btnLoadingState.value = false;
-  modalInstance.value.hide();
   modalFormState.value = "add";
+  modalInstance.value.hide();
 };
 
 const isFormInvalid = computed(() => {
@@ -842,6 +1020,28 @@ const isFormInvalid = computed(() => {
   } else if (modalFormState.value === "edit") {
     return commonValidation();
   }
+});
+
+const filterProducts = () => {
+  // Filter products based on both category and search query
+  productLists.value = productListsCopy.value.filter((product) => {
+    const matchesCategory =
+      selectedCategory.value === "all" ||
+      product.categoryName === selectedCategory.value;
+    const matchesSearchQuery = product.productName
+      .toLowerCase()
+      .startsWith(searchProduct.value.toLowerCase());
+
+    return matchesCategory && matchesSearchQuery;
+  });
+};
+
+watch(selectedCategory, () => {
+  filterProducts();
+});
+
+watch(searchProduct, () => {
+  filterProducts();
 });
 </script>
 
