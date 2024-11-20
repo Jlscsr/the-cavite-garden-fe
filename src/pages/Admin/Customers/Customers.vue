@@ -5,41 +5,6 @@
     </div>
     <div class="content mt-5 d-flex justify-content-between align-items-center">
       <div class="buttons">
-        <button type="button" class="btn btn-outline-dark">PDF</button>
-
-        <div class="dropdown">
-          <button
-            class="btn btn-outline-dark dropdown-toggle"
-            type="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            Show visibility
-          </button>
-          <div class="dropdown-menu">
-            <ul class="d-flex list-unstyled mb-0">
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Customer Name
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Email
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Phone Number
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Shipping Address
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Date Created
-              </li>
-              <li class="fs-6 fs-light dropdown-item cursor-pointer d-block">
-                Actions
-              </li>
-            </ul>
-          </div>
-        </div>
-
         <div class="dropdown">
           <button
             class="btn btn-outline-dark dropdown-toggle"
@@ -99,15 +64,6 @@
           </td>
           <td class="fs-6 fs-light p-3">
             {{ customer?.phoneNumber }}
-          </td>
-          <td class="fs-6 fs-light p-3" style="max-width: 100px">
-            {{ formatShippingAddress(customer?.shippingAddresses) }}
-            <span
-              class="fst-italic"
-              v-if="customer?.shippingAddress?.length > 1"
-            >
-              {{ `+ ${customer?.shippingAddress?.length - 1} more` }}
-            </span>
           </td>
           <td class="fs-6 fs-light p-3">
             {{ formatDate(customer?.createdAt) }}
@@ -284,10 +240,6 @@ const tableHeaders = ref([
   {
     id: 3,
     label: "Phone Number",
-  },
-  {
-    id: 4,
-    label: "Shipping Address",
   },
   {
     id: 5,

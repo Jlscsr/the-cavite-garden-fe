@@ -1,42 +1,51 @@
 @import "../../../styles/variables.scss";
 
 .about {
-    & > .container {
-        & > .row {
-            & > .col:nth-of-type(1) {
-                & > #panorama {
-                    border-radius: $border-radius-2;
-                }
-            }
-
-            & > .col:nth-of-type(2) {
-                & > h3 {
-                    font-size: 3.5rem;
-                }
-
-                & > a {
-                    color: $main-color;
-                    text-decoration: none;
-
-                    &:hover {
-                        text-decoration: underline !important;
-                    }
-                }
-
-                & > .container {
-                    & > .row {
-                        & > .col {
-                            padding-block: 1rem;
-                            border: 1px solid $main-color;
-                            border-radius: $border-radius-2;
-
-                            & > img {
-                                width: 2rem;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+  & > .styled-header {
+    @media (max-width: 640px) {
+      font-size: 3.5em;
     }
+  }
+  & > .container {
+    & > .row {
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+
+      & > .col:nth-of-type(1) {
+        & > #panorama {
+          border-radius: $border-radius-2;
+        }
+      }
+
+      & > .col:nth-of-type(2) {
+        & > h3 {
+          font-size: 3.5rem;
+        }
+
+        & > a {
+          color: $main-color;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline !important;
+          }
+        }
+
+        & > .container {
+          & > .row {
+            & > .col {
+              padding-block: 1rem;
+              border: 1px solid $main-color;
+              border-radius: $border-radius-2;
+
+              & > img {
+                width: 2rem;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }

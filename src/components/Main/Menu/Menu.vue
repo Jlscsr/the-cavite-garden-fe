@@ -1,13 +1,13 @@
 <template>
   <!-- Menu Section -->
   <section class="menu section" id="menu">
-    <h2 class="heading px-5 py-5">
+    <h2 class="styled-header heading px-5 py-5">
       BEST SELLING
       <span class="fs-heading-4">BEST SELLING</span>
     </h2>
     <div class="container px-5 py-3">
       <div class="row gap-1">
-        <div class="menu-col-1 col bg-secondary rounded p-5">
+        <div class="menu-col-1 col bg-secondary rounded p-5 mb-3">
           <div class="d-flex flex-column gap-3 menu-intro mx-auto">
             <h3 class="fs-heading-4 fs-semi-bold text-white">
               Our Best Selling <br />

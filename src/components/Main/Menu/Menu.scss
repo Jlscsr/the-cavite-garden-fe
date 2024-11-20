@@ -1,9 +1,26 @@
 @import "../../../styles/variables.scss";
 
 .menu {
+  & > .styled-header {
+    @media (max-width: 640px) {
+      font-size: 3.5em;
+    }
+  }
   .container {
+    & > .row {
+      @media (max-width: 768px) {
+        column-gap: 2em;
+        row-gap: 3em;
+        flex-direction: column;
+      }
+    }
     .menu-col-1 {
       height: 550px;
+
+      @media (max-width: 507px) {
+        padding: 2em 0.5em !important;
+        margin-bottom: 2em;
+      }
 
       .menu-intro {
         width: 70%;

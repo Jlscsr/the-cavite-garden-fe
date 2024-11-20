@@ -1,12 +1,13 @@
 <template>
   <div class="container">
-    <div v-if="!route.params.id" class="">
-      <div class="shop-header mb-5">
-        <div class="container">
+    <div v-if="!route.params.id">
+      <!-- Shop Header -->
+      <div class="mb-5">
+        <div class="container py-2 shadow-sm">
           <div class="row align-items-center justify-content-center">
-            <div class="col-12">
-              <h1 class="shop-title text-center">Our Products</h1>
-              <p class="shop-subtitle text-center">
+            <div class="col-12 text-center">
+              <h1 class="shop-title">Our Products</h1>
+              <p class="shop-subtitle">
                 Discover our collection of beautiful plants and gardening
                 essentials
               </p>
@@ -15,75 +16,63 @@
         </div>
       </div>
 
+      <!-- Main Content -->
       <div class="row gap-3">
-        <!-- Left Sidebar -->
-        <div class="col-1 border-end px-2">
+        <!-- Left Sidebar (only visible on large screens) -->
+        <div
+          v-if="windowWidth > 1000"
+          class="left-sidebar col-md-3 col-lg-2 border-end px-3 py-4"
+        >
           <h6 class="sidebar-title">Categories</h6>
           <div class="category-list">
             <div
+              v-for="category in [
+                'All',
+                'Plants',
+                'Flowers',
+                'Pots',
+                'Soils',
+                'Rocks',
+              ]"
+              :key="category"
               class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === 'All' }"
-              @click="filterProductsByCategory('All')"
+              :class="{ active: selectedCategory === category }"
+              @click="filterProductsByCategory(category)"
             >
-              All
-            </div>
-            <div
-              class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === 'Plants' }"
-              @click="filterProductsByCategory('Plants')"
-            >
-              Plants
-            </div>
-            <div
-              class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === 'Flowers' }"
-              @click="filterProductsByCategory('Flowers')"
-            >
-              Flowers
-            </div>
-            <div
-              class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === 'Pots' }"
-              @click="filterProductsByCategory('Pots')"
-            >
-              Pots
-            </div>
-            <div
-              class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === 'Soils' }"
-              @click="filterProductsByCategory('Soils')"
-            >
-              Soils
-            </div>
-            <div
-              class="category-item"
-              :class="{ active: selectedCategory === 'Rocks' }"
-              @click="filterProductsByCategory('Rocks')"
-            >
-              Rocks
+              {{ category }}
             </div>
           </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main col-10">
-          <!-- Header with Plants title and filters -->
+        <!-- Main Content (Product Grid) -->
+        <div class="main col-12 col-md-9">
+          <!-- Filters and Header -->
           <div
             class="content-header d-flex justify-content-between align-items-center mb-4"
           >
-            <h2 class="section-title">{{ selectedCategory }}</h2>
-            <div class="filters d-flex gap-3">
-              <div class="dropdown">
-                <button class="btn btn-light dropdown-toggle" type="button">
-                  Indoor Plants
-                </button>
+            <h2 v-if="windowWidth > 1000" class="section-title">
+              {{ selectedCategory }}
+            </h2>
+            <div class="filters d-flex gap-3 align-items-center">
+              <div v-if="windowWidth < 1000" class="dropdown">
+                <select class="form-select" v-model="selectedCategory">
+                  <option selected>Select plant category</option>
+                  <option value="Plants">Plants</option>
+                  <option value="Flowers">Flowers</option>
+                  <option value="Pots">Pots</option>
+                  <option value="Soils">Soils</option>
+                  <option value="Rocks">Rocks</option>
+                </select>
               </div>
-              <div class="search-box">
+              <div class="search-box d-flex align-items-center">
                 <input
                   type="text"
                   class="form-control"
+                  v-model="searchQuery"
                   placeholder="Search..."
+                  aria-label="Search products"
                 />
+                <i class="bi bi-search ms-2"></i>
               </div>
             </div>
           </div>
@@ -93,46 +82,41 @@
             <div
               v-for="product in filteredProducts"
               :key="product.id"
-              class="col-4 shadow-sm py-3 rounded"
+              class="col-12 col-sm-6 col-md-4 col-lg-3 shadow-sm py-3 rounded product-card"
             >
-              <div class="product-card">
-                <div
-                  class="product-image-container"
-                  @click="goToProductDetails(product.id)"
-                >
-                  <Product360Viewer
-                    class="product-image w-100"
-                    :imageSequence="product.imageSequence"
-                  />
+              <div
+                class="product-image-container"
+                @click="goToProductDetails(product.id)"
+              >
+                <Product360Viewer
+                  class="product-image w-100"
+                  :imageSequence="product.imageSequence"
+                />
+              </div>
+              <div class="product-info mt-2">
+                <div class="d-flex flex-column">
+                  <h5 class="product-name">{{ product.productName }}</h5>
+                  <div class="rating">
+                    <span class="stars">
+                      <span>
+                        {{ "★".repeat(Math.round(product.averageRating)) }}
+                        {{ "☆".repeat(5 - Math.round(product.averageRating)) }}
+                      </span>
+                    </span>
+                    <span class="rating-count">
+                      {{ product.reviewCount }} reviews
+                    </span>
+                  </div>
                 </div>
-                <div class="product-info">
-                  <div class="d-flex justify-content-between">
-                    <h5 class="product-name">{{ product.productName }}</h5>
-                    <div class="rating">
-                      <span class="stars">
-                        <span>
-                          {{ "★".repeat(Math.round(product.averageRating)) }}
-                          {{
-                            "☆".repeat(5 - Math.round(product.averageRating))
-                          }}
-                        </span>
-                      </span>
-                      <span class="rating-count">
-                        {{ product.reviewCount }} reviews
-                      </span>
-                    </div>
-                  </div>
-                  <div
-                    class="d-flex justify-content-between align-items-center mt-3"
-                  >
-                    <p class="product-category text-muted">
-                      {{ product.categoryName }}
-                    </p>
-
-                    <p class="product-category text-muted">
-                      {{ product.subCategoryName }}
-                    </p>
-                  </div>
+                <div
+                  class="category-info d-flex justify-content-between align-items-center mt-3"
+                >
+                  <p class="product-category text-muted">
+                    {{ product.categoryName }}
+                  </p>
+                  <p class="product-category text-muted">
+                    {{ product.subCategoryName }}
+                  </p>
                 </div>
               </div>
             </div>
@@ -140,16 +124,17 @@
         </div>
       </div>
     </div>
-    <div v-else class="">
+
+    <!-- Product Details (if route params id is present) -->
+    <div v-else>
       <ProductDetails :product="selectedProduct" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, onBeforeMount, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
 import { getDownloadURL, listAll, ref as storageRef } from "firebase/storage";
 import { storage } from "../../boot/firebase";
 import { GetAllProductsAPI } from "@composables/Products";
@@ -158,15 +143,28 @@ import Product360Viewer from "../../360Viewer.vue";
 import ProductDetails from "./ProductDetails/ProductDetails.vue";
 
 const selectedCategory = ref("Plants");
+const selectedPlantType = ref(null); // New variable for selected plant type
+const searchQuery = ref(""); // New variable for search query
 const selectedProduct = ref(null);
 
 const route = useRoute();
 const router = useRouter();
 
 const products = ref([]);
+const windowWidth = ref(window.innerWidth);
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
+});
 
 onMounted(async () => {
   try {
+    window.addEventListener("resize", handleResize);
+
     const response = await GetAllProductsAPI();
     if (response.status === "failed") {
       console.log(response.message);
@@ -236,11 +234,20 @@ const filterProductsByCategory = (category) => {
 };
 
 const filteredProducts = computed(() => {
-  return products.value.filter(
-    (product) =>
+  return products.value.filter((product) => {
+    const matchesCategory =
       product.categoryName === selectedCategory.value ||
-      selectedCategory.value === "All"
-  );
+      selectedCategory.value === "All";
+    const matchesPlantType =
+      !selectedPlantType.value ||
+      product.subCategoryName === selectedPlantType.value;
+    const matchesSearchQuery =
+      !searchQuery.value ||
+      product.productName
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase());
+    return matchesCategory && matchesPlantType && matchesSearchQuery;
+  });
 });
 </script>
 

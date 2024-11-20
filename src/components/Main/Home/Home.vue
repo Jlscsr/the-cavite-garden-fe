@@ -6,7 +6,7 @@
       <div class="carousel-inner h-100">
         <div class="carousel-item h-100 d-flex justify-content-center active">
           <div class="carousel-content mt-5">
-            <p class="fs-1 text-white fs-semi-bold fs-heading-1">
+            <p class="hero-text fs-1 text-white fs-semi-bold fs-heading-1">
               Blooms of Elegance,
               <span class="text-emphasis d-block">Roots of Serinity</span>
               - Your Oasis In Cavite

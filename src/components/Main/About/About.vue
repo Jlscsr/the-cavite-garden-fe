@@ -1,7 +1,7 @@
 <template>
   <!-- About Section -->
   <section class="about section" id="about">
-    <h2 class="heading px-5 py-5">
+    <h2 class="styled-header heading px-5 py-5">
       About Us
       <span class="fs-heading-4">About Us</span>
     </h2>

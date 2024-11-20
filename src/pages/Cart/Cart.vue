@@ -3,10 +3,10 @@
     <!-- Cart Header -->
     <div class="cart-header">
       <div class="row border-bottom pb-2">
-        <div class="col-6">Product</div>
-        <div class="col-2 text-center">Unit Price</div>
-        <div class="col-2 text-center">Quantity</div>
-        <div class="col-2 text-end">Total Price</div>
+        <div class="col-12 col-md-6">Product</div>
+        <div class="col-4 col-md-2 text-center">Unit Price</div>
+        <div class="col-4 col-md-2 text-center">Quantity</div>
+        <div class="col-4 col-md-2 text-end">Total Price</div>
       </div>
     </div>
 
@@ -18,74 +18,62 @@
         class="row cart-item align-items-center py-3 border-bottom"
       >
         <!-- Checkbox and Product Info -->
-        <div class="col-6">
-          <div class="d-flex align-items-center gap-3">
-            <div class="form-check">
-              <input
-                class="form-check-input"
-                type="checkbox"
-                :checked="item.selected"
-                @change="toggleItemSelection(index)"
-              />
-            </div>
-            <video
-              :src="item.productInfo.productVideoURL"
-              autoplay
-              loop
-              muted
-              class="product-image"
-            ></video>
-            <div class="product-info">
-              <h6 class="product-name mb-1">
-                {{ item?.productInfo?.productName }}
-              </h6>
-              <p class="product-category mb-0">
-                {{ item?.productInfo?.categoryName }}
-              </p>
-            </div>
+        <div class="col-12 col-md-6 d-flex align-items-center gap-3">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              :checked="item.selected"
+              @change="toggleItemSelection(index)"
+            />
+          </div>
+          <video
+            :src="item.productInfo.productVideoURL"
+            autoplay
+            loop
+            muted
+            class="product-image"
+          ></video>
+          <div class="product-info">
+            <h6 class="product-name mb-1">
+              {{ item?.productInfo?.productName }}
+            </h6>
+            <p class="product-category mb-0">
+              {{ item?.productInfo?.categoryName }}
+            </p>
           </div>
         </div>
 
         <!-- Unit Price -->
-        <div class="col-2 text-center">
+        <div class="col-4 col-md-2 text-center">
           <span class="price">₱ {{ item?.productInfo?.productPrice }}</span>
         </div>
 
         <!-- Quantity Controls -->
-        <div class="col-2">
-          <div
-            class="quantity-controls d-flex justify-content-center align-items-center gap-2"
-          >
-            <button class="btn btn-quantity" @click="decrementQuantity(index)">
-              -
-            </button>
-            <input
-              type="number"
-              class="form-control quantity-input"
-              v-model="item.productQuantity"
-              min="1"
-              :max="item.productInfo.productStock"
-              @input="
-                item.productQuantity = Math.max(
-                  1,
-                  Math.min(item.productQuantity, item.productInfo.productStock)
-                );
-                item.totalPrice =
-                  parseFloat(item.productInfo.productPrice) *
-                  item.productQuantity;
-              "
-            />
-            <button class="btn btn-quantity" @click="incrementQuantity(index)">
-              +
-            </button>
-          </div>
-          <button class="btn btn-remove mt-2" @click="removeItem(index)">
+        <div
+          class="col-4 col-md-2 d-flex justify-content-center align-items-center"
+        >
+          <button class="btn btn-quantity" @click="decrementQuantity(index)">
+            -
+          </button>
+          <input
+            type="number"
+            class="form-control quantity-input"
+            v-model="item.productQuantity"
+            min="1"
+            :max="item.productInfo.productStock"
+            @input="updateTotalPrice(index)"
+          />
+          <button class="btn btn-quantity" @click="incrementQuantity(index)">
+            +
+          </button>
+          <button class="btn btn-remove ms-2" @click="removeItem(index)">
             Remove
           </button>
         </div>
 
         <!-- Total Price -->
-        <div class="col-2 text-end">
+        <div class="col-4 col-md-2 text-end">
           <span class="price">₱ {{ item?.totalPrice.toFixed(2) }}</span>
         </div>
       </div>
@@ -98,8 +86,8 @@
           <span class="total-label">Total Price: </span>
           <span class="total-price">₱ {{ calculateTotal.toFixed(2) }}</span>
         </div>
-        <div class="col-auto">
-          <button class="btn btn-outline-secondary me-2" @click="backToShop">
+        <div class="col-auto d-flex gap-2">
+          <button class="btn btn-outline-secondary" @click="backToShop">
             Back to shop
           </button>
           <button class="btn btn-primary" @click="checkout">Checkout</button>
@@ -243,7 +231,8 @@ const checkout = async () => {
 
 <style lang="scss" scoped>
 .cart-container {
-  margin-top: 10em;
+  margin-top: 5em;
+  padding: 1rem;
 
   .cart-header {
     font-weight: 500;
@@ -251,8 +240,8 @@ const checkout = async () => {
   }
 
   .product-image {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     object-fit: cover;
     border-radius: 4px;
   }
@@ -271,26 +260,33 @@ const checkout = async () => {
   }
 
   .quantity-controls {
-    .btn-quantity {
-      width: 32px;
-      height: 32px;
-      padding: 0;
-      border: 1px solid #dee2e6;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-      &:hover {
-        background: #f8f9fa;
-      }
-    }
+  .btn-quantity {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #dee2e6;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
 
-    .quantity-input {
-      width: 50px;
-      text-align: center;
-      padding: 0.375rem;
+    &:hover {
+      background: #f8f9fa;
     }
+  }
+
+  .quantity-input {
+    width: 50px;
+    text-align: center;
+    padding: 0.375rem;
+    font-size: 1rem;
   }
 
   .btn-remove {
@@ -299,7 +295,6 @@ const checkout = async () => {
     padding: 0;
     border: none;
     background: none;
-    width: 100%;
     text-align: center;
 
     &:hover {

@@ -70,7 +70,7 @@
         </div>
         <div class="modal-body">
           <div class="row">
-            <div class="col">
+            <div class="col-md-6">
               <h2 class="fs-semi-bold fs-heading-6">Order Information</h2>
               <p class="fs-text-paragram">
                 Date: {{ selectedOrder?.createdAt }}
@@ -82,7 +82,7 @@
                 Payment: {{ firstLetterUppercase(selectedOrder?.paymentType) }}
               </p>
             </div>
-            <div class="col">
+            <div class="col-md-6">
               <h2 class="fs-semi-bold fs-heading-6">Shipping Address</h2>
               <p class="fs-text-paragram">
                 {{ selectedOrder?.shippingAddress }}
@@ -91,7 +91,7 @@
           </div>
 
           <div class="fs-text-paragraph mt-3 text-semi-bold">Order Items</div>
-          <table class="table">
+          <table class="table table-responsive">
             <thead>
               <tr>
                 <th scope="col">Item</th>
@@ -116,6 +116,7 @@
               </tr>
             </tbody>
           </table>
+
           <div class="text-end me-5">
             <p class="text-semi-bold mt-3 me-3">
               Total: ₱{{ selectedOrder?.totalTransactionPrice.toFixed(2) }}
@@ -446,5 +447,12 @@ const submitReview = async (productID) => {
 
 .card:hover {
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 767px) {
+  .modal-dialog {
+    max-width: 100%;
+    margin: 0;
+  }
 }
 </style>

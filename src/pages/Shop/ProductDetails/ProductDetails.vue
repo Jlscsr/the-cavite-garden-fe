@@ -239,6 +239,10 @@ const addToCart = (productId) => {
 
   width: 70%;
 
+  @media (max-width: 768px) {
+    width: 90%;
+  }
+
   .product-image {
     max-width: 100%;
     height: 100%;
@@ -248,6 +252,10 @@ const addToCart = (productId) => {
     font-size: 2rem;
     font-weight: 500;
     margin-bottom: 0.5rem;
+
+    @media (max-width: 768px) {
+      margin-top: 1rem;
+    }
   }
 
   .product-category {

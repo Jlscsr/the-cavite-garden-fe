@@ -13,8 +13,10 @@
         background-repeat: no-repeat;
 
         & > .carousel-content {
-          & > h1 {
-            font-size: 7rem;
+          .hero-text {
+            @media (max-width: 768px) {
+              font-size: 3rem !important;
+            }
           }
 
           & > p {

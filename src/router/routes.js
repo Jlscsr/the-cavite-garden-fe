@@ -28,6 +28,7 @@ const routes = [
             component: () => import("../pages/Home/Home.vue"),
             meta: {
               requiresAuth: false,
+              role: ["customer"],
             },
           },
           {
@@ -85,25 +86,6 @@ const routes = [
               requiresAuth: true,
               role: ["customer"],
             },
-          },
-          {
-            path: "track-orders/:customerId?/:transactionId?",
-            name: "track-orders",
-            meta: {
-              requiresAuth: true,
-              role: ["customer"],
-            },
-            component: () =>
-              import("../pages/Customer/TrackOrders/TrackOrders.vue"),
-          },
-          {
-            path: "payment",
-            name: "payment",
-            meta: {
-              requiresAuth: true,
-              role: ["customer"],
-            },
-            component: () => import("../pages/Payment.vue"),
           },
         ],
       },

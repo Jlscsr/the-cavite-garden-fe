@@ -76,6 +76,7 @@ router.beforeEach(async (to, from) => {
 
   // Handle role-based access for authenticated users
   const userRole = userStore.getUserRole();
+  console.log(userRole);
 
   // Check if the route has a defined role array in meta
   const allowedRoles = to.matched.some(

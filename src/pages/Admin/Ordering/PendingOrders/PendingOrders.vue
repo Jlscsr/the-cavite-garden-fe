@@ -132,7 +132,7 @@
 
                 <li
                   v-if="
-                    order?.paymentType === 'over the counter' &&
+                    order?.paymentType === 'counter' &&
                     order?.orderType === 'delivery' &&
                     order?.status === 'pending'
                   "
@@ -147,7 +147,7 @@
                 </li>
                 <li
                   v-if="
-                    order?.paymentType === 'over the counter' &&
+                    order?.paymentType === 'counter' &&
                     order?.orderType === 'delivery' &&
                     order?.status === 'Preparing'
                   "
@@ -162,7 +162,7 @@
                 </li>
                 <li
                   v-if="
-                    order?.paymentType === 'over the counter' &&
+                    order?.paymentType === 'counter' &&
                     order?.orderType === 'delivery' &&
                     order?.status === 'To Ship'
                   "
