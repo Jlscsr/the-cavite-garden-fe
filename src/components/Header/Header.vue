@@ -43,12 +43,12 @@
             <li
               class="nav-item"
               :class="{ active: route.name === 'ourStory' }"
-              @click="handleNavClick('story')"
+              @click="handleNavClick('ourStory')"
             >
               <router-link
                 class="nav-link fs-6 text-black cursor-pointer"
                 :to="{ name: 'ourStory' }"
-                >Story</router-link
+                >History</router-link
               >
             </li>
             <li class="nav-item" @click="handleNavClick('shop')">
@@ -119,7 +119,7 @@
               </div>
             </li>
 
-            <li class="nav-item">
+            <li class="nav-item" :class="{active: route.name === 'cart'}">
               <div class="cart-icon" @click="goToCart">
                 <ShoppingCartIcon size="20" />
               </div>
