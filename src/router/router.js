@@ -66,14 +66,14 @@ router.beforeEach(async (to, from) => {
 
   // Allow unauthenticated access to `home` or other public routes
   if (!isAuthenticated) {
-    if (!to.matched.some((record) => record.meta.requiresAuth)) {
-      return true; // Public route, allow access
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+      displayLoginFirstAlert(() => {
+        return { name: "login" };
+      });
+      return false; // Stop navigation to protected routes
     }
 
-    displayLoginFirstAlert(() => {
-      return { name: "login" };
-    });
-    return false; // Stop navigation to protected routes
+    return true; // Public route, allow access
   }
 
   // Handle role-based access for authenticated users

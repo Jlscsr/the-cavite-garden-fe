@@ -61,6 +61,15 @@ const routes = [
             ],
           },
           {
+            path: "ourStory",
+            name: "ourStory",
+            component: () => import("../pages/OurStory/OurStory.vue"),
+            meta: {
+              requiresAuth: false,
+              role: ["customer"],
+            },
+          },
+          {
             path: "shop/:id?",
             name: "shop",
             component: () => import("../pages/Shop/Shop.vue"),

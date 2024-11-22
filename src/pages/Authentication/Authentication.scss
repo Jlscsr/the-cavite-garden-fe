@@ -2,9 +2,55 @@
   height: 100vh;
   & > .d-flex {
     & > .shadow {
+      height: 500px;
+      width: 80%;
       & > .row {
-        & > .col:nth-of-type(2) {
-          width: 500px;
+        height: 100% !important;
+        margin: 0 !important;
+
+        & > .col-lg-6:nth-of-type(1) {
+          height: 100%;
+        }
+
+        & > .col-lg-6:nth-of-type(2) {
+          height: 100%;
+          overflow: auto;
+          /* width: 500px;
+
+          @media (max-width: 576px) {
+            width: 100%;
+            padding: 0;
+          } */
+        }
+
+        .col-lg-6 {
+          .names,
+          .passwords {
+            @media (max-width: 576px) {
+              flex-direction: column !important;
+            }
+          }
+        }
+
+        .step-indicators {
+          @media (max-width: 500px) {
+            flex-direction: column;
+            gap: 1em;
+          }
+          .step {
+            flex-grow: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: #e0e0e0;
+            margin: 0 5px;
+            border-radius: 5px;
+            color: #666;
+
+            &.active {
+              background-color: #007bff;
+              color: white;
+            }
+          }
         }
       }
     }

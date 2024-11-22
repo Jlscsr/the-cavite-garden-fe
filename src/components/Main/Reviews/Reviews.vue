@@ -10,8 +10,6 @@
       <Swiper
         :slides-per-view="slidesPerView"
         :space-between="spaceBetween"
-        @swiper="onSwiper"
-        @slideChange="onSlideChange"
         class="px-1 py-2"
       >
         <SwiperSlide
@@ -43,19 +41,12 @@
 <script setup>
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { GetAllProductReviews } from "../../../composables/Reviews";
 import "swiper/css";
 
 const slides = ref(Array(5).fill({})); // Dummy data
 const slidesPerView = ref(2);
 const spaceBetween = ref(30);
-
-const onSwiper = (swiper) => {
-  console.log(swiper);
-};
-
-const onSlideChange = () => {
-  console.log("slide change");
-};
 
 const updateSwiperConfig = () => {
   const width = window.innerWidth;

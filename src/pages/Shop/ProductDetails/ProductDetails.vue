@@ -83,7 +83,9 @@
           >
             Add to Cart
           </button>
-          <button class="btn btn-primary flex-grow-1">Buy Now</button>
+          <button class="btn btn-primary flex-grow-1" @click="checkout">
+            Buy Now
+          </button>
         </div>
       </div>
     </div>
@@ -235,6 +237,10 @@ const addToCart = (productId) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+const checkout = async () => {
+  console.log(product.value);
 };
 </script>
 

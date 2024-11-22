@@ -34,14 +34,8 @@
 
         & > .container {
           & > .row {
-            & > .col {
-              padding-block: 1rem;
-              border: 1px solid $main-color;
-              border-radius: $border-radius-2;
-
-              & > img {
-                width: 2rem;
-              }
+            @media (max-width: 576px) {
+              flex-direction: column;
             }
           }
         }

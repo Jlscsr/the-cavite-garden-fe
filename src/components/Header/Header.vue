@@ -6,70 +6,78 @@
           The Cavite Garden
           <i class="fas fa-leaf ms-1"></i>
         </router-link>
+
         <button
           class="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
+          data-bs-target="#navbarContent"
+          aria-controls="navbarContent"
           aria-expanded="false"
           aria-label="Toggle navigation"
+          ref="navToggler"
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+        <div class="collapse navbar-collapse" id="navbarContent">
           <ul class="navbar-nav me-auto ms-auto gap-3 mb-2 mb-lg-0">
-            <li class="nav-item">
+            <li
+              class="nav-item"
+              :class="{
+                active:
+                  (route.name === 'home' && currentSection === '') ||
+                  currentSection === 'home',
+              }"
+              @click="handleNavClick('home')"
+            >
+              <a class="nav-link fs-6 text-black cursor-pointer">Home</a>
+            </li>
+            <li
+              class="nav-item"
+              :class="{ active: currentSection === 'about' }"
+              @click="handleNavClick('about')"
+            >
+              <a class="nav-link fs-6 text-black cursor-pointer">About</a>
+            </li>
+            <li
+              class="nav-item"
+              :class="{ active: route.name === 'ourStory' }"
+              @click="handleNavClick('story')"
+            >
               <router-link
-                :to="{ name: 'home' }"
-                class="nav-link fs-6 text-black"
-                >Home</router-link
-              >
-            </li>
-            <li class="nav-item">
-              <a
                 class="nav-link fs-6 text-black cursor-pointer"
-                @click="goToOrSlideTo('about')"
-                >About</a
+                :to="{ name: 'ourStory' }"
+                >Story</router-link
               >
             </li>
-            <li class="nav-item">
+            <li class="nav-item" @click="handleNavClick('shop')">
               <router-link
                 :to="{ name: 'shop' }"
                 class="nav-link fs-6 text-black"
-                href="#menu"
                 >Shop</router-link
               >
             </li>
-            <li class="nav-item">
-              <a
-                class="nav-link fs-6 text-black cursor-pointer"
-                @click="goToOrSlideTo('reviews')"
-                >Reviews</a
-              >
-            </li>
           </ul>
-        </div>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul
             v-if="!userStore.isUserAuthenticated()"
-            class="navbar-nav mb-2 mb-lg-0"
+            class="navbar-nav auth-nav"
           >
-            <li class="nav-item">
+            <li class="nav-item" @click="handleNavClick">
               <router-link
                 class="nav-link text-black fs-heading-6"
                 :to="{ name: 'login' }"
+                >Login</router-link
               >
-                Login
-              </router-link>
             </li>
           </ul>
-          <ul v-else class="navbar-nav mb-2 mb-lg-0 align-items-center">
-            <li class="">
+
+          <ul v-else class="navbar-nav auth-nav align-items-center">
+            <li class="nav-item">
               <div class="dropdown-center">
                 <a
-                  class="btn dropdown-toggle"
+                  class="btn dropdown-toggle notification-btn"
                   href="#"
                   role="button"
                   data-bs-toggle="dropdown"
@@ -84,10 +92,10 @@
                   <NotificationBellIcon size="20" />
                 </a>
 
-                <ul class="dropdown-menu" v-if="notificationContainer">
+                <ul class="dropdown-menu notification-menu">
                   <li
                     v-for="notification in notificationContainer"
-                    class="cursor-pointer px-3 py-2 text-black mb-2 border-bottom"
+                    class="notification-item"
                     @click="
                       gotoPendingOrdersPage(
                         notification.orderID,
@@ -110,20 +118,17 @@
                 </ul>
               </div>
             </li>
-            <li class="">
-              <div
-                class="mx-3 cursor-pointer"
-                data-bs-toggle="modal"
-                data-bs-target="#headerActiveModal"
-                @click="goToCart"
-              >
+
+            <li class="nav-item">
+              <div class="cart-icon" @click="goToCart">
                 <ShoppingCartIcon size="20" />
               </div>
             </li>
-            <li class="">
+
+            <li class="nav-item">
               <div class="dropdown">
                 <button
-                  class="btn dropdown-toggle"
+                  class="btn dropdown-toggle profile-btn"
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
@@ -131,7 +136,7 @@
                   <ProfileIcon size="20" />
                 </button>
                 <ul class="dropdown-menu">
-                  <li>
+                  <li @click="handleNavClick">
                     <router-link
                       class="dropdown-item"
                       :to="{ name: 'profile' }"
@@ -139,25 +144,21 @@
                       Profile
                     </router-link>
                   </li>
-                  <li>
+                  <li @click="handleNavClick">
                     <router-link
-                      class="dropdown-item cursor-pointer"
-                      :to="{
-                        name: 'pendingOrders',
-                      }"
+                      class="dropdown-item"
+                      :to="{ name: 'pendingOrders' }"
                     >
                       Pending Orders
                     </router-link>
                   </li>
-                  <li>
+                  <li @click="handleNavClick">
                     <router-link
-                      :to="{
-                        name: 'ordersHistory',
-                      }"
                       class="dropdown-item"
-                      href="#"
-                      >Orders History</router-link
+                      :to="{ name: 'ordersHistory' }"
                     >
+                      Orders History
+                    </router-link>
                   </li>
                   <li>
                     <button class="btn dropdown-item" @click="handleLogoutUser">
@@ -176,12 +177,10 @@
 
 <script setup>
 import { useRoute, useRouter } from "vue-router";
-import { ref, onMounted, computed } from "vue";
-
+import { ref, onMounted } from "vue";
 import NotificationBellIcon from "@assets/icons/NotificationBellIcon.vue";
 import ShoppingCartIcon from "@assets/icons/ShoppingCartIcon.vue";
 import ProfileIcon from "@assets/icons/ProfileIcon.vue";
-
 import {
   database,
   ref as dbRef,
@@ -192,25 +191,42 @@ import {
   onChildChanged,
   onValue,
 } from "../../boot/firebase";
-
 import { useUserStore } from "@stores/userStore.js";
 import { firstLetterUppercase } from "@composables/Helpers";
 import { LogoutUserAPI } from "@composables/Authentication";
 import Swal from "sweetalert2";
+import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
 
 const router = useRouter();
 const route = useRoute();
+const navToggler = ref(null);
 
 const userStore = useUserStore();
 const userData = ref(userStore.getUserInfo());
 const notificationContainer = ref([]);
+const currentSection = ref("");
 
 onMounted(async () => {
-  listenForTransactionChanges(userData.value.id);
+  if (userData.value.id) {
+    listenForTransactionChanges(userData.value.id);
+  }
 });
 
+const handleNavClick = (section) => {
+  // Close navbar on mobile when item is clicked
+  const navbar = document.getElementById("navbarContent");
+  const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+  if (bsCollapse) {
+    bsCollapse.hide();
+  }
+
+  if (section) {
+    goToOrSlideTo(section);
+  }
+};
+
+// Your existing functions remain the same
 const gotoPendingOrdersPage = (orderID, status) => {
-  // Update the notification status in firebase to read
   const orderRef = dbRef(database, `orders/${orderID}`);
   update(orderRef, { notificationStatus: "read" }, { merge: true });
 
@@ -240,25 +256,21 @@ const listenForTransactionChanges = (customerID) => {
 
   onChildChanged(ordersQuery, (snapshot) => {
     const orderData = snapshot.val();
-    if (snapshot.exists()) {
-      if (orderData) {
-        notificationContainer.value = Object.values(orderData).filter(
-          (order) =>
-            order.status !== "pending" && order.notificationStatus === "unread"
-        );
-      }
+    if (snapshot.exists() && orderData) {
+      notificationContainer.value = Object.values(orderData).filter(
+        (order) =>
+          order.status !== "pending" && order.notificationStatus === "unread"
+      );
     }
   });
 
   onValue(ordersQuery, (snapshot) => {
     const orderData = snapshot.val();
-    if (snapshot.exists()) {
-      if (orderData) {
-        notificationContainer.value = Object.values(orderData).filter(
-          (order) =>
-            order.status !== "pending" && order.notificationStatus === "unread"
-        );
-      }
+    if (snapshot.exists() && orderData) {
+      notificationContainer.value = Object.values(orderData).filter(
+        (order) =>
+          order.status !== "pending" && order.notificationStatus === "unread"
+      );
     }
   });
 };
@@ -275,7 +287,6 @@ const handleLogoutUser = async () => {
       await LogoutUserAPI();
       userStore.setUserInfo({});
       userStore.setUserAuthenticated(false);
-
       router.push({ name: "home" });
     }
   });
@@ -283,18 +294,19 @@ const handleLogoutUser = async () => {
 
 const goToOrSlideTo = (sectionId) => {
   if (route.name === "home") {
-    // Scroll to the section if on the home page
+    currentSection.value = sectionId;
     const section = document.getElementById(sectionId);
     if (section) {
       section.scrollIntoView({ behavior: "smooth" });
     }
   } else {
-    // Navigate to the home page with a hash
+    currentSection.value = "";
     router.push({ name: "home", hash: `#${sectionId}` });
   }
 };
 
 const goToCart = () => {
+  handleNavClick();
   router.push({ name: "cart" });
 };
 </script>

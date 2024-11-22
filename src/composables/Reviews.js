@@ -10,4 +10,14 @@ const AddNewProductReviewAPI = async (payload) => {
   }
 };
 
-export { AddNewProductReviewAPI };
+const GetAllProductReviews = async () => {
+  try {
+    const response = await API.get("/product/reviews");
+
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
+};
+
+export { AddNewProductReviewAPI, GetAllProductReviews };
