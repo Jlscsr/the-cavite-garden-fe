@@ -14,7 +14,7 @@ const routes = [
   {
     path: "/",
     component: () => import("../App.vue"),
-    redirect: "home",
+    redirect: "/home",
     meta: { requiresAuth: false },
     children: [
       {
