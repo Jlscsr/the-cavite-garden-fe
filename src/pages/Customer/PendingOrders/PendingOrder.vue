@@ -195,6 +195,8 @@ onMounted(async () => {
       };
     });
 
+    console.log(pendingOrders.value);
+
     if (route.params.id) {
       viewOrderDetails(route.params.id);
     }

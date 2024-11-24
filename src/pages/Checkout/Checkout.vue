@@ -108,6 +108,7 @@ import { useUserStore } from "../../store/userStore";
 import { AddNewTransactionAPI } from "../../composables/Transaction";
 import { ref as dbRef, set, database } from "../../boot/firebase";
 import Swal from "sweetalert2";
+import { GetProductByIDAPI } from "../../composables/Products";
 
 const route = useRoute();
 const router = useRouter();
@@ -138,6 +139,8 @@ const backToCart = () => {
 };
 
 const processCheckout = async () => {
+  console.log("Cart Items: ", cartItems.value);
+  console.log("Product Carts: ", productCarts.value);
   btnLoadingState.value = true;
   let formatUserAddress;
 
@@ -181,7 +184,7 @@ const processCheckout = async () => {
     paymentType: paymentMethod.value,
     shippingAddress: formatUserAddress,
     status,
-    purchasedProducts: cartItems.value,
+    purchasedProducts: cartItems.value
   };
 
   if (paymentMethod.value === "gcash") {
@@ -195,22 +198,23 @@ const processCheckout = async () => {
     });
 
     const options = {
-      method: "POST",
+      method: 'POST',
       headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        authorization: "Basic c2tfdGVzdF9HUW40cG9nOXVYeVFLS1RnZjVZZm9VanY6",
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: 'Basic c2tfdGVzdF92dHc2bVg3clJRMTVLZXN1TDU1cDl6Z3E6'
       },
       body: JSON.stringify({
         data: {
           attributes: {
-            amount: orderTotal.value * 100, // Amount in centavos
-            description: "Payment for order",
-            remarks: "Online order",
-          },
-        },
-      }),
+            amount: orderTotal.value * 100, 
+            description: 'Payment for order', 
+            remarks: 'This is just a test'
+          }
+        }
+      })
     };
+
 
     try {
       const res = await fetch("https://api.paymongo.com/v1/links", options);
@@ -322,6 +326,9 @@ const addNewOrderInFirebase = async (orderData) => {
 
 onMounted(async () => {
   let ids;
+  console.log(route.query);
+  console.log(route.query.qty);
+  console.log(route.query.initPrice);
 
   if (route.params.id.includes(",")) {
     ids = route.params.id.split(",");
@@ -330,9 +337,54 @@ onMounted(async () => {
   }
 
   try {
-    if (ids.length > 1) {
-      for (const id of ids) {
-        const response = await GetCartProductByID(id);
+
+    if (ids.length === 1 && route.query.qty) {
+      const response = await GetProductByIDAPI(ids[0]);
+
+      if (response.status === "failed") { 
+        Swal.fire({
+          icon: "error",
+          title: "Oops, something went wrong!",
+          text: response.message,
+        });
+        return;
+      }
+
+      productCarts.value.push({
+        name: response.data.productName,
+        quantity: route.query.qty,
+        price: parseFloat(route.query.initPrice),
+        video: response.data.productVideoURL,
+        totalPrice:
+          parseFloat(route.query.initPrice) * route.query.qty,
+      });
+      cartItems.value.push({
+        customerID: userStore.getUserInfo().id,
+        productID: route.params.id,
+        productQuantity: route.query.qty,
+        productInitialPrice: parseFloat(route.query.initPrice),
+        totalPrice: parseFloat(route.query.initPrice * route.query.qty),
+        productInfo: response.data
+      })
+    } else if (!route.query.qty) {
+      if (ids.length > 1) {
+        for (const id of ids) {
+          const response = await GetCartProductByID(id);
+
+          if (response.status === "failed") {
+            Swal.fire({
+              icon: "error",
+              title: "Oops, something went wrong!",
+              text: response.message,
+            });
+            return;
+          }
+
+          cartItems.value.push(response.data);
+          console.log("Multiple items", cartItems.value);
+        }
+      } else {
+        const response = await GetCartProductByID(ids[0]);
 
         if (response.status === "failed") {
           Swal.fire({
@@ -344,31 +396,17 @@ onMounted(async () => {
         }
 
         cartItems.value.push(response.data);
-        console.log("Multiple items", cartItems.value);
-      }
-    } else {
-      const response = await GetCartProductByID(ids[0]);
-
-      if (response.status === "failed") {
-        Swal.fire({
-          icon: "error",
-          title: "Oops, something went wrong!",
-          text: response.message,
-        });
-        return;
       }
 
-      cartItems.value.push(response.data);
+      productCarts.value = cartItems.value.map((item) => ({
+        name: item.productInfo.productName,
+        quantity: item.productQuantity,
+        price: parseFloat(item.productInfo.productPrice),
+        video: item.productInfo.productVideoURL,
+        totalPrice:
+          parseFloat(item.productInfo.productPrice) * item.productQuantity,
+      }));
     }
-
-    productCarts.value = cartItems.value.map((item) => ({
-      name: item.productInfo.productName,
-      quantity: item.productQuantity,
-      price: parseFloat(item.productInfo.productPrice),
-      video: item.productInfo.productVideoURL,
-      totalPrice:
-        parseFloat(item.productInfo.productPrice) * item.productQuantity,
-    }));
 
     console.log(cartItems.value);
     console.log(productCarts.value);

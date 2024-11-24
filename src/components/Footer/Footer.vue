@@ -34,7 +34,7 @@
             <ul>
               <li>
                 <i class="fab fa-facebook-f me-2"></i>
-                <a href="#" class="fs-light">Facebook</a>
+                <a href="https://web.facebook.com/thecavitegardens?_rdc=1&_rdr" class="fs-light">Facebook</a>
               </li>
             </ul>
           </div>

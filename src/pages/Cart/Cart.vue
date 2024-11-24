@@ -187,7 +187,7 @@ const calculateTotal = computed(() => {
 });
 
 const backToShop = () => {
-  // Implement navigation back to shop
+  router.push( {name: 'shop'} )
 };
 
 const checkout = async () => {

@@ -240,7 +240,22 @@ const addToCart = (productId) => {
 };
 
 const checkout = async () => {
-  console.log(product.value);
+  Swal.fire({
+    icon: "info",
+    title: "Are you sure?",
+    text: "Do you want to checkout this product?"
+  }).then((result) => {
+    if(result.isConfirmed){
+      router.push(
+        {name: 'checkout', 
+        params: {
+          id: product.value.id
+        }, 
+        query: {
+          qty: quantity.value, initPrice: product.value.productPrice
+        }})
+    }
+  });
 };
 </script>
 
