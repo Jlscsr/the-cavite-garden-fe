@@ -74,7 +74,7 @@ const routes = [
             name: "shop",
             component: () => import("../pages/Shop/Shop.vue"),
             meta: {
-              requiresAuth: true,
+              requiresAuth: false,
               role: ["customer"],
             },
           },

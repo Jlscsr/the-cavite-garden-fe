@@ -26,20 +26,13 @@
           <h6 class="sidebar-title">Categories</h6>
           <div class="category-list">
             <div
-              v-for="category in [
-                'All',
-                'Plants',
-                'Flowers',
-                'Pots',
-                'Soils',
-                'Rocks',
-              ]"
+              v-for="category in categories"
               :key="category"
               class="category-item cursor-pointer"
-              :class="{ active: selectedCategory === category }"
-              @click="filterProductsByCategory(category)"
+              :class="{ active: selectedCategory === category?.categoryName }"
+              @click="filterProductsByCategory(category?.categoryName)"
             >
-              {{ category }}
+              {{ category?.categoryName }}
             </div>
           </div>
         </div>
@@ -57,11 +50,14 @@
               <div v-if="windowWidth < 1000" class="dropdown">
                 <select class="form-select" v-model="selectedCategory">
                   <option selected>Select plant category</option>
-                  <option value="Plants">Plants</option>
-                  <option value="Flowers">Flowers</option>
-                  <option value="Pots">Pots</option>
-                  <option value="Soils">Soils</option>
-                  <option value="Rocks">Rocks</option>
+                  <option value="All">All</option>
+                  <option
+                    v-for="category in categories"
+                    :key="category.id"
+                    :value="category.categoryName"
+                  >
+                    {{ category.categoryName }}
+                  </option>
                 </select>
               </div>
               <div class="search-box d-flex align-items-center">
@@ -139,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onBeforeMount, onBeforeUnmount } from "vue";
+import { ref, onMounted, computed, onBeforeUnmount } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { getDownloadURL, listAll, ref as storageRef } from "firebase/storage";
 import { storage } from "../../boot/firebase";
@@ -147,6 +143,7 @@ import { GetAllProductsAPI } from "@composables/Products";
 
 import Product360Viewer from "../../360Viewer.vue";
 import ProductDetails from "./ProductDetails/ProductDetails.vue";
+import { GetAllCategoriesAPI } from "../../composables/Categories";
 
 const selectedCategory = ref("Plants");
 const selectedPlantType = ref(null); // New variable for selected plant type
@@ -154,6 +151,7 @@ const searchQuery = ref(""); // New variable for search query
 const selectedProduct = ref(null);
 
 const pageLoadingState = ref(false);
+const categories = ref([]);
 
 const route = useRoute();
 const router = useRouter();
@@ -193,6 +191,17 @@ onMounted(async () => {
       }
     }
     products.value = productData;
+
+    const categoriesResponse = await GetAllCategoriesAPI();
+
+    if (categoriesResponse.status === "failed") {
+      console.log(categoriesResponse.message);
+      return;
+    }
+
+    categories.value = categoriesResponse.data || [];
+    categories.value.unshift({ id: 1, categoryName: "All" });
+
     pageLoadingState.value = false;
   } catch (error) {
     console.log(error);

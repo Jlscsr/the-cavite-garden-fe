@@ -7,7 +7,7 @@
       <!-- Product Image and Basic Info -->
       <div class="col-md-6">
         <video
-          src="../../../assets/videos/Bunny_Ears_Cactus.mp4"
+          :src="product?.productVideoURL"
           alt="Mecardonia"
           class="product-image img-fluid rounded"
           autoplay

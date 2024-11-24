@@ -130,32 +130,78 @@
                   <div class="row">
                     <div class="col-md-6 mb-3">
                       <label class="form-label">Region</label>
-                      <input
-                        v-model="currentAddress.region"
-                        class="form-control"
-                        required
-                      />
+                      <select
+                        @change="handleProvince('c', $event)"
+                        class="form-select"
+                      >
+                        <option selected>Select region</option>
+                        <option
+                          v-for="region in regionOptions"
+                          :key="region.region_code"
+                          :value="region.region_code"
+                        >
+                          {{ region.region_name }}
+                        </option>
+                      </select>
                     </div>
+
+                    <!-- Province -->
                     <div class="col-md-6 mb-3">
                       <label class="form-label">Province</label>
-                      <input
-                        v-model="currentAddress.province"
-                        class="form-control"
-                        required
-                      />
+                      <select
+                        @change="handleMunicipality('c', $event)"
+                        class="form-select"
+                      >
+                        <option selected>Select province</option>
+                        <option
+                          v-for="province in provinceOptions"
+                          :key="province.province_code"
+                          :value="province.province_code"
+                        >
+                          {{ province.province_name }}
+                        </option>
+                      </select>
                     </div>
+
+                    <!-- Municipality -->
                     <div class="col-md-6 mb-3">
                       <label class="form-label">Municipality</label>
-                      <input
-                        v-model="currentAddress.city"
-                        class="form-control"
-                        required
-                      />
+                      <select
+                        @change="handleBarangay('c', $event)"
+                        class="form-select"
+                      >
+                        <option selected>Select municipality</option>
+                        <option
+                          v-for="city in cityOptions"
+                          :key="city.city_code"
+                          :value="city.city_code"
+                        >
+                          {{ city.city_name }}
+                        </option>
+                      </select>
                     </div>
+
+                    <!-- Barangay -->
                     <div class="col-md-6 mb-3">
                       <label class="form-label">Barangay</label>
+                      <select
+                        @change="handleBarangayChange('c', $event)"
+                        class="form-select"
+                      >
+                        <option selected>Select barangay</option>
+                        <option
+                          v-for="barangay in barangayOptions"
+                          :key="barangay.brgy_code"
+                          :value="barangay.brgy_code"
+                        >
+                          {{ barangay.brgy_name }}
+                        </option>
+                      </select>
+                    </div>
+                    <div class="col-12 mb-3">
+                      <label class="form-label">Postal code</label>
                       <input
-                        v-model="currentAddress.barangay"
+                        v-model="currentAddress.postalCode"
                         class="form-control"
                         required
                       />
@@ -166,6 +212,7 @@
                         v-model="currentAddress.streetAddress"
                         class="form-control"
                         required
+                        placeholder="e.g. subd. blk, lot, street."
                       />
                     </div>
                     <div class="col-12 mb-3">
@@ -204,32 +251,72 @@
                     <div class="row">
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Region</label>
-                        <input
-                          v-model="permanentAddress.region"
-                          class="form-control"
-                          required
-                        />
+                        <select
+                          @change="handleProvince('p', $event)"
+                          class="form-select"
+                        >
+                          <option selected>Select region</option>
+                          <option
+                            v-for="region in regionOptions"
+                            :key="region.region_code"
+                            :value="region.region_code"
+                          >
+                            {{ region.region_name }}
+                          </option>
+                        </select>
                       </div>
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Province</label>
-                        <input
-                          v-model="permanentAddress.province"
-                          class="form-control"
-                          required
-                        />
+                        <select
+                          @change="handleMunicipality('p', $event)"
+                          class="form-select"
+                        >
+                          <option selected>Select province</option>
+                          <option
+                            v-for="province in provinceOptions"
+                            :key="province.province_code"
+                            :value="province.province_code"
+                          >
+                            {{ province.province_name }}
+                          </option>
+                        </select>
                       </div>
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Municipality</label>
-                        <input
-                          v-model="permanentAddress.city"
-                          class="form-control"
-                          required
-                        />
+                        <select
+                          @change="handleBarangay('p', $event)"
+                          class="form-select"
+                        >
+                          <option selected>Select municipality</option>
+                          <option
+                            v-for="city in cityOptions"
+                            :key="city.city_code"
+                            :value="city.city_code"
+                          >
+                            {{ city.city_name }}
+                          </option>
+                        </select>
                       </div>
                       <div class="col-md-6 mb-3">
                         <label class="form-label">Barangay</label>
+                        <select
+                          @change="handleBarangayChange('p', $event)"
+                          class="form-select"
+                        >
+                          <option selected>Select barangay</option>
+                          <option
+                            v-for="brgy in barangayOptions"
+                            :key="brgy.brgy_code"
+                            :value="brgy.brgy_code"
+                          >
+                            {{ brgy.brgy_name }}
+                          </option>
+                        </select>
+                      </div>
+                      <div class="col-12 mb-3">
+                        <label class="form-label">Postal code</label>
                         <input
-                          v-model="permanentAddress.barangay"
+                          v-model="permanentAddress.postalCode"
                           class="form-control"
                           required
                         />
@@ -323,9 +410,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-
+import {
+  regions,
+  provinces,
+  cities,
+  barangays,
+} from "select-philippines-address";
 import { registerUser } from "@composables/Authentication";
 import {
   displayWarningAlert,
@@ -347,6 +439,11 @@ const firstName = ref("");
 const lastName = ref("");
 const birthday = ref("");
 
+const regionOptions = ref([]);
+const provinceOptions = ref([]);
+const cityOptions = ref([]);
+const barangayOptions = ref([]);
+
 // Contact Details
 const phoneNumber = ref("");
 const email = ref("");
@@ -357,6 +454,7 @@ const currentAddress = ref({
   province: "",
   city: "",
   barangay: "",
+  postalCode: "",
   streetAddress: "",
   landmark: "",
   addressLabel: "",
@@ -367,6 +465,7 @@ const permanentAddress = ref({
   province: "",
   city: "",
   barangay: "",
+  postalCode: "",
   streetAddress: "",
   landmark: "",
   addressLabel: "",
@@ -375,6 +474,11 @@ const permanentAddress = ref({
 // Passwords
 const password = ref("");
 const confirmPassword = ref("");
+
+onMounted(async () => {
+  regionOptions.value = await regions();
+  console.log(regionOptions.value);
+});
 
 // Navigation Methods
 const nextStep = () => {
@@ -400,6 +504,7 @@ const isFormValid = computed(() => {
     currentAddress.value.province &&
     currentAddress.value.city &&
     currentAddress.value.barangay &&
+    currentAddress.value.postalCode &&
     currentAddress.value.streetAddress &&
     currentAddress.value.landmark &&
     currentAddress.value.addressLabel;
@@ -409,6 +514,7 @@ const isFormValid = computed(() => {
     (permanentAddress.value.region &&
       permanentAddress.value.province &&
       permanentAddress.value.city &&
+      permanentAddress.value.postalCode &&
       permanentAddress.value.barangay &&
       permanentAddress.value.streetAddress &&
       permanentAddress.value.landmark &&
@@ -468,6 +574,9 @@ const submitForm = async () => {
     // Prepare and Send Data
     const userData = prepareUserData();
 
+    console.log(userData);
+    return;
+
     const response = await registerUser(userData);
 
     if (response.status === "failed") {
@@ -482,6 +591,44 @@ const submitForm = async () => {
     displayUnexpectedErrorAlert();
   } finally {
     btnLoadingState.value = false;
+  }
+};
+
+const handleProvince = async (addressType, e) => {
+  if (addressType === "c") {
+    currentAddress.region = e.target.value;
+    provinceOptions.value = await provinces(e.target.value);
+  } else {
+    permanentAddress.region = e.target.value;
+    provinceOptions.value = await provinces(e.target.value);
+  }
+};
+
+const handleMunicipality = async (addressType, e) => {
+  if (addressType === "c") {
+    currentAddress.province = e.target.value;
+    cityOptions.value = await cities(e.target.value);
+  } else {
+    permanentAddress.province = e.target.value;
+    cityOptions.value = await cities(e.target.value);
+  }
+};
+
+const handleBarangay = async (addressType, e) => {
+  if (addressType === "c") {
+    currentAddress.city = e.target.value;
+    barangayOptions.value = await barangays(e.target.value);
+  } else {
+    permanentAddress.city = e.target.value;
+    barangayOptions.value = await barangays(e.target.value);
+  }
+};
+
+const handleBarangayChange = (addressType, e) => {
+  if (addressType === "c") {
+    currentAddress.barangay = e.target.value;
+  } else {
+    permanentAddress.barangay = e.target.value;
   }
 };
 </script>
