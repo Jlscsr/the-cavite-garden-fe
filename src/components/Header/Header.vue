@@ -284,10 +284,8 @@ const handleLogoutUser = async () => {
     confirmButtonText: "Yes",
   }).then(async (result) => {
     if (result.isConfirmed) {
-      await LogoutUserAPI();
-      userStore.setUserInfo({});
-      userStore.setUserAuthenticated(false);
-      router.push({ name: "home" });
+      userStore.resetUserSession();
+      router.push({name: 'home'});
     }
   });
 };

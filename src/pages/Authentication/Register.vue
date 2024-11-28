@@ -499,6 +499,7 @@ const isContactInfoValid = computed(() => {
 });
 
 const isFormValid = computed(() => {
+  // Track current address validity
   const currentAddressValid =
     currentAddress.value.region &&
     currentAddress.value.province &&
@@ -508,7 +509,8 @@ const isFormValid = computed(() => {
     currentAddress.value.streetAddress &&
     currentAddress.value.landmark &&
     currentAddress.value.addressLabel;
-
+  
+  // Track permanent address validity
   const permanentAddressValid =
     sameAsPermanent.value ||
     (permanentAddress.value.region &&
@@ -519,8 +521,8 @@ const isFormValid = computed(() => {
       permanentAddress.value.streetAddress &&
       permanentAddress.value.landmark &&
       permanentAddress.value.addressLabel);
-
-  return (
+  
+  const isValid = (
     firstName.value &&
     lastName.value &&
     birthday.value &&
@@ -532,7 +534,10 @@ const isFormValid = computed(() => {
     confirmPassword.value &&
     password.value === confirmPassword.value
   );
+
+  return isValid;
 });
+
 
 // Data Preparation
 const prepareUserData = () => {
@@ -574,9 +579,6 @@ const submitForm = async () => {
     // Prepare and Send Data
     const userData = prepareUserData();
 
-    console.log(userData);
-    return;
-
     const response = await registerUser(userData);
 
     if (response.status === "failed") {
@@ -596,39 +598,39 @@ const submitForm = async () => {
 
 const handleProvince = async (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.region = e.target.value;
+    currentAddress.value.region = e.target.options[e.target.selectedIndex].text;
     provinceOptions.value = await provinces(e.target.value);
   } else {
-    permanentAddress.region = e.target.value;
+    permanentAddress.value.region = e.target.options[e.target.selectedIndex].text;
     provinceOptions.value = await provinces(e.target.value);
   }
 };
 
 const handleMunicipality = async (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.province = e.target.value;
+    currentAddress.value.province = e.target.options[e.target.selectedIndex].text;
     cityOptions.value = await cities(e.target.value);
   } else {
-    permanentAddress.province = e.target.value;
+    permanentAddress.value.province = e.target.options[e.target.selectedIndex].text;
     cityOptions.value = await cities(e.target.value);
   }
 };
 
 const handleBarangay = async (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.city = e.target.value;
+    currentAddress.value.city = e.target.options[e.target.selectedIndex].text;
     barangayOptions.value = await barangays(e.target.value);
   } else {
-    permanentAddress.city = e.target.value;
+    permanentAddress.value.city = e.target.options[e.target.selectedIndex].text;
     barangayOptions.value = await barangays(e.target.value);
   }
 };
 
 const handleBarangayChange = (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.barangay = e.target.value;
+    currentAddress.value.barangay = e.target.options[e.target.selectedIndex].text;
   } else {
-    permanentAddress.barangay = e.target.value;
+    permanentAddress.value.barangay = e.target.options[e.target.selectedIndex].text;
   }
 };
 </script>

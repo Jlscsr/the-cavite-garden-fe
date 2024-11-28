@@ -67,10 +67,12 @@ router.beforeEach(async (to, from) => {
   // Allow unauthenticated access to `home` or other public routes
   if (!isAuthenticated) {
     if (to.matched.some((record) => record.meta.requiresAuth)) {
+      // Show alert and redirect programmatically
       displayLoginFirstAlert(() => {
-        return { name: "login" };
+        router.push({ name: "login" }); // Explicit redirection
       });
-      return false; // Stop navigation to protected routes
+
+      return false; // Stop the initial navigation
     }
 
     return true; // Public route, allow access
@@ -95,5 +97,6 @@ router.beforeEach(async (to, from) => {
 
   return true; // Allow navigation if all checks pass
 });
+
 
 export default router;
