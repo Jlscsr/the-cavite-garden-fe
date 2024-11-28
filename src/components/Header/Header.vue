@@ -25,9 +25,7 @@
             <li
               class="nav-item"
               :class="{
-                active:
-                  (route.name === 'home' && currentSection === '') ||
-                  currentSection === 'home',
+                active: route.name === 'home' && currentSection === '',
               }"
               @click="handleNavClick('home')"
             >
@@ -35,7 +33,9 @@
             </li>
             <li
               class="nav-item"
-              :class="{ active: currentSection === 'about' }"
+              :class="{
+                active: currentSection === 'about' && route.name === 'home',
+              }"
               @click="handleNavClick('about')"
             >
               <a class="nav-link fs-6 text-black cursor-pointer">About</a>
@@ -51,7 +51,11 @@
                 >History</router-link
               >
             </li>
-            <li class="nav-item" @click="handleNavClick('shop')">
+            <li
+              class="nav-item"
+              @click="handleNavClick('shop')"
+              :class="{ active: route.name === 'shop' }"
+            >
               <router-link
                 :to="{ name: 'shop' }"
                 class="nav-link fs-6 text-black"
@@ -119,7 +123,7 @@
               </div>
             </li>
 
-            <li class="nav-item" :class="{active: route.name === 'cart'}">
+            <li class="nav-item" :class="{ active: route.name === 'cart' }">
               <div class="cart-icon" @click="goToCart">
                 <ShoppingCartIcon size="20" />
               </div>
@@ -220,7 +224,7 @@ const handleNavClick = (section) => {
     bsCollapse.hide();
   }
 
-  if (section) {
+  if (section && (section === "home" || section === "about")) {
     goToOrSlideTo(section);
   }
 };
@@ -285,7 +289,7 @@ const handleLogoutUser = async () => {
   }).then(async (result) => {
     if (result.isConfirmed) {
       userStore.resetUserSession();
-      router.push({name: 'home'});
+      router.push({ name: "home" });
     }
   });
 };
