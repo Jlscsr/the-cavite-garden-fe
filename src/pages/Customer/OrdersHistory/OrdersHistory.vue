@@ -2,7 +2,15 @@
   <div class="container-fluid">
     <h2 class="mb-4">Orders History</h2>
     <div class="order-list">
-      <div v-for="order in pendingOrders" :key="order?.id" class="card mb-3">
+      <span class="d-block text-center" v-if="pendingOrders.length === 0">
+        No Orders History found.
+      </span>
+      <div
+        v-else
+        v-for="order in pendingOrders"
+        :key="order?.id"
+        class="card mb-3"
+      >
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-start">
             <div>

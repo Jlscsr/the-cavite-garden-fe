@@ -73,6 +73,12 @@
                   <span class="fs-6">Product Categories</span>
                 </router-link>
               </li>
+              <li class="sidebar-subnav-item ms-3">
+                <router-link :to="{ name: 'product-reviews' }">
+                  <i class="fa-solid fa-star me-2"></i>
+                  <span class="fs-6">Product Reviews</span>
+                </router-link>
+              </li>
             </ul>
           </li>
           <li class="sidebar-item p-3 cursor-pointer">
@@ -130,13 +136,9 @@ const logoutUser = async () => {
       userStore.setUserInfo({});
       userStore.setUserAuthenticated(false);
 
-      router.push({name: 'login'});
+      router.push({ name: "login" });
     }
   });
-};
-
-const toggleShopStatus = () => {
-  isShopOpen.value = !isShopOpen.value;
 };
 
 const toggleMenu = (menu) => {

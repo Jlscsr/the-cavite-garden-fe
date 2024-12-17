@@ -143,6 +143,18 @@
             </div>
           </div>
         </div>
+        <!-- Rewiew replies by admin -->
+        <div class="review-replies ms-3 mt-3">
+          <div
+            v-if="review?.replies?.length !== 0"
+            v-for="(reply, index) in review?.replies"
+            :key="index"
+            class="review-reply"
+          >
+            <h6 class="fw-bold">Admin</h6>
+            <p>{{ reply?.replyComment }}</p>
+          </div>
+        </div>
       </div>
       <div v-else class="">
         <p class="text-center">No reviews yet</p>
@@ -243,17 +255,19 @@ const checkout = async () => {
   Swal.fire({
     icon: "info",
     title: "Are you sure?",
-    text: "Do you want to checkout this product?"
+    text: "Do you want to checkout this product?",
   }).then((result) => {
-    if(result.isConfirmed){
-      router.push(
-        {name: 'checkout', 
+    if (result.isConfirmed) {
+      router.push({
+        name: "checkout",
         params: {
-          id: product.value.id
-        }, 
+          id: product.value.id,
+        },
         query: {
-          qty: quantity.value, initPrice: product.value.productPrice
-        }})
+          qty: quantity.value,
+          initPrice: product.value.productPrice,
+        },
+      });
     }
   });
 };

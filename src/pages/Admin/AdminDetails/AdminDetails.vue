@@ -9,8 +9,8 @@
             <i class="fas fa-user-circle"></i>
           </div>
           <p class="mb-0 fs-4">
-            {{ accountDetails?.first_name }}
-            {{ accountDetails?.last_name }}
+            {{ accountDetails?.firstName }}
+            {{ accountDetails?.lastName }}
           </p>
           <p class="mb-0 fs-6 fs-medium text-secondary">
             {{ accountDetails?.role?.toUpperCase() }}
@@ -32,7 +32,7 @@
           >
             <p class="fs-medium mb-0">Created Date:</p>
             <p class="mb-0">
-              {{ formatDate(accountDetails?.created_at) }}
+              {{ formatDate(accountDetails?.createdAt) }}
             </p>
           </div>
           <div
@@ -40,7 +40,7 @@
           >
             <p class="fs-medium mb-0">Modified Date:</p>
             <p class="mb-0">
-              {{ formatDate(accountDetails?.updated_at) }}
+              {{ formatDate(accountDetails?.updatedAt) }}
             </p>
           </div>
         </div>
@@ -52,9 +52,9 @@
           >
             <p class="fs-medium mb-0">Full Name:</p>
             <p class="mb-0">
-              {{ accountDetails?.first_name }}
-              {{ accountDetails?.middle_name }}
-              {{ accountDetails?.last_name }}
+              {{ accountDetails?.firstName }}
+              {{ accountDetails?.middleName }}
+              {{ accountDetails?.lastName }}
             </p>
           </div>
           <div
@@ -70,7 +70,7 @@
           >
             <p class="fs-medium mb-0">Marital Status:</p>
             <p class="mb-0">
-              {{ firstLetterUppercase(accountDetails?.marital_status) }}
+              {{ firstLetterUppercase(accountDetails?.maritalStatus) }}
             </p>
           </div>
           <div
@@ -78,23 +78,23 @@
           >
             <p class="fs-medium mb-0">Sex:</p>
             <p class="mb-0">
-              {{ firstLetterUppercase(accountDetails?.sex) }}
+              {{ firstLetterUppercase(accountDetails?.gender) }}
             </p>
           </div>
           <div
             class="d-flex justify-content-between align-items-center border-bottom mt-2"
           >
-            <p class="fs-medium mb-0">Status:</p>
+            <!-- <p class="fs-medium mb-0">Status:</p>
             <p class="mb-0">
               {{ firstLetterUppercase(accountDetails?.status) }}
-            </p>
+            </p> -->
           </div>
           <div
             class="d-flex justify-content-between align-items-center border-bottom mt-2"
           >
             <p class="fs-medium mb-0">Date Started:</p>
             <p class="mb-0">
-              {{ formatDate(accountDetails?.date_started) }}
+              {{ formatDate(accountDetails?.dateStarted) }}
             </p>
           </div>
         </div>
@@ -107,16 +107,15 @@
 import { ref, onMounted } from "vue";
 
 import { firstLetterUppercase, formatDate } from "../../../composables/Helpers";
+import { useUserStore } from "../../../store/userStore";
 
+const userStore = useUserStore();
 const accountDetails = ref([]);
 
 onMounted(() => {
-  const ctm = JSON.parse(localStorage.getItem("ctm"));
+  accountDetails.value = userStore.getUserInfo();
 
-  if (ctm) {
-    accountDetails.value = ctm;
-    console.log(accountDetails.value);
-  }
+  console.log(accountDetails.value);
 });
 </script>
 

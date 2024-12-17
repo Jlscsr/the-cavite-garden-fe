@@ -38,13 +38,22 @@
                     Password
                     <span class="text-danger">*</span>
                   </label>
-                  <input
-                    type="password"
-                    id="password"
-                    class="form-control"
-                    v-model="password"
-                    required
-                  />
+                  <div class="input-group">
+                    <input
+                      :type="showPassword ? 'text' : 'password'"
+                      id="password"
+                      class="form-control"
+                      v-model="password"
+                      required
+                    />
+                    <button
+                      class="btn btn-light"
+                      type="button"
+                      @click="showPassword = !showPassword"
+                    >
+                      <VisionIcon size="20" />
+                    </button>
+                  </div>
                 </div>
                 <div class="d-flex justify-content-end mb-3">
                   <div class="forgot">
@@ -88,17 +97,18 @@ import { useRouter } from "vue-router";
 import {
   displayLoginFailedAlert,
   displayUnexpectedErrorAlert,
-  displaySuccessAlert,
 } from "@composables/helpers/AlertService";
 import { useUserStore } from "@stores/userStore";
 import { LoginUserAPI } from "@composables/Authentication";
 
+import VisionIcon from "../../assets/icons/VisionIcon.vue";
 import ButtonLoader from "@components/Loaders/BtnLoader.vue";
 
 const router = useRouter();
 const userStore = useUserStore();
 
 const btnLoadingState = ref(false);
+const showPassword = ref(false);
 
 const email = ref("");
 const password = ref("");
@@ -127,13 +137,7 @@ const submitForm = async () => {
     });
   }
 
-  displaySuccessAlert(
-    "Login Success",
-    "You have successfully logged in",
-    () => {
-      handleSuccessLogin(response);
-    }
-  );
+  handleSuccessLogin(response);
 };
 
 const handleSuccessLogin = (response) => {

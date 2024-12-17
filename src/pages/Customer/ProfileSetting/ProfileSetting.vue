@@ -86,11 +86,17 @@
               <!-- Address Details -->
               <div class="mb-3">
                 <label class="form-label">Address Label</label>
-                <input
-                  type="text"
-                  class="form-control"
+                <select
+                  class="form-select"
                   v-model="address.addressLabel"
-                />
+                  @change="address.isEdited = true"
+                >
+                  <option selected>Select Address Label</option>
+                  <option value="Home">Home</option>
+                  <option value="Office">Office</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="Condominium">Condominium</option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Region</label>
@@ -114,6 +120,15 @@
                   type="text"
                   class="form-control"
                   v-model="address.municipality"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Postal Code</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="address.postalCode"
+                  @input="address.isEdited = true"
                 />
               </div>
               <div class="mb-3">
@@ -143,11 +158,11 @@
 
               <!-- Conditional Save Button -->
               <button
-                v-if="address.isNew"
+                v-if="address.isNew || address.isEdited"
                 @click="saveAddress(index)"
                 class="btn btn-primary mt-4"
               >
-                Save
+                {{ address.isNew ? "Save" : "Update" }}
               </button>
             </div>
           </div>
@@ -164,6 +179,7 @@ import { useUserStore } from "../../../store/userStore";
 import {
   UpdateCustomerDataAPI,
   AddNewCustomerAddressAPI,
+  UpdateCustomerAddressAPI,
   DeleteCustomerAddressAPI,
 } from "../../../composables/Customers";
 import Swal from "sweetalert2";
@@ -180,7 +196,12 @@ const profile = ref({
   phoneNumber: user.phoneNumber,
   email: user.email,
   birthdate: user.birthdate,
-  addresses: user.shippingAddresses || [],
+  addresses:
+    user.shippingAddresses.map((address) => ({
+      ...address,
+      isNew: false,
+      isEdited: false,
+    })) || [],
 });
 
 const addAddress = () => {
@@ -189,6 +210,7 @@ const addAddress = () => {
     region: "",
     province: "",
     municipality: "",
+    postalCode: "",
     barangay: "",
     streetAddress: "",
     landmark: "",
@@ -278,16 +300,32 @@ const saveProfile = async () => {
 const saveAddress = async (index) => {
   try {
     const address = profile.value.addresses[index];
+
     const payload = {
       addressLabel: address.addressLabel,
       region: address.region,
       province: address.province,
       city: address.municipality,
+      postalCode: address.postalCode,
       barangay: address.barangay,
       streetAddress: address.streetAddress,
       landmark: address.landmark,
     };
 
+    if (address.isNew) {
+      await addNewCustomerAddress(payload);
+      address.isNew = false;
+    } else {
+      await updateCustomerAddress(address.id, payload);
+      address.isEdited = false;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const addNewCustomerAddress = async (payload) => {
+  try {
     const response = await AddNewCustomerAddressAPI(payload);
 
     if (response.status === "failed") {
@@ -299,13 +337,26 @@ const saveAddress = async (index) => {
       return;
     }
 
-    Swal.fire({
-      icon: "success",
-      title: "Address added successfully",
-    }).then(() => {
-      address.isNew = false; // Mark as saved
-      router.go();
-    });
+    displaySuccessNotification("Address added successfully");
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const updateCustomerAddress = async (addressID, payload) => {
+  try {
+    const response = await UpdateCustomerAddressAPI(addressID, payload);
+
+    if (response.status === "failed") {
+      Swal.fire({
+        icon: "error",
+        title: "Failed to update address",
+        text: response.message,
+      });
+      return;
+    }
+
+    displaySuccessNotification("Address updated successfully");
   } catch (error) {
     console.error(error);
   }

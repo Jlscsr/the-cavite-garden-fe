@@ -176,3 +176,11 @@ input[type="number"] {
   margin-block: 1em;
   background-color: $secondary-color;
 }
+
+.divider.thin {
+  height: 1px;
+}
+
+.divider.thin.dark {
+  background-color: $dark-color;
+}

@@ -154,6 +154,18 @@ const routes = [
               ),
           },
           {
+            path: "product-reviews",
+            name: "product-reviews",
+            meta: {
+              requiresAuth: true,
+              role: ["admin"],
+            },
+            component: () =>
+              import(
+                "../pages/Admin/Products/ProductReviews/ProductReviews.vue"
+              ),
+          },
+          {
             path: "employees",
             name: "employees",
             meta: {

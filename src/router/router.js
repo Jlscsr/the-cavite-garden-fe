@@ -52,6 +52,8 @@ const checkAndFetchUser = async (to, userStore) => {
 
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore();
+  // Check authentication status
+  const isAuthenticated = await checkAndFetchUser(to, userStore);
 
   // Allow unauthenticated access to login and register
   if (["login", "register"].includes(to.name)) {
@@ -60,9 +62,6 @@ router.beforeEach(async (to, from) => {
     }
     return true;
   }
-
-  // Check authentication status
-  const isAuthenticated = await checkAndFetchUser(to, userStore);
 
   // Allow unauthenticated access to `home` or other public routes
   if (!isAuthenticated) {
@@ -80,7 +79,6 @@ router.beforeEach(async (to, from) => {
 
   // Handle role-based access for authenticated users
   const userRole = userStore.getUserRole();
-  console.log(userRole);
 
   // Check if the route has a defined role array in meta
   const allowedRoles = to.matched.some(
@@ -97,6 +95,5 @@ router.beforeEach(async (to, from) => {
 
   return true; // Allow navigation if all checks pass
 });
-
 
 export default router;

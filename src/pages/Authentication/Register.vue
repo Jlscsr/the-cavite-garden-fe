@@ -224,11 +224,16 @@
                     </div>
                     <div class="col-12 mb-3">
                       <label class="form-label">Label</label>
-                      <input
+                      <select
+                        class="form-select"
                         v-model="currentAddress.addressLabel"
-                        class="form-control"
-                        placeholder="e.g. Home, Office, etc."
-                      />
+                      >
+                        <option selected>Select Address Label</option>
+                        <option value="Home">Home</option>
+                        <option value="Office">Office</option>
+                        <option value="Apartment">Apartment</option>
+                        <option value="Condominium">Condominium</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -338,11 +343,16 @@
                       </div>
                       <div class="col-12 mb-3">
                         <label class="form-label">Label</label>
-                        <input
+                        <select
+                          class="form-select"
                           v-model="permanentAddress.addressLabel"
-                          class="form-control"
-                          placeholder="e.g. Home, Office, etc."
-                        />
+                        >
+                          <option selected>Select Address Label</option>
+                          <option value="Home">Home</option>
+                          <option value="Office">Office</option>
+                          <option value="Apartment">Apartment</option>
+                          <option value="Condominium">Condominium</option>
+                        </select>
                       </div>
                     </div>
                   </template>
@@ -353,13 +363,22 @@
                     <label for="password" class="form-label fs-paragraph">
                       Password <span class="text-danger">*</span>
                     </label>
-                    <input
-                      type="password"
-                      id="password"
-                      class="form-control"
-                      v-model="password"
-                      required
-                    />
+                    <div class="input-group">
+                      <input
+                        :type="showPassword ? 'text' : 'password'"
+                        id="password"
+                        class="form-control"
+                        v-model="password"
+                        required
+                      />
+                      <button
+                        class="btn btn-light"
+                        type="button"
+                        @click="showPassword = !showPassword"
+                      >
+                        <VisionIcon size="20" />
+                      </button>
+                    </div>
                   </div>
                   <div class="mb-2">
                     <label
@@ -368,13 +387,22 @@
                     >
                       Confirm Password <span class="text-danger">*</span>
                     </label>
-                    <input
-                      type="password"
-                      id="confirmPassword"
-                      class="form-control"
-                      v-model="confirmPassword"
-                      required
-                    />
+                    <div class="input-group">
+                      <input
+                        :type="showPassword ? 'text' : 'password'"
+                        id="confirmPassword"
+                        class="form-control"
+                        v-model="confirmPassword"
+                        required
+                      />
+                      <button
+                        class="btn btn-light"
+                        type="button"
+                        @click="showPassword = !showPassword"
+                      >
+                        <VisionIcon size="20" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -426,6 +454,7 @@ import {
   displayErrorAlert,
 } from "@composables/helpers/AlertService";
 
+import VisionIcon from "../../assets/icons/VisionIcon.vue";
 import ButtonLoader from "@components/Loaders/BtnLoader.vue";
 
 const router = useRouter();
@@ -433,6 +462,7 @@ const router = useRouter();
 const currentStep = ref(1);
 const btnLoadingState = ref(false);
 const sameAsPermanent = ref(false);
+const showPassword = ref(false);
 
 // Personal Info
 const firstName = ref("");
@@ -509,7 +539,7 @@ const isFormValid = computed(() => {
     currentAddress.value.streetAddress &&
     currentAddress.value.landmark &&
     currentAddress.value.addressLabel;
-  
+
   // Track permanent address validity
   const permanentAddressValid =
     sameAsPermanent.value ||
@@ -521,8 +551,8 @@ const isFormValid = computed(() => {
       permanentAddress.value.streetAddress &&
       permanentAddress.value.landmark &&
       permanentAddress.value.addressLabel);
-  
-  const isValid = (
+
+  const isValid =
     firstName.value &&
     lastName.value &&
     birthday.value &&
@@ -532,12 +562,10 @@ const isFormValid = computed(() => {
     permanentAddressValid &&
     password.value &&
     confirmPassword.value &&
-    password.value === confirmPassword.value
-  );
+    password.value === confirmPassword.value;
 
   return isValid;
 });
-
 
 // Data Preparation
 const prepareUserData = () => {
@@ -601,17 +629,20 @@ const handleProvince = async (addressType, e) => {
     currentAddress.value.region = e.target.options[e.target.selectedIndex].text;
     provinceOptions.value = await provinces(e.target.value);
   } else {
-    permanentAddress.value.region = e.target.options[e.target.selectedIndex].text;
+    permanentAddress.value.region =
+      e.target.options[e.target.selectedIndex].text;
     provinceOptions.value = await provinces(e.target.value);
   }
 };
 
 const handleMunicipality = async (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.value.province = e.target.options[e.target.selectedIndex].text;
+    currentAddress.value.province =
+      e.target.options[e.target.selectedIndex].text;
     cityOptions.value = await cities(e.target.value);
   } else {
-    permanentAddress.value.province = e.target.options[e.target.selectedIndex].text;
+    permanentAddress.value.province =
+      e.target.options[e.target.selectedIndex].text;
     cityOptions.value = await cities(e.target.value);
   }
 };
@@ -628,9 +659,11 @@ const handleBarangay = async (addressType, e) => {
 
 const handleBarangayChange = (addressType, e) => {
   if (addressType === "c") {
-    currentAddress.value.barangay = e.target.options[e.target.selectedIndex].text;
+    currentAddress.value.barangay =
+      e.target.options[e.target.selectedIndex].text;
   } else {
-    permanentAddress.value.barangay = e.target.options[e.target.selectedIndex].text;
+    permanentAddress.value.barangay =
+      e.target.options[e.target.selectedIndex].text;
   }
 };
 </script>

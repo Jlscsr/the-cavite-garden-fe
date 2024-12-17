@@ -1,0 +1,18 @@
+.table-container {
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+
+  .dropstart {
+    & > .btn::before {
+      content: none;
+    }
+
+    & > .dropdown-menu {
+      & > li {
+        & > button {
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}

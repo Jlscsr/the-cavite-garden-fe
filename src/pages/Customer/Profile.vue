@@ -1,7 +1,7 @@
 <template>
   <div class="profile-container">
     <!-- Sidebar Toggle Button (Mobile Only) -->
-    <button 
+    <button
       class="sidebar-toggle"
       @click="toggleSidebar"
       :class="{ 'is-active': isSidebarOpen }"
@@ -12,29 +12,23 @@
 
     <div class="wrapper">
       <!-- Overlay for mobile -->
-      <div 
-        class="sidebar-overlay" 
+      <div
+        class="sidebar-overlay"
         :class="{ 'is-visible': isSidebarOpen }"
         @click="closeSidebar"
       ></div>
 
       <!-- Sidebar -->
-      <aside 
-        class="sidebar"
-        :class="{ 'is-open': isSidebarOpen }"
-      >
+      <aside class="sidebar" :class="{ 'is-open': isSidebarOpen }">
         <div class="sidebar-content">
           <div class="sidebar-header">
             <h5 class="mb-4">My Account</h5>
             <!-- Close button (Mobile Only) -->
-            <button 
-              class="close-sidebar"
-              @click="closeSidebar"
-            >
+            <button class="close-sidebar" @click="closeSidebar">
               <span>&times;</span>
             </button>
           </div>
-          
+
           <nav class="sidebar-nav">
             <RouterLink
               v-for="(link, index) in navLinks"
@@ -59,38 +53,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 import { RouterLink, RouterView } from "vue-router";
 
 const isSidebarOpen = ref(false);
 
 const navLinks = [
   {
-    to: { name: 'profileSettings' },
-    text: 'Profile Settings'
+    to: { name: "profileSettings" },
+    text: "Profile Settings",
   },
   {
-    to: { name: 'pendingOrders' },
-    text: 'Pending Orders'
+    to: { name: "pendingOrders" },
+    text: "Pending Orders",
   },
   {
-    to: { name: 'ordersHistory' },
-    text: 'Order History'
-  }
+    to: { name: "ordersHistory" },
+    text: "Order History",
+  },
 ];
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
   if (isSidebarOpen.value) {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   } else {
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
   }
 };
 
 const closeSidebar = () => {
   isSidebarOpen.value = false;
-  document.body.style.overflow = '';
+  document.body.style.overflow = "";
 };
 </script>
 
@@ -135,7 +129,7 @@ const closeSidebar = () => {
 
     &::before,
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       left: 0;
       width: 100%;
@@ -144,8 +138,12 @@ const closeSidebar = () => {
       transition: transform 0.3s ease;
     }
 
-    &::before { top: -6px; }
-    &::after { bottom: -6px; }
+    &::before {
+      top: -6px;
+    }
+    &::after {
+      bottom: -6px;
+    }
   }
 
   &.is-active {
@@ -177,13 +175,13 @@ const closeSidebar = () => {
   height: 100vh;
   position: fixed;
   left: 0;
-  top: 0;
+  top: 100px;
   z-index: 1040;
   transition: transform 0.3s ease;
 
   @media (max-width: 767px) {
     transform: translateX(-100%);
-    
+
     &.is-open {
       transform: translateX(0);
     }
@@ -239,16 +237,16 @@ const closeSidebar = () => {
   border-radius: 0.25rem;
   text-decoration: none;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background-color: #e9ecef;
     color: #198754;
   }
-  
+
   &.active {
     color: #fff;
     background-color: #198754;
-    
+
     &:hover {
       background-color: darken(#198754, 5%);
       color: #fff;
@@ -268,11 +266,11 @@ const closeSidebar = () => {
   z-index: 1035;
   opacity: 0;
   transition: opacity 0.3s ease;
-  
+
   @media (max-width: 767px) {
     display: block;
     pointer-events: none;
-    
+
     &.is-visible {
       opacity: 1;
       pointer-events: auto;
@@ -287,7 +285,7 @@ const closeSidebar = () => {
   margin-left: 250px;
   width: calc(100% - 250px);
   min-height: 100vh;
-  
+
   @media (max-width: 767px) {
     margin-left: 0;
     width: 100%;

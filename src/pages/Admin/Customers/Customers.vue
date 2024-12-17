@@ -63,6 +63,11 @@
             {{ customer?.email }}
           </td>
           <td class="fs-6 fs-light p-3">
+            {{ customer?.shipping_address[0].barangay }},
+            {{ customer?.shipping_address[0].municipality }},
+            {{ customer?.shipping_address[0].province }}
+          </td>
+          <td class="fs-6 fs-light p-3">
             {{ customer?.phoneNumber }}
           </td>
           <td class="fs-6 fs-light p-3">
@@ -239,6 +244,10 @@ const tableHeaders = ref([
   },
   {
     id: 3,
+    label: "Address",
+  },
+  {
+    id: 4,
     label: "Phone Number",
   },
   {
