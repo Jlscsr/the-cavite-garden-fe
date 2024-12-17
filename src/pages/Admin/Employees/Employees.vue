@@ -43,6 +43,7 @@
             placeholder="Search..."
             aria-label="Product Name"
             aria-describedby="button-addon2"
+            v-model="searchQuery"
           />
           <button
             class="btn btn-outline-secondary"
@@ -486,7 +487,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 
 import {
   getAllEmployees,
@@ -506,6 +507,7 @@ const btnLoadingState = ref(false);
 const modalInstance = ref(null);
 const employeeFormModal = ref(null);
 const modalFormState = ref("add");
+const searchQuery = ref("");
 
 const firstName = ref("");
 const middleName = ref("");
@@ -539,6 +541,7 @@ const tableHeaders = ref([
   },
 ]);
 const employeesLists = ref([]);
+const employeesListsCopy = ref([]);
 const selectedEmployee = ref(null);
 
 const isFormInvalid = computed(() => {
@@ -737,10 +740,21 @@ const getEmployees = async () => {
     }
 
     employeesLists.value = response.data;
+    employeesListsCopy.value = response.data;
   } catch (error) {
     console.error(error.message);
   }
 };
+
+const filterEmployees = () => {
+  employeesLists.value = employeesListsCopy.value.filter((employee) => {
+    return employee.firstName
+      .toLowerCase()
+      .includes(searchQuery.value.toLowerCase());
+  });
+};
+
+watch(searchQuery, filterEmployees);
 
 onMounted(async () => {
   modalInstance.value = new bootstrap.Modal(employeeFormModal.value);

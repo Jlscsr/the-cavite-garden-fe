@@ -34,6 +34,7 @@
             placeholder="Search..."
             aria-label="Product Name"
             aria-describedby="button-addon2"
+            v-model="searchQuery"
           />
           <button
             class="btn btn-outline-secondary"
@@ -223,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { formatDate } from "../../../composables/Helpers";
@@ -255,7 +256,10 @@ const tableHeaders = ref([
     label: "Date Created",
   },
 ]);
+const searchQuery = ref("");
+
 const customersLists = ref([]);
+const customersListsCopy = ref([]);
 const selectedCustomer = ref([]);
 
 const stringShippingAddress = (address) => {
@@ -264,38 +268,45 @@ const stringShippingAddress = (address) => {
   }
 };
 
-const formatShippingAddress = (address) => {
-  if (address) {
-    if (address.length === 0) {
-      return "No Shipping Address";
-    }
-
-    const addressString = `${address[0].streetAddress}, ${address[0].barangay}, ${address[0].municipality}, ${address[0].province}`;
-
-    const shortenedAddress = addressString.substring(0, 20) + "...";
-    return shortenedAddress;
-  }
-};
-
 const viewCustomerDetails = (customerId) => {
   selectedCustomer.value = customersLists.value.find(
     (customer) => customer.id === customerId
   );
 };
+
+const filterCustomers = () => {
+  customersLists.value = customersListsCopy.value.filter((customer) => {
+    return (
+      customer.firstName
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase()) ||
+      customer.lastName
+        .toLowerCase()
+        .includes(searchQuery.value.toLowerCase()) ||
+      customer.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  });
+};
+
+watch(searchQuery, filterCustomers);
+
 onMounted(async () => {
   try {
     const response = await GetAllCustomersAPI();
 
     if (response.status === "unauthorized") {
-      /* swal(
-        "Unauthorized",
-        "You are not authorized to perform this action or try log in again",
-        "error"
-      ); */
       router.push({ name: "home" });
       return;
     }
+
+    if (response.status === "failed") {
+      console.log(response.message);
+      customersLists.value = [];
+      customersListsCopy.value = [];
+      return;
+    }
     customersLists.value = response.data;
+    customersListsCopy.value = response.data;
   } catch (error) {
     console.log(error);
   }
