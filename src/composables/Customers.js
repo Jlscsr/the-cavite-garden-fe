@@ -18,6 +18,15 @@ const UpdateCustomerDataAPI = async (payload) => {
   }
 };
 
+const DeleteCustomerAPI = async (id) => {
+  try {
+    const response = await API.delete(`/user/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
+};
+
 const AddNewCustomerAddressAPI = async (address) => {
   try {
     const response = await API.post("/customer/address/add", address);
@@ -57,4 +66,5 @@ export {
   AddNewCustomerAddressAPI,
   DeleteCustomerAddressAPI,
   UpdateCustomerAddressAPI,
+  DeleteCustomerAPI,
 };

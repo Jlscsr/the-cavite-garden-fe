@@ -1,6 +1,13 @@
 <template>
   <div class="container-fluid">
-    <h2 class="mb-4">Profile</h2>
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="mb-4">Profile</h2>
+
+      <!-- Delete button -->
+      <button @click="deleteProfile" class="btn btn-danger btn-sm">
+        Delete Account
+      </button>
+    </div>
 
     <div>
       <!-- Basic Info -->
@@ -100,27 +107,57 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">Region</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="address.region"
-                />
+                <select
+                  @change="handleProvince(address, $event)"
+                  class="form-select"
+                >
+                  <option selected>
+                    {{ address.region || "Select region" }}
+                  </option>
+                  <option
+                    v-for="region in regionOptions"
+                    :key="region.region_code"
+                    :value="region.region_code"
+                  >
+                    {{ region.region_name }}
+                  </option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Province</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="address.province"
-                />
+                <select
+                  @change="handleMunicipality(address, $event)"
+                  class="form-select"
+                >
+                  <option selected>
+                    {{ address.province || "Select Province" }}
+                  </option>
+                  <option
+                    v-for="province in provinceOptions"
+                    :key="province.province_code"
+                    :value="province.province_code"
+                  >
+                    {{ province.province_name }}
+                  </option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Municipality</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="address.municipality"
-                />
+                <select
+                  @change="handleBarangay(address, $event)"
+                  class="form-select"
+                >
+                  <option selected>
+                    {{ address.municipality || "Select City" }}
+                  </option>
+                  <option
+                    v-for="city in cityOptions"
+                    :key="city.city_code"
+                    :value="city.city_code"
+                  >
+                    {{ city.city_name }}
+                  </option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Postal Code</label>
@@ -133,11 +170,21 @@
               </div>
               <div class="mb-3">
                 <label class="form-label">Barangay</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="address.barangay"
-                />
+                <select
+                  @change="handleBarangayChange(address, $event)"
+                  class="form-select"
+                >
+                  <option selected>
+                    {{ address.barangay || "Select Barangay" }}
+                  </option>
+                  <option
+                    v-for="barangay in barangayOptions"
+                    :key="barangay.brgy_code"
+                    :value="barangay.brgy_code"
+                  >
+                    {{ barangay.brgy_name }}
+                  </option>
+                </select>
               </div>
               <div class="mb-3">
                 <label class="form-label">Street Address</label>
@@ -173,15 +220,24 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import {
+  regions,
+  provinces,
+  cities,
+  barangays,
+} from "select-philippines-address";
+
 import { useUserStore } from "../../../store/userStore";
 import {
   UpdateCustomerDataAPI,
   AddNewCustomerAddressAPI,
   UpdateCustomerAddressAPI,
   DeleteCustomerAddressAPI,
+  DeleteCustomerAPI,
 } from "../../../composables/Customers";
+import { LogoutUserAPI } from "../../../composables/Authentication";
 import Swal from "sweetalert2";
 import { displaySuccessNotification } from "../../../composables/helpers/NotificationService";
 
@@ -189,6 +245,11 @@ const router = useRouter();
 
 const userStore = useUserStore();
 const user = userStore.getUserInfo();
+
+const regionOptions = ref([]);
+const provinceOptions = ref([]);
+const cityOptions = ref([]);
+const barangayOptions = ref([]);
 
 const profile = ref({
   firstName: user.firstName,
@@ -361,4 +422,86 @@ const updateCustomerAddress = async (addressID, payload) => {
     console.error(error);
   }
 };
+
+const deleteProfile = async () => {
+  try {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this! All your data(orders, addresses, etc.) will be deleted.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const response = await DeleteCustomerAPI(user.id);
+
+        if (response.status === "failed") {
+          Swal.fire({
+            icon: "error",
+            title: "Failed to delete profile",
+            text: response.message,
+          });
+          return;
+        }
+
+        Swal.fire({
+          icon: "success",
+          title: "Profile deleted successfully",
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            await LogoutUserAPI();
+            userStore.setUserInfo({});
+            userStore.setUserAuthenticated(false);
+            router.push({ name: "home" });
+          }
+        });
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleProvince = async (address, e) => {
+  profile.value.addresses[profile.value.addresses.indexOf(address)].region =
+    e.target.options[e.target.selectedIndex].text;
+  profile.value.addresses[profile.value.addresses.indexOf(address)].province =
+    "";
+  profile.value.addresses[
+    profile.value.addresses.indexOf(address)
+  ].isEdited = true;
+
+  provinceOptions.value = await provinces(e.target.value);
+};
+
+const handleMunicipality = async (address, e) => {
+  profile.value.addresses[profile.value.addresses.indexOf(address)].province =
+    e.target.options[e.target.selectedIndex].text;
+  profile.value.addresses[
+    profile.value.addresses.indexOf(address)
+  ].municipality = "";
+
+  cityOptions.value = await cities(e.target.value);
+};
+
+const handleBarangay = async (address, e) => {
+  profile.value.addresses[
+    profile.value.addresses.indexOf(address)
+  ].municipality = e.target.options[e.target.selectedIndex].text;
+  profile.value.addresses[profile.value.addresses.indexOf(address)].barangay =
+    "";
+
+  barangayOptions.value = await barangays(e.target.value);
+};
+
+const handleBarangayChange = (address, e) => {
+  profile.value.addresses[profile.value.addresses.indexOf(address)].barangay =
+    e.target.options[e.target.selectedIndex].text;
+};
+
+onMounted(async () => {
+  regionOptions.value = await regions();
+});
 </script>
