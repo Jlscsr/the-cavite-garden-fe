@@ -259,6 +259,8 @@ const checkout = async () => {
     icon: "info",
     title: "Are you sure?",
     text: "Do you want to checkout this product?",
+    showCancelButton: true,
+    cancelButtonText: "Cancel"
   }).then((result) => {
     if (result.isConfirmed) {
       router.push({
