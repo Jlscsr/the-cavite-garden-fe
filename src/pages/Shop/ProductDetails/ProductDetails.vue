@@ -144,15 +144,18 @@
           </div>
         </div>
         <!-- Rewiew replies by admin -->
-        <div class="review-replies ms-3 mt-3">
-          <div
-            v-if="review?.replies?.length !== 0"
-            v-for="(reply, index) in review?.replies"
-            :key="index"
-            class="review-reply"
-          >
-            <h6 class="fw-bold">Admin</h6>
-            <p>{{ reply?.replyComment }}</p>
+        <div class="review-replies">
+          <div class="divider thin dark my-2"></div>
+          <div class="container ms-3 mt-2">
+              <div
+              v-if="review?.replies?.length !== 0"
+              v-for="(reply, index) in review?.replies"
+              :key="index"
+              class="review-reply"
+            >
+              <h6 class="fw-bold">Admin</h6>
+              <p>{{ reply?.replyComment }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -287,6 +290,7 @@ const checkout = async () => {
   .product-image {
     max-width: 100%;
     height: 100%;
+    object-fit: contain;
   }
 
   .product-title {

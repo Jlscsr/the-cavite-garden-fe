@@ -84,8 +84,8 @@
                 controls
               ></video>
             </div>
-
-            <div v-if="toggleReplyInput" class="reply mt-3">
+          </div>
+          <div v-if="toggleReplyInput" class="reply mt-3">
               <div class="divider thin dark"></div>
               <p class="fs-6 fs-light">
                 <em>Reply to this comment</em>
@@ -106,7 +106,6 @@
                   <span> <i class="fa-solid fa-paper-plane"></i> </span>
                 </button>
               </div>
-            </div>
           </div>
         </div>
         <div class="modal-footer">

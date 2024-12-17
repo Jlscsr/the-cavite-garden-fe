@@ -63,9 +63,9 @@
             {{ customer?.email }}
           </td>
           <td class="fs-6 fs-light p-3">
-            {{ customer?.shipping_address[0].barangay }},
-            {{ customer?.shipping_address[0].municipality }},
-            {{ customer?.shipping_address[0].province }}
+            {{ customer?.shipping_address[0]?.barangay }},
+            {{ customer?.shipping_address[0]?.municipality }},
+            {{ customer?.shipping_address[0]?.province }}
           </td>
           <td class="fs-6 fs-light p-3">
             {{ customer?.phoneNumber }}
