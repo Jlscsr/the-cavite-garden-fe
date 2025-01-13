@@ -13,13 +13,19 @@
 
       <div class="sidebar-nav">
         <ul class="sidebar-nav-list list-unstyled">
+          <li class="sidebar-item p-3 cursor-pointer">
+            <router-link :to="{ name: 'admin-dashboard' }">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              <span class="fs-6">Dashboard</span>
+            </router-link>
+          </li>
           <li class="sidebar-item cursor-pointer">
             <div
               class="sidebar-menu-toggle p-3"
               @click="toggleMenu('ordering')"
             >
               <i class="fas fa-cash-register d-block me-1"></i>
-              <span class="fs-6 d-block">Ordering</span>
+              <span class="fs-6 d-block">Transactions</span>
               <i
                 class="fas fa-chevron-right d-block"
                 :style="{ transform: rotateIcon('ordering') }"
@@ -34,6 +40,12 @@
                 <router-link :to="'pending-orders'">
                   <i class="fas fa-hourglass-half me-2"></i>
                   <span class="fs-6">Pending Orders</span>
+                </router-link>
+              </li>
+              <li class="sidebar-subnav-item ms-3">
+                <router-link :to="'refund-requests'">
+                  <i class="fas fa-hourglass-half me-2"></i>
+                  <span class="fs-6"> Refund Requests </span>
                 </router-link>
               </li>
               <li class="sidebar-subnav-item ms-3">

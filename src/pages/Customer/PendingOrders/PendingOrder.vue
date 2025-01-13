@@ -19,15 +19,20 @@
               <h5 class="card-title">Order #{{ order?.id }}</h5>
               <p class="text-muted">{{ formatDate(order?.updatedAt) }}</p>
             </div>
-            <span
-              class="badge text-black"
-              :class="{
-                'bg-warning': order?.status === 'pending',
-                'bg-warning': order?.status === 'preparing',
-                'bg-danger': order?.status === 'cancelled',
-              }"
-              >{{ firstLetterUppercase(order?.status) }}</span
-            >
+            <div class="d-flex gap-4">
+              <span
+                class="badge text-black"
+                :class="{
+                  'bg-warning': order?.status === 'pending',
+                  'bg-secondary': order?.status === 'preparing',
+                  'bg-danger': order?.status === 'cancelled',
+                }"
+                >{{ firstLetterUppercase(order?.status) }}
+              </span>
+              <span class="badge bg-primary"
+                >{{ firstLetterUppercase(order?.orderPurpose) }}
+              </span>
+            </div>
           </div>
 
           <div class="order-details mt-3">

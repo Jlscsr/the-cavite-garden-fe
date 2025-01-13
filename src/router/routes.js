@@ -110,6 +110,15 @@ const routes = [
 
         children: [
           {
+            path: "dashboard",
+            name: "admin-dashboard",
+            meta: {
+              requiresAuth: true,
+              role: ["admin"],
+            },
+            component: () => import("../pages/Admin/Dashboard/Dashboard.vue"),
+          },
+          {
             path: "pending-orders",
             name: "peding-orders",
             meta: {
@@ -118,6 +127,18 @@ const routes = [
             },
             component: () =>
               import("../pages/Admin/Ordering/PendingOrders/PendingOrders.vue"),
+          },
+          {
+            path: "refund-requests",
+            name: "refund-requests",
+            meta: {
+              requiresAuth: true,
+              role: ["admin"],
+            },
+            component: () =>
+              import(
+                "../pages/Admin/Ordering/RefundRequests/RefundRequests.vue"
+              ),
           },
           {
             path: "transaction-history",

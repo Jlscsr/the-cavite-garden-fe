@@ -83,7 +83,7 @@ $sb-close-status: (
         & > .sidebar-item {
           width: 100%;
           transition: 0.3s;
-          &:nth-of-type(n + 3):hover {
+          &:nth-of-type(n + 4):hover {
             background-color: $sb-primary-color;
             & > a {
               & > i,

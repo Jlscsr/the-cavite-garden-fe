@@ -479,7 +479,7 @@ const viewOrderDetails = (id) => {
 
 const getAllOrderTransactions = async () => {
   try {
-    const response = await GetAllTransactionAPI("all");
+    const response = await GetAllTransactionAPI("all", "order");
 
     if (response.status === "failed") {
       pendingOrders.value = [];

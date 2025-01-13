@@ -255,7 +255,13 @@
                   </option>
                 </select>
               </div>
-              <div v-if="productCategory === 'Pots'" class="mb-3">
+              <div
+                v-if="
+                  productCategory !== 'Soils' &&
+                  productCategory !== 'Fertilizers'
+                "
+                class="mb-3"
+              >
                 <label for="size" class="form-label">
                   Size <span class="text-danger">*</span>
                 </label>

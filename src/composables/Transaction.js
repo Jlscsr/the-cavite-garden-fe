@@ -1,8 +1,10 @@
 import { API } from "../boot/axios";
 
-const GetAllTransactionAPI = async (status) => {
+const GetAllTransactionAPI = async (status, orderPurpose) => {
   try {
-    const response = await API.get(`/transactions/status/${status}`);
+    const response = await API.get(
+      `/transactions/orderPurpose/status/${orderPurpose}/${status}`
+    );
 
     return response.data;
   } catch (error) {
@@ -40,9 +42,23 @@ const UpdateTransactionStatus = async (id, payload) => {
   }
 };
 
+const UpdateTransactionOrderPurpose = async (id, payload) => {
+  try {
+    const response = await API.put(
+      `/transaction/orderPurpose/update/${id}`,
+      payload
+    );
+
+    return response.data;
+  } catch (error) {
+    return error.response.data;
+  }
+};
+
 export {
   GetAllTransactionAPI,
   AddNewTransactionAPI,
   UpdateTransactionStatus,
   GetAllCustomerTransactionsByID,
+  UpdateTransactionOrderPurpose,
 };

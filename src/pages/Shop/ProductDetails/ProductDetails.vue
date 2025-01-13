@@ -147,13 +147,13 @@
         <div class="review-replies">
           <div class="divider thin dark my-2"></div>
           <div class="container ms-3 mt-2">
-              <div
+            <div
               v-if="review?.replies?.length !== 0"
               v-for="(reply, index) in review?.replies"
               :key="index"
               class="review-reply"
             >
-              <h6 class="fw-bold">Admin</h6>
+              <h6 class="fw-bold">Seller</h6>
               <p>{{ reply?.replyComment }}</p>
             </div>
           </div>
@@ -260,7 +260,7 @@ const checkout = async () => {
     title: "Are you sure?",
     text: "Do you want to checkout this product?",
     showCancelButton: true,
-    cancelButtonText: "Cancel"
+    cancelButtonText: "Cancel",
   }).then((result) => {
     if (result.isConfirmed) {
       router.push({

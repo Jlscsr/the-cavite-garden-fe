@@ -17,14 +17,20 @@
               <h5 class="card-title">Order #{{ order?.id }}</h5>
               <p class="text-muted">{{ formatDate(order?.updatedAt) }}</p>
             </div>
-            <span
-              class="badge"
-              :class="{
-                'bg-success': order?.status === 'completed',
-                'bg-danger': order?.status === 'cancelled',
-              }"
-              >{{ firstLetterUppercase(order?.status) }}</span
-            >
+            <div class="d-flex gap-2">
+              <span
+                class="badge"
+                :class="{
+                  'bg-success': order?.status === 'completed',
+                  'bg-danger': order?.status === 'cancelled',
+                }"
+              >
+                {{ firstLetterUppercase(order?.status) }}
+              </span>
+              <span class="badge bg-primary">
+                {{ firstLetterUppercase(order?.orderPurpose) }}
+              </span>
+            </div>
           </div>
 
           <div class="order-details mt-3">
@@ -114,10 +120,10 @@
                 <td>₱{{ product?.totalPrice }}</td>
                 <td>
                   <button
-                    class="btn btn-secondary"
+                    class="btn btn-light"
                     @click="toggleAddReviewModal(product?.productInfo?.id)"
                   >
-                    Leave a Review
+                    <StarReview color="#000000" size="30" />
                   </button>
                 </td>
               </tr>
@@ -137,6 +143,13 @@
             data-bs-dismiss="modal"
           >
             Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="toggleRequestRefund"
+          >
+            Request Refund
           </button>
         </div>
       </div>
@@ -170,14 +183,17 @@
         <div class="modal-body">
           <div class="mb-3">
             <label for="rate" class="form-label">Rate (1-5)</label>
-            <input
-              type="number"
-              min="1"
-              max="5"
-              class="form-control"
-              id="rate"
-              v-model="rate"
-            />
+            <div class="star-rating">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="star"
+                :class="{ filled: star <= rate }"
+                @click="rate = star"
+              >
+                {{ star }} ★
+              </span>
+            </div>
           </div>
           <div class="mb-3">
             <label for="review" class="form-label">Comment</label>
@@ -268,21 +284,31 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-import { useUserStore } from "../../../store/userStore";
-import { GetAllCustomerTransactionsByID } from "../../../composables/Transaction";
-import { firstLetterUppercase } from "../../../composables/Helpers";
 import bootstrap from "bootstrap/dist/js/bootstrap.bundle.js";
+
 import {
   getStorage,
   ref as storageRef,
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import Swal from "sweetalert2";
+import { useUserStore } from "../../../store/userStore";
+import { firstLetterUppercase } from "../../../composables/Helpers";
 import { AddNewProductReviewAPI } from "../../../composables/Reviews";
+import {
+  GetAllCustomerTransactionsByID,
+  UpdateTransactionOrderPurpose,
+} from "../../../composables/Transaction";
+
+import Swal from "sweetalert2";
+
+import StarReview from "../../../assets/icons/StarReview.vue";
 
 const storage = getStorage();
+const route = useRoute();
+const router = useRouter();
 
 const userStore = useUserStore();
 
@@ -470,9 +496,46 @@ const submitReview = async (productID) => {
     console.error(error);
   }
 };
+
+const toggleRequestRefund = async () => {
+  try {
+    const response = await Swal.fire({
+      title: "Request Refund",
+      text: "Are you sure you want to request a refund for this order?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
+    });
+
+    if (response.isConfirmed) {
+      const response = UpdateTransactionOrderPurpose(selectedOrder.value.id, {
+        status: "pending",
+      });
+
+      if (response.status === "failed") {
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Request Refund",
+          text: response.message,
+        });
+        return;
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Refund Requested",
+        text: "Your refund request has been submitted.",
+      });
+      router.go();
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .card {
   transition: box-shadow 0.3s ease;
 }
@@ -485,6 +548,28 @@ const submitReview = async (productID) => {
   .modal-dialog {
     max-width: 100%;
     margin: 0;
+  }
+}
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+  font-size: 2rem;
+  cursor: pointer;
+
+  .star {
+    color: #ccc; // Default star color
+    transition: color 0.3s;
+
+    &.filled {
+      color: #ffd700; // Filled star color
+    }
+
+    .star:hover,
+    .star:hover ~ .star,
+    .star:hover:nth-child(-n + 5) {
+      color: #ffd700;
+    }
   }
 }
 </style>
