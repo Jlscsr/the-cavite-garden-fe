@@ -27,9 +27,6 @@
               >
                 {{ firstLetterUppercase(order?.status) }}
               </span>
-              <span class="badge bg-primary">
-                {{ firstLetterUppercase(order?.orderPurpose) }}
-              </span>
             </div>
           </div>
 
@@ -110,7 +107,7 @@
                 <th scope="col">Item</th>
                 <th scope="col">Quantity</th>
                 <th scope="col">Price</th>
-                <th scope="col">Review</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -119,12 +116,21 @@
                 <td>{{ product?.purchasedQuantity }}</td>
                 <td>₱{{ product?.totalPrice }}</td>
                 <td>
-                  <button
-                    class="btn btn-light"
-                    @click="toggleAddReviewModal(product?.productInfo?.id)"
-                  >
-                    <StarReview color="#000000" size="30" />
-                  </button>
+                  <div class="d-flex">
+                    <button
+                      class="btn btn-light"
+                      @click="toggleAddReviewModal(product?.productInfo?.id)"
+                    >
+                      <StarReview color="#000000" size="30" />
+                    </button>
+
+                    <button
+                      class="btn btn-light"
+                      @click="toggleRequestRefund(product?.productInfo?.id)"
+                    >
+                      <RefundIcon color="#000000" size="30" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -143,13 +149,6 @@
             data-bs-dismiss="modal"
           >
             Close
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary"
-            @click="toggleRequestRefund"
-          >
-            Request Refund
           </button>
         </div>
       </div>
@@ -213,7 +212,7 @@
               id="media"
               multiple
               accept="image/*,video/*"
-              @change="handleMediaUpload"
+              @change="handleMediaUpload($event, 'reviews')"
             />
           </div>
 
@@ -280,6 +279,143 @@
       </div>
     </div>
   </div>
+
+  <!-- Refund Request Modal -->
+  <div
+    ref="refundRequestModal"
+    class="modal fade"
+    id="refundRequestModal"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="refundRequestModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="refundRequestModalLabel">
+            Request Refund for Product #{{ selectedProduct?.productInfo?.id }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="contactDetails" class="form-label"
+              >Contact Details</label
+            >
+            <div class="contactDetails">
+              <input
+                type="text"
+                class="form-control"
+                id="contactDetails"
+                v-model="refundContactDetails"
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="refundQty" class="form-label">Quantity</label>
+            <div class="qty">
+              <input
+                type="number"
+                class="form-control"
+                id="refundQty"
+                @change="handleQuantityChange"
+                min="1"
+                :max="selectedProduct?.purchasedQuantity"
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="refundReason" class="form-label">Refund Reason</label>
+            <textarea
+              type="text"
+              class="form-control"
+              id="refundReason"
+              v-model="refundReason"
+            ></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="media" class="form-label">Upload Images/Videos</label>
+            <input
+              type="file"
+              class="form-control"
+              id="media"
+              multiple
+              accept="image/*,video/*"
+              @change="handleMediaUpload($event, 'refunds')"
+            />
+          </div>
+
+          <div v-if="isUploading" class="progress">
+            <div
+              class="progress-bar progress-bar-striped progress-bar-animated"
+              role="progressbar"
+              :style="{ width: `${uploadProgress}%` }"
+              aria-valuenow="0"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            ></div>
+          </div>
+
+          <!-- Display uploaded media -->
+          <div class="mt-3">
+            <h5>Uploaded Media:</h5>
+            <div v-if="uploadedMedia.length > 0" class="d-flex flex-wrap gap-2">
+              <div
+                v-for="(file, index) in uploadedMedia"
+                :key="index"
+                class="media-preview"
+              >
+                <div v-if="file.mediaType.startsWith('image/')">
+                  <img
+                    :src="file.mediaURL"
+                    class="img-thumbnail"
+                    style="max-width: 200px; max-height: 200px"
+                    alt="Preview"
+                  />
+                </div>
+                <div v-else-if="file.mediaType.startsWith('video/')">
+                  <video
+                    :src="file.mediaURL"
+                    autoplay
+                    muted
+                    loop
+                    class="img-thumbnail"
+                    style="max-width: 290px; max-height: 290px"
+                  ></video>
+                </div>
+              </div>
+            </div>
+            <p v-else>No files uploaded yet.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            @click="addNewRefundRequest(selectedProduct?.productInfo?.id)"
+            :disabled="isUploading"
+          >
+            Request Refund
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -294,17 +430,17 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { ref as dbRef, database, set } from "../../../boot/firebase";
 import { useUserStore } from "../../../store/userStore";
 import { firstLetterUppercase } from "../../../composables/Helpers";
 import { AddNewProductReviewAPI } from "../../../composables/Reviews";
-import {
-  GetAllCustomerTransactionsByID,
-  UpdateTransactionOrderPurpose,
-} from "../../../composables/Transaction";
+import { GetAllCustomerTransactionsByID } from "../../../composables/Transaction";
 
 import Swal from "sweetalert2";
 
 import StarReview from "../../../assets/icons/StarReview.vue";
+import RefundIcon from "../../../assets/icons/RefundIcon.vue";
+import { AddNewRefundTransactionAPI } from "../../../composables/RefundRequest";
 
 const storage = getStorage();
 const route = useRoute();
@@ -323,8 +459,14 @@ const uploadedMedia = ref([]);
 const uploadProgress = ref(0);
 const reviewModal = ref(null);
 const viewProductModal = ref(null);
+const refundRequestModal = ref(null);
 const reviewModalInstance = ref(null);
 const viewProductModalInstance = ref(null);
+const refundRequestModalInstance = ref(null);
+
+const refundContactDetails = ref("");
+const refundQuantity = ref(1);
+const refundReason = ref("");
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -337,6 +479,9 @@ const formatDate = (dateString) => {
 onMounted(async () => {
   reviewModalInstance.value = new bootstrap.Modal(reviewModal.value);
   viewProductModalInstance.value = new bootstrap.Modal(viewProductModal.value);
+  refundRequestModalInstance.value = new bootstrap.Modal(
+    refundRequestModal.value
+  );
 
   try {
     const userID = userStore.getUserInfo().id;
@@ -394,7 +539,7 @@ const toggleAddReviewModal = (productID) => {
   reviewModalInstance.value.show();
 };
 
-const handleMediaUpload = async (event) => {
+const handleMediaUpload = async (event, folderName) => {
   let files = Array.from(event.target.files);
   isUploading.value = true;
 
@@ -409,7 +554,10 @@ const handleMediaUpload = async (event) => {
       file = null;
       return;
     }
-    const fileRef = storageRef(storage, `reviews/${Date.now()}-${file.name}`);
+    const fileRef = storageRef(
+      storage,
+      `${folderName}/${Date.now()}-${file.name}`
+    );
     const uploadTask = uploadBytesResumable(fileRef, file);
 
     // Track upload progress
@@ -433,7 +581,6 @@ const handleMediaUpload = async (event) => {
         });
         isUploading.value = false;
         uploadProgress.value = 0;
-        console.log("File uploaded successfully:", uploadedMedia.value);
       }
     );
   }
@@ -497,7 +644,57 @@ const submitReview = async (productID) => {
   }
 };
 
-const toggleRequestRefund = async () => {
+const addNewRefundRequest = async (productID) => {
+  try {
+    const userID = userStore.getUserInfo().id;
+
+    const payload = {
+      userID,
+      productID,
+      contactDetails: refundContactDetails.value,
+      productQuantity: refundQuantity.value,
+      productPrice: selectedProduct.value.productPrice,
+      totalPrice: selectedProduct.value.productPrice * refundQuantity.value,
+      refundReason: refundReason.value,
+      status: "pending",
+      mediasRefund: uploadedMedia.value,
+    };
+
+    const response = await AddNewRefundTransactionAPI(payload);
+
+    if (response.status === "failed") {
+      Swal.fire({
+        icon: "error",
+        title: "Failed to Request Refund",
+        text: response.message,
+      });
+      return;
+    }
+
+    payload.refundID = response.data.id;
+
+    await addNewOrderInFirebase(payload);
+
+    Swal.fire({
+      icon: "success",
+      title: "Refund Request Sent",
+      text: "Your refund request has been sent successfully.",
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    refundRequestModalInstance.value.hide();
+    uploadedMedia.value = [];
+  }
+};
+
+const toggleRequestRefund = async (productID) => {
+  selectedProduct.value = selectedOrder.value.products.find(
+    (product) => product?.productInfo?.id === productID
+  );
+
+  console.log(selectedProduct.value);
+
   try {
     const response = await Swal.fire({
       title: "Request Refund",
@@ -509,29 +706,32 @@ const toggleRequestRefund = async () => {
     });
 
     if (response.isConfirmed) {
-      const response = UpdateTransactionOrderPurpose(selectedOrder.value.id, {
-        status: "pending",
-      });
-
-      if (response.status === "failed") {
-        Swal.fire({
-          icon: "error",
-          title: "Failed to Request Refund",
-          text: response.message,
-        });
-        return;
-      }
-
-      Swal.fire({
-        icon: "success",
-        title: "Refund Requested",
-        text: "Your refund request has been submitted.",
-      });
-      router.go();
+      refundRequestModalInstance.value.show();
     }
   } catch (error) {
     console.error(error);
   }
+};
+
+const addNewOrderInFirebase = async (refundData) => {
+  const orderRef = dbRef(database, `refunds/${refundData.refundID}`);
+  delete refundData.mediasRefund;
+  await set(orderRef, {
+    ...refundData,
+    notificationStatus: "unread",
+  });
+};
+
+const handleQuantityChange = (event) => {
+  if (event.target.value < 1) {
+    event.target.value = 1;
+  }
+
+  if (event.target.value > selectedProduct.value.purchasedQuantity) {
+    event.target.value = selectedProduct.value.purchasedQuantity;
+  }
+
+  refundQuantity.value = event.target.value;
 };
 </script>
 

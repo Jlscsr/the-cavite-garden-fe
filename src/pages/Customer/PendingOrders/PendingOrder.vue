@@ -29,9 +29,6 @@
                 }"
                 >{{ firstLetterUppercase(order?.status) }}
               </span>
-              <span class="badge bg-primary"
-                >{{ firstLetterUppercase(order?.orderPurpose) }}
-              </span>
             </div>
           </div>
 
@@ -185,30 +182,22 @@ onMounted(async () => {
       return;
     }
 
-    console.log(response.data);
-
     pendingOrders.value = response.data.filter(
       (order) => order.status !== "completed" || order.status !== "cancelled"
     );
 
-    console.log(pendingOrders.value);
-
     pendingOrders.value = pendingOrders.value.map((order) => {
       let totalTransactionPrice = 0;
 
-      // Calculate the total price for all products in the order
       for (const item of order.products) {
         totalTransactionPrice += parseFloat(item.totalPrice); // Ensure totalPrice is a number
       }
 
-      // Add the totalTransactionPrice to the order object
       return {
         ...order,
         totalTransactionPrice, // Include the calculated total in the order
       };
     });
-
-    console.log(pendingOrders.value);
 
     if (route.params.id) {
       viewOrderDetails(route.params.id);

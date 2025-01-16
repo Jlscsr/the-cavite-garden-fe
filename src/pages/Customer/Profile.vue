@@ -68,8 +68,16 @@ const navLinks = [
     text: "Pending Orders",
   },
   {
+    to: { name: "refundRequests" },
+    text: "Refund Requests",
+  },
+  {
     to: { name: "ordersHistory" },
     text: "Order History",
+  },
+  {
+    to: { name: "refundsHistory" },
+    text: "Refunds History",
   },
 ];
 

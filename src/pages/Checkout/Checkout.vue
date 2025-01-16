@@ -139,8 +139,6 @@ const backToCart = () => {
 };
 
 const processCheckout = async () => {
-  console.log("Cart Items: ", cartItems.value);
-  console.log("Product Carts: ", productCarts.value);
   btnLoadingState.value = true;
   let formatUserAddress;
 
@@ -184,7 +182,7 @@ const processCheckout = async () => {
     paymentType: paymentMethod.value,
     shippingAddress: formatUserAddress,
     status,
-    purchasedProducts: cartItems.value
+    purchasedProducts: cartItems.value,
   };
 
   if (paymentMethod.value === "gcash") {
@@ -198,23 +196,22 @@ const processCheckout = async () => {
     });
 
     const options = {
-      method: 'POST',
+      method: "POST",
       headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        authorization: 'Basic c2tfdGVzdF92dHc2bVg3clJRMTVLZXN1TDU1cDl6Z3E6'
+        accept: "application/json",
+        "content-type": "application/json",
+        authorization: "Basic c2tfdGVzdF92dHc2bVg3clJRMTVLZXN1TDU1cDl6Z3E6",
       },
       body: JSON.stringify({
         data: {
           attributes: {
-            amount: orderTotal.value * 100, 
-            description: 'Payment for order', 
-            remarks: 'This is just a test'
-          }
-        }
-      })
+            amount: orderTotal.value * 100,
+            description: "Payment for order",
+            remarks: "This is just a test",
+          },
+        },
+      }),
     };
-
 
     try {
       const res = await fetch("https://api.paymongo.com/v1/links", options);
@@ -337,11 +334,10 @@ onMounted(async () => {
   }
 
   try {
-
     if (ids.length === 1 && route.query.qty) {
       const response = await GetProductByIDAPI(ids[0]);
 
-      if (response.status === "failed") { 
+      if (response.status === "failed") {
         Swal.fire({
           icon: "error",
           title: "Oops, something went wrong!",
@@ -355,8 +351,7 @@ onMounted(async () => {
         quantity: route.query.qty,
         price: parseFloat(route.query.initPrice),
         video: response.data.productVideoURL,
-        totalPrice:
-          parseFloat(route.query.initPrice) * route.query.qty,
+        totalPrice: parseFloat(route.query.initPrice) * route.query.qty,
       });
       cartItems.value.push({
         customerID: userStore.getUserInfo().id,
@@ -364,8 +359,8 @@ onMounted(async () => {
         productQuantity: route.query.qty,
         productInitialPrice: parseFloat(route.query.initPrice),
         totalPrice: parseFloat(route.query.initPrice * route.query.qty),
-        productInfo: response.data
-      })
+        productInfo: response.data,
+      });
     } else if (!route.query.qty) {
       if (ids.length > 1) {
         for (const id of ids) {

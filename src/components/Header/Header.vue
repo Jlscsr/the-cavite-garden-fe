@@ -88,20 +88,28 @@
                   aria-expanded="false"
                 >
                   <p
-                    v-if="notificationContainer.length > 0"
+                    v-if="
+                      notificationContainer.orders.length > 0 ||
+                      notificationContainer.refunds.length > 0
+                    "
                     class="notification fs-bold mb-0 text-danger"
                   >
-                    {{ notificationContainer.length }}
+                    {{
+                      notificationContainer.orders.length +
+                      notificationContainer.refunds.length
+                    }}
                   </p>
                   <NotificationBellIcon size="20" />
                 </a>
 
                 <ul class="dropdown-menu notification-menu">
                   <li
-                    v-for="notification in notificationContainer"
+                    v-if="notificationContainer.orders.length > 0"
+                    v-for="notification in notificationContainer.orders"
                     class="notification-item"
                     @click="
-                      gotoPendingOrdersPage(
+                      gotoTransactionsPage(
+                        'orders',
                         notification.orderID,
                         notification.status
                       )
@@ -109,10 +117,35 @@
                   >
                     <div class="d-flex align-items-center">
                       <i class="fas fa-bell"></i>
-                      <h6 class="fs-medium mb-0 ms-2">Order Notification</h6>
+                      <h6 class="fs-medium mb-0 ms-2">Order Notifications</h6>
                     </div>
                     <p class="mb-0">
                       Your Order #{{ notification?.orderID?.split("-")[4] }}
+                      status:
+                      <span class="fw-bold">
+                        {{ firstLetterUppercase(notification.status) }}
+                      </span>
+                    </p>
+                  </li>
+
+                  <li
+                    v-if="notificationContainer.refunds.length > 0"
+                    v-for="notification in notificationContainer.refunds"
+                    class="notification-item"
+                    @click="
+                      gotoTransactionsPage(
+                        'refunds',
+                        notification.refundID,
+                        notification.status
+                      )
+                    "
+                  >
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-bell"></i>
+                      <h6 class="fs-medium mb-0 ms-2">Refund Notifications</h6>
+                    </div>
+                    <p class="mb-0">
+                      Your Refund #{{ notification?.refundID?.split("-")[4] }}
                       status:
                       <span class="fw-bold">
                         {{ firstLetterUppercase(notification.status) }}
@@ -207,7 +240,10 @@ const navToggler = ref(null);
 
 const userStore = useUserStore();
 const userData = ref(userStore.getUserInfo());
-const notificationContainer = ref([]);
+const notificationContainer = ref({
+  orders: [],
+  refunds: [],
+});
 const currentSection = ref("");
 
 onMounted(async () => {
@@ -230,14 +266,28 @@ const handleNavClick = (section) => {
 };
 
 // Your existing functions remain the same
-const gotoPendingOrdersPage = (orderID, status) => {
-  const orderRef = dbRef(database, `orders/${orderID}`);
+const gotoTransactionsPage = (typeOfTransaction, transactionID, status) => {
+  const orderRef = dbRef(database, `${typeOfTransaction}/${transactionID}`);
   update(orderRef, { notificationStatus: "read" }, { merge: true });
 
-  notificationContainer.value = notificationContainer.value.filter(
-    (notification) => notification.id !== orderID
-  );
+  notificationContainer.value.orders =
+    notificationContainer.value.orders.filter(
+      (order) => order.orderID !== transactionID
+    );
 
+  notificationContainer.value.refunds =
+    notificationContainer.value.refunds.filter(
+      (refund) => refund.refundID !== transactionID
+    );
+
+  if (typeOfTransaction === "orders") {
+    goToOrdersHistory(transactionID, status);
+  } else {
+    goToRefundRequests(transactionID, status);
+  }
+};
+
+const goToOrdersHistory = (orderID, status) => {
   if (status !== "completed") {
     router.push({
       name: "pendingOrders",
@@ -247,6 +297,20 @@ const gotoPendingOrdersPage = (orderID, status) => {
     router.push({
       name: "ordersHistory",
       params: { id: orderID },
+    });
+  }
+};
+
+const goToRefundRequests = (refundID, status) => {
+  if (status !== "completed") {
+    router.push({
+      name: "refundRequests",
+      params: { id: refundID },
+    });
+  } else {
+    router.push({
+      name: "refundsHistory",
+      params: { id: refundID },
     });
   }
 };
@@ -261,7 +325,7 @@ const listenForTransactionChanges = (customerID) => {
   onChildChanged(ordersQuery, (snapshot) => {
     const orderData = snapshot.val();
     if (snapshot.exists() && orderData) {
-      notificationContainer.value = Object.values(orderData).filter(
+      notificationContainer.value.orders = Object.values(orderData).filter(
         (order) =>
           order.status !== "pending" && order.notificationStatus === "unread"
       );
@@ -271,9 +335,35 @@ const listenForTransactionChanges = (customerID) => {
   onValue(ordersQuery, (snapshot) => {
     const orderData = snapshot.val();
     if (snapshot.exists() && orderData) {
-      notificationContainer.value = Object.values(orderData).filter(
+      notificationContainer.value.orders = Object.values(orderData).filter(
         (order) =>
           order.status !== "pending" && order.notificationStatus === "unread"
+      );
+    }
+  });
+
+  const refundsQuery = query(
+    dbRef(database, "refunds"),
+    orderByChild("userID"),
+    equalTo(customerID)
+  );
+
+  onChildChanged(refundsQuery, (snapshot) => {
+    const refundData = snapshot.val();
+    if (snapshot.exists() && refundData) {
+      notificationContainer.value.refunds = Object.values(refundData).filter(
+        (refund) =>
+          refund.status !== "pending" && refund.notificationStatus === "unread"
+      );
+    }
+  });
+
+  onValue(refundsQuery, (snapshot) => {
+    const refundData = snapshot.val();
+    if (snapshot.exists() && refundData) {
+      notificationContainer.value.refunds = Object.values(refundData).filter(
+        (refund) =>
+          refund.status !== "pending" && refund.notificationStatus === "unread"
       );
     }
   });

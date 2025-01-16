@@ -1,7 +1,7 @@
 <template>
   <div class="pending-orders container-fluid">
     <div class="title">
-      <h1 class="fs-1 fs-medium">Refund Requests</h1>
+      <h1 class="fs-1 fs-medium">Refund History</h1>
     </div>
     <div class="content mt-5 d-flex justify-content-between align-items-center">
       <div class="buttons">
@@ -99,38 +99,6 @@
                     @click="viewOrderDetails(refund?.id)"
                   >
                     View
-                  </button>
-                </li>
-                <li
-                  v-if="refund?.status === 'pending'"
-                  class="px-2 mb-1 cursor-pointer text-center fs-light"
-                >
-                  <button
-                    class="btn btn-success w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'approved')"
-                  >
-                    Approved
-                  </button>
-                </li>
-
-                <li
-                  v-if="refund?.status === 'approved'"
-                  class="px-2 mb-1 cursor-pointer text-center fs-light"
-                >
-                  <button
-                    class="btn btn-success w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'completed')"
-                  >
-                    Completed
-                  </button>
-                </li>
-
-                <li class="px-2 mb-1 cursor-pointer text-center fs-light">
-                  <button
-                    class="btn btn-danger w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'cancelled')"
-                  >
-                    Cancel
                   </button>
                 </li>
               </ul>
@@ -268,7 +236,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { tableHeaders } from "./componentData";
-import { database, ref as dbRef, update } from "../../../../boot/firebase";
 import {
   formatDate,
   firstLetterUppercase,
@@ -277,86 +244,36 @@ import {
 
 import Table from "../../../../components/Table/Table.vue";
 import Swal from "sweetalert2";
-import {
-  GetAllRefundTransactionsAPI,
-  UpdateRefundTransactionStatusAPI,
-} from "../../../../composables/RefundRequest";
+import { GetAllRefundTransactionsAPI } from "../../../../composables/RefundRequest";
 
 const refundRequests = ref([]);
 const selectedRefundRequest = ref(null);
 
 const getAllRefundRequests = async () => {
   try {
-    const [pendingRequests, approvedRequests] = await Promise.all([
-      GetAllRefundTransactionsAPI("pending"),
-      GetAllRefundTransactionsAPI("approved"),
+    const [completedRequests, cancelledRequests] = await Promise.all([
+      GetAllRefundTransactionsAPI("completed"),
+      GetAllRefundTransactionsAPI("cancelled"),
     ]);
 
     if (
-      pendingRequests.status === "failed" ||
-      approvedRequests.status === "failed"
+      completedRequests.status === "failed" ||
+      cancelledRequests.status === "failed"
     ) {
       Swal.fire({
         icon: "error",
         title: "Failed to fetch refund requests",
-        text: pendingRequests.message || approvedRequests.message,
+        text: completedRequests.message || cancelledRequests.message,
       });
       return;
     }
 
-    refundRequests.value = [...pendingRequests.data, ...approvedRequests.data];
+    refundRequests.value = [
+      ...completedRequests.data,
+      ...cancelledRequests.data,
+    ];
   } catch (error) {
     console.error(error);
-  }
-};
-
-const setNewTransactionStatus = async (id, status) => {
-  Swal.fire({
-    icon: "info",
-    title: "Updating transaction status",
-    text: `Are you sure you want to update the transaction status to ${status}?`,
-    showCancelButton: true,
-    confirmButtonText: "Yes",
-    cancelButtonText: "No",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      updateTransactionStatus(id, status);
-    }
-  });
-};
-
-const updateTransactionStatus = async (id, status) => {
-  try {
-    const payload = {
-      status: status,
-    };
-
-    const response = await UpdateRefundTransactionStatusAPI(id, payload);
-
-    if (response.status === "failed") {
-      Swal.fire({
-        icon: "error",
-        title: "Failed to update transaction status",
-        text: response.message,
-      });
-      return;
-    }
-
-    const refundRef = dbRef(database, `refunds/${id}`);
-    update(
-      refundRef,
-      { notificationStatus: "unread", status },
-      { merge: true }
-    );
-
-    Swal.fire({
-      icon: "success",
-      title: "Transaction status updated",
-      text: response.message,
-    });
-    getAllRefundRequests();
-  } catch (error) {
-    console.log(error);
   }
 };
 
@@ -372,5 +289,5 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@import "./RefundRequests.scss";
+@import "./RefundsHistory.scss";
 </style>

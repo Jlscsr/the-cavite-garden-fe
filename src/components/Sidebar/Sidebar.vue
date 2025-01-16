@@ -54,6 +54,12 @@
                   <span class="fs-6"> Transaction History </span>
                 </router-link>
               </li>
+              <li class="sidebar-subnav-item ms-3">
+                <router-link :to="'refunds-history'">
+                  <i class="fas fa-history me-2"></i>
+                  <span class="fs-6"> Refunds History </span>
+                </router-link>
+              </li>
             </ul>
           </li>
           <li class="sidebar-item cursor-pointer">

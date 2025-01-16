@@ -53,10 +53,22 @@ const routes = [
                   import("../pages/Customer/PendingOrders/PendingOrder.vue"),
               },
               {
+                path: "refundRequests/:id?",
+                name: "refundRequests",
+                component: () =>
+                  import("../pages/Customer/RefundRequests/RefundRequests.vue"),
+              },
+              {
                 path: "ordersHistory/:id?",
                 name: "ordersHistory",
                 component: () =>
                   import("../pages/Customer/OrdersHistory/OrdersHistory.vue"),
+              },
+              {
+                path: "refundsHistory/:id?",
+                name: "refundsHistory",
+                component: () =>
+                  import("../pages/Customer/RefundsHistory/RefundsHistory.vue"),
               },
             ],
           },
@@ -150,6 +162,18 @@ const routes = [
             component: () =>
               import(
                 "../pages/Admin/Ordering/TransactionHistory/TransactionHistory.vue"
+              ),
+          },
+          {
+            path: "refunds-history",
+            name: "refunds-history",
+            meta: {
+              requiresAuth: true,
+              role: ["admin"],
+            },
+            component: () =>
+              import(
+                "../pages/Admin/Ordering/RefundsHistory/RefundsHistory.vue"
               ),
           },
           {
