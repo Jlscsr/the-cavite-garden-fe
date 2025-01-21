@@ -24,6 +24,11 @@
           <span class="stock-number">{{ product?.productStock }}</span>
         </div>
 
+        <div class="size-info mb-4">
+          <span class="text-muted">Size: </span>
+          <span class="stock-number">{{ product?.productSize }}</span>
+        </div>
+
         <div class="price-section mb-4">
           <h6 class="mb-2">Unit Price</h6>
           <h4 class="price">₱ {{ product?.productPrice }}</h4>
@@ -153,7 +158,7 @@
               :key="index"
               class="review-reply"
             >
-              <h6 class="fw-bold">Seller</h6>
+              <h6 class="fw-bold">The Cavite Garden</h6>
               <p>{{ reply?.replyComment }}</p>
             </div>
           </div>

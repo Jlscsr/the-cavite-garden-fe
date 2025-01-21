@@ -178,6 +178,12 @@
               </p>
             </div>
             <div class="d-flex justify-content-between w-100 mb-3">
+              <p class="fs-medium mb-0">Contact Details:</p>
+              <p class="mb-0">
+                {{ selectedRefundRequest?.contactDetails }}
+              </p>
+            </div>
+            <div class="d-flex justify-content-between w-100 mb-3">
               <p class="fs-medium mb-0">Status:</p>
               <p
                 class="mb-0 fs-medium"
