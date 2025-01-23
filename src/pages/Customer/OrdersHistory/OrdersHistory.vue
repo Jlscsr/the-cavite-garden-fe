@@ -190,7 +190,7 @@
                 :class="{ filled: star <= rate }"
                 @click="rate = star"
               >
-                {{ star }} ★
+                ★
               </span>
             </div>
           </div>
@@ -320,16 +320,7 @@
           </div>
           <div class="mb-3">
             <label for="refundQty" class="form-label">Quantity</label>
-            <div class="qty">
-              <input
-                type="number"
-                class="form-control"
-                id="refundQty"
-                @change="handleQuantityChange"
-                min="1"
-                :max="selectedProduct?.purchasedQuantity"
-              />
-            </div>
+            <p>{{ selectedProduct?.purchasedQuantity }}</p>
           </div>
           <div class="mb-3">
             <label for="refundReason" class="form-label">Refund Reason</label>
@@ -652,7 +643,7 @@ const addNewRefundRequest = async (productID) => {
       userID,
       productID,
       contactDetails: refundContactDetails.value,
-      productQuantity: refundQuantity.value,
+      productQuantity: selectedProduct.value.purchasedQuantity,
       productPrice: selectedProduct.value.productPrice,
       totalPrice: selectedProduct.value.productPrice * refundQuantity.value,
       refundReason: refundReason.value,
