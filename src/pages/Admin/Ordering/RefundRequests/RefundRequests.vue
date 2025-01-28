@@ -101,38 +101,6 @@
                     View
                   </button>
                 </li>
-                <li
-                  v-if="refund?.status === 'pending'"
-                  class="px-2 mb-1 cursor-pointer text-center fs-light"
-                >
-                  <button
-                    class="btn btn-success w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'approved')"
-                  >
-                    Approved
-                  </button>
-                </li>
-
-                <li
-                  v-if="refund?.status === 'approved'"
-                  class="px-2 mb-1 cursor-pointer text-center fs-light"
-                >
-                  <button
-                    class="btn btn-success w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'completed')"
-                  >
-                    Completed
-                  </button>
-                </li>
-
-                <li class="px-2 mb-1 cursor-pointer text-center fs-light">
-                  <button
-                    class="btn btn-danger w-100"
-                    @click="setNewTransactionStatus(refund?.id, 'cancelled')"
-                  >
-                    Cancel
-                  </button>
-                </li>
               </ul>
             </div>
           </td>
@@ -225,6 +193,21 @@
             </div>
             <p class="fs-5 fs-medium border-bottom">Refund Information</p>
             <div class="d-flex justify-content-between w-100 mb-3">
+              <p class="fs-medium mb-0">Mode Of Payment:</p>
+              <p class="mb-0">
+                {{ formatString(selectedRefundRequest?.paymentMethod) }}
+              </p>
+            </div>
+            <div
+              v-if="selectedRefundRequest?.paymentMethod === 'gcash'"
+              class="d-flex justify-content-between w-100 mb-3"
+            >
+              <p class="fs-medium mb-0">Gcash Ref Number:</p>
+              <p class="mb-0">
+                {{ formatString(selectedRefundRequest?.gcashRefNumber) }}
+              </p>
+            </div>
+            <div class="d-flex justify-content-between w-100 mb-3">
               <p class="fs-medium mb-0">Refund Reason:</p>
               <p class="mb-0">
                 {{ formatString(selectedRefundRequest?.refundReason) }}
@@ -258,11 +241,34 @@
           </div>
           <div class="modal-footer">
             <button
+              v-if="selectedRefundRequest?.status === 'pending'"
               type="button"
-              class="btn btn-outline-primary"
-              data-bs-dismiss="modal"
+              class="btn btn-danger"
+              @click="
+                setNewTransactionStatus(selectedRefundRequest?.id, 'cancelled')
+              "
             >
-              <span> Close </span>
+              Cancel
+            </button>
+            <button
+              v-if="selectedRefundRequest?.status === 'pending'"
+              type="button"
+              class="btn btn-primary"
+              @click="
+                setNewTransactionStatus(selectedRefundRequest?.id, 'approved')
+              "
+            >
+              Approved
+            </button>
+            <button
+              v-if="selectedRefundRequest?.status === 'approved'"
+              type="button"
+              class="btn btn-success"
+              @click="
+                setNewTransactionStatus(selectedRefundRequest?.id, 'completed')
+              "
+            >
+              Completed
             </button>
           </div>
         </div>
@@ -273,6 +279,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { tableHeaders } from "./componentData";
 import { database, ref as dbRef, update } from "../../../../boot/firebase";
 import {
@@ -288,6 +295,7 @@ import {
   UpdateRefundTransactionStatusAPI,
 } from "../../../../composables/RefundRequest";
 
+const router = useRouter();
 const refundRequests = ref([]);
 const selectedRefundRequest = ref(null);
 
@@ -310,7 +318,10 @@ const getAllRefundRequests = async () => {
       return;
     }
 
-    refundRequests.value = [...pendingRequests.data, ...approvedRequests.data];
+    refundRequests.value = [
+      ...pendingRequests.data,
+      ...approvedRequests.data,
+    ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   } catch (error) {
     console.error(error);
   }
@@ -360,7 +371,7 @@ const updateTransactionStatus = async (id, status) => {
       title: "Transaction status updated",
       text: response.message,
     });
-    getAllRefundRequests();
+    router.go();
   } catch (error) {
     console.log(error);
   }

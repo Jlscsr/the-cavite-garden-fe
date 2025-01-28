@@ -319,6 +319,29 @@
             </div>
           </div>
           <div class="mb-3">
+            <label for="mod" class="form-label">Mode Of Payment</label>
+            <div class="mod">
+              <select class="form-select" v-model="paymentMethod">
+                <option value="counter">Over the counter</option>
+                <option value="cod">Cash On Delivery</option>
+                <option value="gcash">GCash</option>
+              </select>
+            </div>
+          </div>
+          <div v-if="paymentMethod === 'gcash'" class="mb-3">
+            <label for="gcashRefNumber" class="form-label"
+              >Gcash Ref. Number</label
+            >
+            <div class="gcashRefNumber">
+              <input
+                type="text"
+                class="form-control"
+                id="gcashRefNumber"
+                v-model="gcashRefNumber"
+              />
+            </div>
+          </div>
+          <div class="mb-3">
             <label for="refundQty" class="form-label">Quantity</label>
             <p>{{ selectedProduct?.purchasedQuantity }}</p>
           </div>
@@ -458,6 +481,8 @@ const refundRequestModalInstance = ref(null);
 const refundContactDetails = ref("");
 const refundQuantity = ref(1);
 const refundReason = ref("");
+const paymentMethod = ref("");
+const gcashRefNumber = ref("");
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -647,6 +672,8 @@ const addNewRefundRequest = async (productID) => {
       productPrice: selectedProduct.value.productPrice,
       totalPrice: selectedProduct.value.productPrice * refundQuantity.value,
       refundReason: refundReason.value,
+      paymentMethod: paymentMethod.value,
+      gcashRefNumber: gcashRefNumber.value || "n/a",
       status: "pending",
       mediasRefund: uploadedMedia.value,
     };
