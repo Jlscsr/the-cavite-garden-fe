@@ -277,7 +277,7 @@ const getAllRefundRequests = async () => {
     refundRequests.value = [
       ...completedRequests.data,
       ...cancelledRequests.data,
-    ];
+    ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   } catch (error) {
     console.error(error);
   }

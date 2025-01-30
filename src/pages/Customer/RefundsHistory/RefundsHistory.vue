@@ -112,7 +112,7 @@
 
           <div class="row">
             <div class="col">
-              <h2 class="fs-semi-bold fs-heading-6">Medias</h2>
+              <h2 class="fs-semi-bold fs-heading-6">Reason Of Refund</h2>
               <div
                 v-for="media in selectedRequest?.medias"
                 class="medias"
@@ -131,6 +131,22 @@
                   controls
                   class="img-fluid"
                 ></video>
+              </div>
+            </div>
+
+            <div class="col">
+              <h2 class="fs-semi-bold fs-heading-6">Proof of Refunded Money</h2>
+              <div
+                v-for="media in selectedRequest?.medias"
+                class="medias"
+                style="width: 150px"
+              >
+                <img
+                  style="width: 150px"
+                  :src="media.refundProofMediaURL"
+                  alt="Product Image"
+                  class="img-fluid"
+                />
               </div>
             </div>
           </div>
@@ -213,7 +229,7 @@ const getAllRefundRequests = async () => {
     refundRequests.value = [
       ...completedRequests.data,
       ...cancelledRequests.data,
-    ];
+    ].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   } catch (error) {
     console.log(error);
   }

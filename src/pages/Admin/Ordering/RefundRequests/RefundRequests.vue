@@ -202,9 +202,9 @@
               v-if="selectedRefundRequest?.paymentMethod === 'gcash'"
               class="d-flex justify-content-between w-100 mb-3"
             >
-              <p class="fs-medium mb-0">Gcash Ref Number:</p>
+              <p class="fs-medium mb-0">Gcash Number:</p>
               <p class="mb-0">
-                {{ formatString(selectedRefundRequest?.gcashRefNumber) }}
+                {{ formatString(selectedRefundRequest?.gcashNumber) }}
               </p>
             </div>
             <div class="d-flex justify-content-between w-100 mb-3">
@@ -250,8 +250,30 @@
             >
               Cancel
             </button>
+            <div
+              v-if="
+                selectedRefundRequest?.status === 'pending' &&
+                !finishedUploading
+              "
+              class=""
+            >
+              <label for="media" class="btn btn-outline-secondary mb-0">
+                <span v-if="!isUploading">Upload Proof of Refund</span>
+                <span v-else class="spinner-border spinner-border-sm"></span>
+              </label>
+              <input
+                hidden
+                type="file"
+                class="form-control"
+                id="media"
+                accept="image/*,video/*"
+                @change="handleMediaUpload($event, 'refunds')"
+              />
+            </div>
             <button
-              v-if="selectedRefundRequest?.status === 'pending'"
+              v-if="
+                selectedRefundRequest?.status === 'pending' && finishedUploading
+              "
               type="button"
               class="btn btn-primary"
               @click="
@@ -278,8 +300,15 @@
 </template>
 
 <script setup>
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
+
 import { tableHeaders } from "./componentData";
 import { database, ref as dbRef, update } from "../../../../boot/firebase";
 import {
@@ -296,8 +325,12 @@ import {
 } from "../../../../composables/RefundRequest";
 
 const router = useRouter();
+const storage = getStorage();
 const refundRequests = ref([]);
 const selectedRefundRequest = ref(null);
+const isUploading = ref(false);
+const finishedUploading = ref(false);
+const uploadedMediaURL = ref([]);
 
 const getAllRefundRequests = async () => {
   try {
@@ -344,9 +377,14 @@ const setNewTransactionStatus = async (id, status) => {
 
 const updateTransactionStatus = async (id, status) => {
   try {
-    const payload = {
+    let payload = {
       status: status,
+      mediaURL: "n/a",
     };
+
+    if (status === "approved") {
+      payload.mediaURL = uploadedMediaURL.value[0]?.mediaURL;
+    }
 
     const response = await UpdateRefundTransactionStatusAPI(id, payload);
 
@@ -380,6 +418,54 @@ const updateTransactionStatus = async (id, status) => {
 const viewOrderDetails = (id) => {
   selectedRefundRequest.value = refundRequests.value.find(
     (order) => order.id === id
+  );
+};
+
+const handleMediaUpload = async (event, folderName) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  isUploading.value = true;
+
+  if (file.size > 10 * 1024 * 1024) {
+    Swal.fire({
+      icon: "error",
+      title: "File Too Large",
+      text: "Please upload files smaller than 10MB.",
+    });
+    isUploading.value = false;
+    finishedUploading.value = false;
+    return;
+  }
+
+  const fileRef = storageRef(
+    storage,
+    `${folderName}/${Date.now()}-${file.name}`
+  );
+
+  const uploadTask = uploadBytesResumable(fileRef, file);
+
+  uploadTask.on(
+    "state_changed",
+    null,
+    (error) => {
+      console.error("Error uploading file:", error);
+      isUploading.value = false;
+    },
+    async () => {
+      const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+      uploadedMediaURL.value = [
+        {
+          // Reset array and add single file
+          mediaURL: downloadURL,
+          mediaType: file.type,
+        },
+      ];
+      isUploading.value = false;
+      finishedUploading.value = true;
+
+      console.log(uploadedMediaURL.value);
+    }
   );
 };
 

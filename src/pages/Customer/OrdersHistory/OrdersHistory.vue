@@ -329,15 +329,17 @@
             </div>
           </div>
           <div v-if="paymentMethod === 'gcash'" class="mb-3">
-            <label for="gcashRefNumber" class="form-label"
-              >Gcash Ref. Number</label
-            >
-            <div class="gcashRefNumber">
+            <label for="gcashNumber" class="form-label">Gcash Number</label>
+            <span v-if="isGcashNumberInvalid" class="text-danger fs-6 d-block">
+              Invalid GCash number. Please provide a valid GCash number.
+            </span>
+            <div class="gcashNumber">
               <input
                 type="text"
                 class="form-control"
-                id="gcashRefNumber"
-                v-model="gcashRefNumber"
+                id="gcashNumber"
+                v-model="gcashNumber"
+                @input="setGcashNumber()"
               />
             </div>
           </div>
@@ -422,7 +424,7 @@
             type="button"
             class="btn btn-primary"
             @click="addNewRefundRequest(selectedProduct?.productInfo?.id)"
-            :disabled="isUploading"
+            :disabled="isUploading || isGcashNumberInvalid"
           >
             Request Refund
           </button>
@@ -482,7 +484,7 @@ const refundContactDetails = ref("");
 const refundQuantity = ref(1);
 const refundReason = ref("");
 const paymentMethod = ref("");
-const gcashRefNumber = ref("");
+const gcashNumber = ref("");
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString("en-US", {
@@ -673,7 +675,7 @@ const addNewRefundRequest = async (productID) => {
       totalPrice: selectedProduct.value.productPrice * refundQuantity.value,
       refundReason: refundReason.value,
       paymentMethod: paymentMethod.value,
-      gcashRefNumber: gcashRefNumber.value || "n/a",
+      gcashNumber: gcashNumber.value || "n/a",
       status: "pending",
       mediasRefund: uploadedMedia.value,
     };
@@ -740,16 +742,20 @@ const addNewOrderInFirebase = async (refundData) => {
   });
 };
 
-const handleQuantityChange = (event) => {
-  if (event.target.value < 1) {
-    event.target.value = 1;
+const isGcashNumberInvalid = ref(false);
+
+const setGcashNumber = () => {
+  if (!gcashNumber.value) {
+    isGcashNumberInvalid.value = false;
+    return;
   }
 
-  if (event.target.value > selectedProduct.value.purchasedQuantity) {
-    event.target.value = selectedProduct.value.purchasedQuantity;
+  if (!gcashNumber.value.match(/^(09|\+639)\d{11}$/)) {
+    isGcashNumberInvalid.value = true;
+    return;
   }
 
-  refundQuantity.value = event.target.value;
+  isGcashNumberInvalid.value = false;
 };
 </script>
 
